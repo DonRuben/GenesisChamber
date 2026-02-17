@@ -63,3 +63,45 @@
   color: #333;
   line-height: 1.6;
 }
+
+/* Genesis dark mode */
+.genesis-mode .stage {
+  background: #111827;
+  border-color: rgba(255,255,255,0.08);
+}
+
+.genesis-mode .stage-title {
+  color: #00D9C4;
+}
+
+.genesis-mode .tab {
+  background: #1a2332;
+  border-color: rgba(255,255,255,0.08);
+  color: #9CA3AF;
+}
+
+.genesis-mode .tab:hover {
+  background: rgba(0,217,196,0.1);
+  color: #E5E7EB;
+  border-color: rgba(0,217,196,0.3);
+}
+
+.genesis-mode .tab.active {
+  background: rgba(0,217,196,0.15);
+  color: #00D9C4;
+  border-color: rgba(0,217,196,0.3);
+  border-bottom-color: #111827;
+}
+
+.genesis-mode .tab-content {
+  background: #1a2332;
+  border-color: rgba(255,255,255,0.08);
+}
+
+.genesis-mode .model-name {
+  color: #9CA3AF;
+}
+
+.genesis-mode .response-text {
+  color: #E5E7EB;
+}

@@ -151,3 +151,90 @@
   color: #999;
   font-size: 12px;
 }
+
+/* Genesis dark mode */
+.genesis-mode .stage2 {
+  background: #111827;
+}
+
+.genesis-mode .stage2 h4 {
+  color: #E5E7EB;
+}
+
+.genesis-mode .stage-description {
+  color: #9CA3AF;
+}
+
+.genesis-mode .aggregate-rankings {
+  background: rgba(0,217,196,0.08);
+  border-color: rgba(0,217,196,0.2);
+}
+
+.genesis-mode .aggregate-rankings h4 {
+  color: #00D9C4;
+}
+
+.genesis-mode .aggregate-item {
+  background: #1a2332;
+  border-color: rgba(255,255,255,0.08);
+}
+
+.genesis-mode .rank-position {
+  color: #00D9C4;
+}
+
+.genesis-mode .rank-model {
+  color: #E5E7EB;
+}
+
+.genesis-mode .rank-score {
+  color: #9CA3AF;
+}
+
+.genesis-mode .stage2 .tab {
+  background: #1a2332;
+  border-color: rgba(255,255,255,0.08);
+  color: #9CA3AF;
+}
+
+.genesis-mode .stage2 .tab:hover {
+  background: rgba(0,217,196,0.1);
+  color: #E5E7EB;
+  border-color: rgba(0,217,196,0.3);
+}
+
+.genesis-mode .stage2 .tab.active {
+  background: rgba(0,217,196,0.15);
+  color: #00D9C4;
+  border-color: rgba(0,217,196,0.3);
+  border-bottom-color: #111827;
+}
+
+.genesis-mode .stage2 .tab-content {
+  background: #1a2332;
+  border-color: rgba(255,255,255,0.08);
+}
+
+.genesis-mode .ranking-model {
+  color: #9CA3AF;
+}
+
+.genesis-mode .ranking-content {
+  color: #E5E7EB;
+}
+
+.genesis-mode .parsed-ranking {
+  border-top-color: rgba(255,255,255,0.08);
+}
+
+.genesis-mode .parsed-ranking strong {
+  color: #00D9C4;
+}
+
+.genesis-mode .parsed-ranking ol {
+  color: #E5E7EB;
+}
+
+.genesis-mode .rank-count {
+  color: #9CA3AF;
+}

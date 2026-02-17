@@ -1,16 +1,13 @@
 # === Genesis Chamber — Backend (Python FastAPI) ===
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install uv for fast dependency resolution
-RUN pip install uv
-
 # Copy dependency files first (cache layer)
-COPY pyproject.toml uv.lock ./
+COPY requirements.txt ./
 
 # Install dependencies
-RUN uv pip install --system -r pyproject.toml
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY backend/ ./backend/

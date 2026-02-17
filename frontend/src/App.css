@@ -13,3 +13,9 @@
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
 }
+
+/* Genesis mode overrides the light theme globally */
+.app.genesis-mode {
+  background: var(--void);
+  color: var(--text);
+}

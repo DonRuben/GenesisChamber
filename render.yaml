@@ -16,4 +16,4 @@ services:
       - key: ALLOWED_ORIGINS
         sync: false
       - key: PYTHON_VERSION
-        value: "3.11.0"
+        value: "3.11.11"
