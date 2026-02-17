@@ -211,6 +211,26 @@ export const api = {
     }
   },
 
+  async getPresentation(simId) {
+    const response = await fetch(`${API_BASE}/api/simulation/${simId}/presentation`);
+    if (!response.ok) throw new Error('Failed to get presentation');
+    return response.blob();
+  },
+
+  async generateImages(simId) {
+    const response = await fetch(`${API_BASE}/api/simulation/${simId}/generate-images`, {
+      method: 'POST',
+    });
+    if (!response.ok) throw new Error('Failed to generate images');
+    return response.json();
+  },
+
+  async getImages(simId) {
+    const response = await fetch(`${API_BASE}/api/simulation/${simId}/images`);
+    if (!response.ok) throw new Error('Failed to get images');
+    return response.json();
+  },
+
   async quickStart(preset = 'quick_test', brief = null, participants = null) {
     const params = new URLSearchParams({ preset });
     if (brief) params.set('brief', brief);

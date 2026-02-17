@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 import uuid
@@ -17,8 +17,10 @@ from .simulation import GenesisSimulation
 from .simulation_store import SimulationStore
 from .config import (
     SIMULATION_PRESETS, DEFAULT_PARTICIPANTS, DEFAULT_MODERATOR,
-    DEFAULT_EVALUATOR, SOULS_DIR, PERSONA_COLORS,
+    DEFAULT_EVALUATOR, SOULS_DIR, PERSONA_COLORS, SIMULATION_OUTPUT_DIR,
 )
+from .output_engine import OutputEngine
+from .image_generator import ImageGenerator
 
 app = FastAPI(title="LLM Council + Genesis Chamber API")
 simulation_store = SimulationStore()
@@ -509,6 +511,88 @@ async def quick_start_simulation(
         "participants": list(participant_configs.keys()),
         "rounds": config.rounds,
     }
+
+
+# === OUTPUT & MEDIA ENDPOINTS ===
+
+
+@app.get("/api/simulation/{sim_id}/presentation")
+async def get_presentation(sim_id: str):
+    """Generate and serve a reveal.js presentation."""
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+
+    engine = OutputEngine()
+    path = engine.generate_reveal_presentation(state)
+
+    return FileResponse(
+        path=str(path),
+        media_type="text/html",
+        filename=f"{sim_id}-presentation.html",
+    )
+
+
+@app.get("/api/simulation/{sim_id}/output/{filename}")
+async def get_output_file(sim_id: str, filename: str):
+    """Serve a generated output file (transcript, summary, etc.)."""
+    if ".." in filename or "/" in filename:
+        raise HTTPException(status_code=400, detail="Invalid filename")
+
+    path = Path(SIMULATION_OUTPUT_DIR) / sim_id / filename
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+
+    media_types = {
+        ".html": "text/html",
+        ".json": "application/json",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+    }
+    media_type = media_types.get(path.suffix, "application/octet-stream")
+
+    return FileResponse(path=str(path), media_type=media_type)
+
+
+@app.post("/api/simulation/{sim_id}/generate-images")
+async def generate_images(sim_id: str):
+    """Generate images for all concept image prompts via fal.ai."""
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+
+    engine = OutputEngine()
+    sim_dir = Path(SIMULATION_OUTPUT_DIR) / sim_id
+    sim_dir.mkdir(parents=True, exist_ok=True)
+    prompts_path = engine.generate_image_prompts(state, sim_dir)
+
+    with open(prompts_path) as f:
+        prompts = json.load(f)
+
+    if not prompts:
+        return {"status": "no_prompts", "count": 0}
+
+    generator = ImageGenerator()
+
+    async def run_generation():
+        await generator.generate_batch(prompts, sim_id)
+
+    asyncio.create_task(run_generation())
+
+    return {"status": "generating", "count": len(prompts)}
+
+
+@app.get("/api/simulation/{sim_id}/images")
+async def get_generated_images(sim_id: str):
+    """Get generated image results."""
+    results_path = Path(SIMULATION_OUTPUT_DIR) / sim_id / "generated_images.json"
+    if not results_path.exists():
+        return {"images": [], "status": "not_generated"}
+
+    with open(results_path) as f:
+        images = json.load(f)
+
+    return {"images": images, "status": "complete"}
 
 
 if __name__ == "__main__":
