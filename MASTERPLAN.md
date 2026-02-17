@@ -81,12 +81,32 @@ Different LLMs per persona for cognitive diversity (all via OpenRouter):
 
 | Role | Model | Why |
 |------|-------|-----|
-| Moderator (Jobs) | Claude Opus | Synthesis + judgment |
-| Evaluator (Ive) | Claude Sonnet | Craft precision |
-| Analytical personas | Gemini Pro | Research, long context |
+| Moderator (Jobs) | Claude Opus 4.6 **or** GPT-5.2 | Synthesis + judgment — needs highest reasoning tier |
+| Evaluator (Ive) | Claude Opus 4.6 **or** GPT-5.2 | Craft precision — needs deep aesthetic reasoning |
+| Analytical personas | Gemini 2.5 Pro | Research, long context |
 | Creative personas | GPT-5.1 | Emotional depth |
 | Bold/provocative | Grok 4 | Unfiltered |
-| Direct/efficient | Llama Maverick | No-nonsense |
+| Direct/efficient | Llama 4 Maverick | No-nonsense |
+
+### High-End Model Strategy for Moderator & Evaluator
+
+**Steve Jobs (Moderator)** and **Jony Ive (Evaluator)** are the two most critical roles in the simulation. They judge, eliminate, direct, and assess craft quality. These roles demand the highest reasoning and synthesis capabilities available.
+
+**Candidate models (must benchmark both):**
+
+| Model | ID (OpenRouter) | Strengths | Considerations |
+|-------|-----------------|-----------|----------------|
+| Claude Opus 4.6 | `anthropic/claude-opus-4-6` | Deepest reasoning, best synthesis, nuanced judgment, large context | Highest cost per token |
+| GPT-5.2 | `openai/gpt-5.2` | Strong creative reasoning, fast, excellent instruction following | May lack Claude's nuance in multi-turn synthesis |
+
+**Evaluation plan:**
+1. Run identical `quick_test` simulation twice — once with Claude Opus 4.6 for Jobs+Ive, once with GPT-5.2
+2. Compare: quality of moderator direction, depth of evaluator craft assessment, elimination reasoning, "one more thing" insight quality
+3. Assess cost/performance ratio — both are premium tier but pricing differs
+4. Consider hybrid: Jobs on one model, Ive on the other for maximum cognitive diversity
+5. Decision before full `genesis_chamber` runs
+
+**Config supports easy switching** — just change `model` field in `DEFAULT_MODERATOR` and `DEFAULT_EVALUATOR` in `backend/config.py`.
 
 ---
 
