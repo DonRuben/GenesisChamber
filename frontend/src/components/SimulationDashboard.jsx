@@ -7,6 +7,7 @@ import CritiquePanel from './CritiquePanel';
 import ModeratorDirection from './ModeratorDirection';
 import QualityGate from './QualityGate';
 import TranscriptViewer from './TranscriptViewer';
+import PresentationGallery from './PresentationGallery';
 
 export default function SimulationDashboard({ simulations, currentSimId, onSelectSim, onRefreshList }) {
   const [simState, setSimState] = useState(null);
@@ -109,10 +110,19 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
             </span>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <span style={{ fontSize: 13, color: 'var(--text-dim)' }}>
             {activeConcepts.length} active / {eliminatedConcepts.length} eliminated
           </span>
+          {simState.status === 'completed' && (
+            <button
+              className="genesis-btn genesis-btn-secondary"
+              style={{ padding: '6px 14px', fontSize: 12 }}
+              onClick={() => window.open(`http://localhost:8001/api/simulation/${currentSimId}/presentation`, '_blank')}
+            >
+              Download Presentation
+            </button>
+          )}
         </div>
       </div>
 
@@ -130,6 +140,7 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
       <div style={{ display: 'flex', gap: 4, padding: '8px 24px', borderBottom: '1px solid var(--border)' }}>
         {[
           { key: 'concepts', label: 'Concepts' },
+          { key: 'gallery', label: 'Gallery' },
           { key: 'critiques', label: 'Critiques' },
           { key: 'direction', label: 'Direction' },
           { key: 'transcript', label: 'Transcript' },
@@ -173,6 +184,13 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
               </>
             )}
           </div>
+        )}
+
+        {activeView === 'gallery' && (
+          <PresentationGallery
+            concepts={simState.concepts}
+            rounds={simState.rounds}
+          />
         )}
 
         {activeView === 'critiques' && (
