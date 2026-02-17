@@ -112,4 +112,114 @@ export const api = {
       }
     }
   },
+
+  // === GENESIS CHAMBER API ===
+
+  async listSouls() {
+    const response = await fetch(`${API_BASE}/api/souls`);
+    if (!response.ok) throw new Error('Failed to list souls');
+    return response.json();
+  },
+
+  async listPresets() {
+    const response = await fetch(`${API_BASE}/api/simulation/presets`);
+    if (!response.ok) throw new Error('Failed to list presets');
+    return response.json();
+  },
+
+  async listSimulations() {
+    const response = await fetch(`${API_BASE}/api/simulations`);
+    if (!response.ok) throw new Error('Failed to list simulations');
+    return response.json();
+  },
+
+  async getSimulationStatus(simId) {
+    const response = await fetch(`${API_BASE}/api/simulation/${simId}/status`);
+    if (!response.ok) throw new Error('Failed to get simulation status');
+    return response.json();
+  },
+
+  async getSimulationState(simId) {
+    const response = await fetch(`${API_BASE}/api/simulation/${simId}/state`);
+    if (!response.ok) throw new Error('Failed to get simulation state');
+    return response.json();
+  },
+
+  async getRoundResults(simId, roundNum) {
+    const response = await fetch(`${API_BASE}/api/simulation/${simId}/round/${roundNum}`);
+    if (!response.ok) throw new Error('Failed to get round results');
+    return response.json();
+  },
+
+  async getTranscript(simId) {
+    const response = await fetch(`${API_BASE}/api/simulation/${simId}/transcript`);
+    if (!response.ok) throw new Error('Failed to get transcript');
+    return response.json();
+  },
+
+  async approveGate(simId, roundNum, decision, notes = '') {
+    const response = await fetch(
+      `${API_BASE}/api/simulation/${simId}/gate/${roundNum}/approve`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ decision, notes }),
+      }
+    );
+    if (!response.ok) throw new Error('Failed to approve gate');
+    return response.json();
+  },
+
+  async startSimulation(config) {
+    const response = await fetch(`${API_BASE}/api/simulation/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ config }),
+    });
+    if (!response.ok) throw new Error('Failed to start simulation');
+    return response.json();
+  },
+
+  async startSimulationStream(config, onEvent) {
+    const response = await fetch(`${API_BASE}/api/simulation/start/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ config }),
+    });
+    if (!response.ok) throw new Error('Failed to start simulation stream');
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value);
+      const lines = chunk.split('\n');
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const event = JSON.parse(line.slice(6));
+            onEvent(event.type, event);
+          } catch (e) {
+            console.error('Failed to parse SSE event:', e);
+          }
+        }
+      }
+    }
+  },
+
+  async quickStart(preset = 'quick_test', brief = null, participants = null) {
+    const params = new URLSearchParams({ preset });
+    if (brief) params.set('brief', brief);
+    const response = await fetch(`${API_BASE}/api/simulation/quick-start?${params}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(participants ? { participants } : {}),
+    });
+    if (!response.ok) throw new Error('Failed to quick-start simulation');
+    return response.json();
+  },
 };
