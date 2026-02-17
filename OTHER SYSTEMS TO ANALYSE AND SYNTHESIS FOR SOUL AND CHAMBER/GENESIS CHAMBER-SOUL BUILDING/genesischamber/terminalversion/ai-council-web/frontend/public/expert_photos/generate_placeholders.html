@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Expert Placeholder Images</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #ccc;
+        }
+        canvas {
+            border: 1px solid #333;
+            margin: 10px;
+        }
+        button {
+            background: #f97316;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 20px 0;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .info {
+            background: #333;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h1>Expert Photo Placeholder Generator</h1>
+        <p>This tool generates placeholder images for testing. Replace these with actual photos.</p>
+        <p>Click "Generate All Placeholders" to create 10 test images, then right-click each to save.</p>
+    </div>
+    
+    <button onclick="generateAll()">Generate All Placeholders</button>
+    
+    <div id="canvases"></div>
+
+    <script>
+        const experts = [
+            { id: 1, name: "Steve Jobs", color: "#333333" },
+            { id: 2, name: "Elon Musk", color: "#0066cc" },
+            { id: 3, name: "Jeff Bezos", color: "#ff9900" },
+            { id: 4, name: "Warren Buffett", color: "#8B4513" },
+            { id: 5, name: "Satya Nadella", color: "#00BCF2" },
+            { id: 6, name: "Tim Cook", color: "#666666" },
+            { id: 7, name: "Mark Zuckerberg", color: "#1877F2" },
+            { id: 8, name: "Sundar Pichai", color: "#4285F4" },
+            { id: 9, name: "Jensen Huang", color: "#76B900" },
+            { id: 10, name: "Sam Altman", color: "#10A37F" }
+        ];
+
+        function generatePlaceholder(expert) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 200;
+            const ctx = canvas.getContext('2d');
+            
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, 200, 200);
+            gradient.addColorStop(0, expert.color);
+            gradient.addColorStop(1, '#111111');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 200, 200);
+            
+            // Circle background
+            ctx.beginPath();
+            ctx.arc(100, 100, 80, 0, 2 * Math.PI);
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.fill();
+            
+            // Initials
+            ctx.font = 'bold 60px Arial';
+            ctx.fillStyle = '#f97316';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const initials = expert.name.split(' ').map(n => n[0]).join('');
+            ctx.fillText(initials, 100, 100);
+            
+            // Label
+            const label = document.createElement('p');
+            label.textContent = `${expert.id}.jpeg - ${expert.name}`;
+            label.style.margin = '5px 10px';
+            
+            const container = document.createElement('div');
+            container.style.display = 'inline-block';
+            container.appendChild(canvas);
+            container.appendChild(label);
+            
+            return container;
+        }
+
+        function generateAll() {
+            const container = document.getElementById('canvases');
+            container.innerHTML = '';
+            
+            experts.forEach(expert => {
+                container.appendChild(generatePlaceholder(expert));
+            });
+        }
+    </script>
+</body>
+</html>

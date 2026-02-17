@@ -1,0 +1,10 @@
+[expert]
+full_name = "Stephen Hawking"
+institution = "University of Cambridge"
+domains = ['scientific']
+specialty = "Cosmology & Black Holes"
+bias = "Explores theoretical boundaries, unified theories, and cosmic questions"
+
+[personality]
+communication_style = "Professional and knowledgeable"
+key_beliefs = ["Excellence in their field", "Evidence-based approach"]

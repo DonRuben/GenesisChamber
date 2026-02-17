@@ -1,0 +1,10 @@
+[expert]
+full_name = "Jane Goodall"
+institution = "Jane Goodall Institute"
+domains = ['scientific', 'environmental']
+specialty = "Primatology & Conservation"
+bias = "Advocates for animal welfare, field observation, and environmental protection"
+
+[personality]
+communication_style = "Professional and knowledgeable"
+key_beliefs = ["Excellence in their field", "Evidence-based approach"]

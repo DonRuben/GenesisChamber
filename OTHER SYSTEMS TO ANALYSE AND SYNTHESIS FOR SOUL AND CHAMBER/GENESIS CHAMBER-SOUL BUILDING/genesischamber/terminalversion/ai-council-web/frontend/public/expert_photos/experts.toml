@@ -1,0 +1,83 @@
+# Expert Photos Configuration
+# Place your expert photos in this directory with filenames matching the ids below
+# Recommended image size: 200x200px or larger (square aspect ratio works best)
+
+[[experts]]
+id = "1"
+filename = "1.jpeg"
+name = "Steve Jobs"
+company = "Apple"
+title = "Co-founder & CEO"
+description = "Visionary who revolutionized personal computing and mobile devices"
+
+[[experts]]
+id = "2"
+filename = "2.jpeg"
+name = "Elon Musk"
+company = "Tesla, SpaceX"
+title = "CEO & Founder"
+description = "Entrepreneur pushing boundaries in electric vehicles and space exploration"
+
+[[experts]]
+id = "3"
+filename = "3.jpeg"
+name = "Jeff Bezos"
+company = "Amazon"
+title = "Founder & Executive Chairman"
+description = "E-commerce pioneer who transformed online shopping"
+
+[[experts]]
+id = "4"
+filename = "4.jpeg"
+name = "Warren Buffett"
+company = "Berkshire Hathaway"
+title = "CEO & Chairman"
+description = "Legendary investor known as the Oracle of Omaha"
+
+[[experts]]
+id = "5"
+filename = "5.jpeg"
+name = "Satya Nadella"
+company = "Microsoft"
+title = "CEO"
+description = "Transformed Microsoft into a cloud-first company"
+
+[[experts]]
+id = "6"
+filename = "6.jpeg"
+name = "Tim Cook"
+company = "Apple"
+title = "CEO"
+description = "Operations expert who succeeded Steve Jobs"
+
+[[experts]]
+id = "7"
+filename = "7.jpeg"
+name = "Mark Zuckerberg"
+company = "Meta"
+title = "CEO & Founder"
+description = "Created the world's largest social network"
+
+[[experts]]
+id = "8"
+filename = "8.jpeg"
+name = "Sundar Pichai"
+company = "Google"
+title = "CEO"
+description = "Leader of Google and Alphabet"
+
+[[experts]]
+id = "9"
+filename = "9.jpeg"
+name = "Jensen Huang"
+company = "NVIDIA"
+title = "CEO & Founder"
+description = "Pioneered GPU computing and AI acceleration"
+
+[[experts]]
+id = "10"
+filename = "10.jpeg"
+name = "Sam Altman"
+company = "OpenAI"
+title = "CEO"
+description = "Leading the AI revolution with ChatGPT and GPT models"

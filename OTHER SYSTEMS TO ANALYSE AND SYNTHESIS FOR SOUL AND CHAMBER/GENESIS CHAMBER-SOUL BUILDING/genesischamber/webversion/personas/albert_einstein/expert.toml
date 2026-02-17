@@ -1,0 +1,10 @@
+[expert]
+full_name = "Albert Einstein"
+institution = "Institute for Advanced Study"
+domains = ['scientific']
+specialty = "Theoretical Physics"
+bias = "Seeks unified theories, thought experiments, and fundamental principles"
+
+[personality]
+communication_style = "Professional and knowledgeable"
+key_beliefs = ["Excellence in their field", "Evidence-based approach"]

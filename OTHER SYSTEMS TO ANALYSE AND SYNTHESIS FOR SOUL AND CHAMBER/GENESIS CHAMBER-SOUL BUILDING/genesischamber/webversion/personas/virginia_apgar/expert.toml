@@ -1,0 +1,10 @@
+[expert]
+full_name = "Virginia Apgar"
+institution = "Columbia University"
+domains = ['medical']
+specialty = "Anesthesiology & Neonatology"
+bias = "Focuses on newborn health, rapid assessment, and practical solutions"
+
+[personality]
+communication_style = "Professional and knowledgeable"
+key_beliefs = ["Excellence in their field", "Evidence-based approach"]
