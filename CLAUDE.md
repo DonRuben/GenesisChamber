@@ -1,166 +1,230 @@
-# CLAUDE.md - Technical Notes for LLM Council
+# CLAUDE.md - Technical Notes for Genesis Chamber
 
 This file contains technical details, architectural decisions, and important implementation notes for future development sessions.
 
 ## Project Overview
 
-LLM Council is a 3-stage deliberation system where multiple LLMs collaboratively answer user questions. The key innovation is anonymized peer review in Stage 2, preventing models from playing favorites.
+Genesis Chamber is a multi-persona AI creative simulation engine, evolved from Karpathy's `llm-council`. The system orchestrates 5-13 AI participants — each loaded with deep consciousness profiles ("soul documents") — through iterative debate rounds to produce creative concepts, critique them anonymously, and refine them to production quality.
 
-## Architecture
+**The full masterplan is in `MASTERPLAN.md`.** This file covers technical implementation details.
 
-### Backend Structure (`backend/`)
+### What We Inherited (llm-council)
+A working 3-stage deliberation system: parallel LLM querying via OpenRouter, anonymized peer review, chairman synthesis, streaming SSE, React frontend.
 
-**`config.py`**
-- Contains `COUNCIL_MODELS` (list of OpenRouter model identifiers)
-- Contains `CHAIRMAN_MODEL` (model that synthesizes final answer)
+### What We're Building (Genesis Chamber)
+A 5-stage, multi-round simulation engine with soul-loaded personas, concept evolution, elimination mechanics, quality gates, output generation, and media integration.
+
+## Architecture: Three Engines
+
+```
+SOUL ENGINE → COUNCIL ENGINE → OUTPUT ENGINE
+(load souls)   (run simulation)   (generate deliverables)
+```
+
+### Soul Engine (`backend/soul_engine.py` — NEW)
+- Loads markdown soul documents (40-60KB, 7 layers)
+- Compiles to system prompts (~3500 tokens for small context, full doc for 200K+)
+- Layers: Cognitive, Emotional, Behavioral, Calibration, Key Works, Quotes, Instructions
+- Soul docs live in `souls/` directory
+
+### Council Engine (`backend/simulation.py` — evolved from `council.py`)
+- 5 stages per round: Create → Critique → Synthesize → Refine → Present
+- Multi-round with elimination (R1: 0%, R2: 40%, R3: 50%, R4: 67%)
+- Quality gates pause for human approval
+- Full state persistence and resume
+
+### Output Engine (`backend/output_engine.py` — NEW)
+- Transcript HTML, per-persona presentations, image prompts, video scripts, production packages
+
+## Backend Structure (`backend/`)
+
+### Existing Files (from llm-council, preserved)
+
+**`config.py`** — WILL BE HEAVILY MODIFIED
+- Currently: `COUNCIL_MODELS` list + `CHAIRMAN_MODEL`
+- Target: Participant configs with soul paths, model assignments, temperatures, round settings, elimination schedule
 - Uses environment variable `OPENROUTER_API_KEY` from `.env`
-- Backend runs on **port 8001** (NOT 8000 - user had another app on 8000)
+- Backend runs on **port 8001** (NOT 8000)
 
-**`openrouter.py`**
+**`council.py`** — PRESERVED (backward compatible)
+- Original 3-stage llm-council logic stays functional
+- `stage1_collect_responses()`, `stage2_collect_rankings()`, `stage3_synthesize_final()`
+- Used for simple Q&A council mode
+
+**`openrouter.py`** — MINOR MODIFICATION
 - `query_model()`: Single async model query
 - `query_models_parallel()`: Parallel queries using `asyncio.gather()`
-- Returns dict with 'content' and optional 'reasoning_details'
-- Graceful degradation: returns None on failure, continues with successful responses
+- Will add: `query_with_soul()` for soul prompt injection into system messages
+- Graceful degradation: returns None on failure
 
-**`council.py`** - The Core Logic
-- `stage1_collect_responses()`: Parallel queries to all council models
-- `stage2_collect_rankings()`:
-  - Anonymizes responses as "Response A, B, C, etc."
-  - Creates `label_to_model` mapping for de-anonymization
-  - Prompts models to evaluate and rank (with strict format requirements)
-  - Returns tuple: (rankings_list, label_to_model_dict)
-  - Each ranking includes both raw text and `parsed_ranking` list
-- `stage3_synthesize_final()`: Chairman synthesizes from all responses + rankings
-- `parse_ranking_from_text()`: Extracts "FINAL RANKING:" section, handles both numbered lists and plain format
-- `calculate_aggregate_rankings()`: Computes average rank position across all peer evaluations
+**`storage.py`** — MODERATE MODIFICATION
+- Currently: JSON conversations in `data/conversations/`
+- Will add: Multi-round simulation state, concept tracking, event log, resume capability
+- Simulations stored in `output/{sim_id}/state.json`
 
-**`storage.py`**
-- JSON-based conversation storage in `data/conversations/`
-- Each conversation: `{id, created_at, messages[]}`
-- Assistant messages contain: `{role, stage1, stage2, stage3}`
-- Note: metadata (label_to_model, aggregate_rankings) is NOT persisted to storage, only returned via API
+**`main.py`** — MODERATE MODIFICATION
+- FastAPI app with CORS for localhost:5173 and localhost:3000
+- Existing endpoints preserved for llm-council mode
+- New simulation endpoints:
+  - `POST /api/simulation/start`
+  - `GET /api/simulation/{id}/status`
+  - `GET /api/simulation/{id}/round/{n}`
+  - `POST /api/simulation/{id}/gate/{n}/approve`
+  - `GET /api/simulation/{id}/transcript`
+  - `POST /api/simulation/{id}/generate-images`
 
-**`main.py`**
-- FastAPI app with CORS enabled for localhost:5173 and localhost:3000
-- POST `/api/conversations/{id}/message` returns metadata in addition to stages
-- Metadata includes: label_to_model mapping and aggregate_rankings
+### New Files
 
-### Frontend Structure (`frontend/src/`)
+**`simulation.py`** — Core 5-stage engine
+- `GenesisRound`: Runs one complete round (5 stages)
+- `GenesisSimulation`: Orchestrates N rounds with elimination + quality gates
+- Structured output parsing via `===TAG_START===` / `===TAG_END===` delimiters
 
-**`App.jsx`**
-- Main orchestration: manages conversations list and current conversation
-- Handles message sending and metadata storage
-- Important: metadata is stored in the UI state for display but not persisted to backend JSON
+**`soul_engine.py`** — Soul document loading
+- `SoulEngine.load_soul()`: Parse markdown into 7 layers
+- `SoulEngine.compile_system_prompt()`: Compress for model context window
+- `SoulEngine.calibrate()`: Add project-specific context
 
-**`components/ChatInterface.jsx`**
-- Multiline textarea (3 rows, resizable)
-- Enter to send, Shift+Enter for new line
-- User messages wrapped in markdown-content class for padding
+**`output_engine.py`** — Deliverable generation
+- Transcript HTML, presentations, image prompts, video scripts, production packages
 
-**`components/Stage1.jsx`**
-- Tab view of individual model responses
-- ReactMarkdown rendering with markdown-content wrapper
+**`image_generator.py`** — fal.ai integration
+- Nano Banana Pro, Recraft V3, Flux 2 Pro, Ideogram V3
+- Model selection logic based on concept type
 
-**`components/Stage2.jsx`**
-- **Critical Feature**: Tab view showing RAW evaluation text from each model
-- De-anonymization happens CLIENT-SIDE for display (models receive anonymous labels)
-- Shows "Extracted Ranking" below each evaluation so users can validate parsing
-- Aggregate rankings shown with average position and vote count
-- Explanatory text clarifies that boldface model names are for readability only
+**`models.py`** — Pydantic schemas
+- Concept, Critique, ModeratorDirection, RoundResult, SimulationState, QualityGate
 
-**`components/Stage3.jsx`**
-- Final synthesized answer from chairman
-- Green-tinted background (#f0fff0) to highlight conclusion
+## Frontend Structure (`frontend/src/`)
 
-**Styling (`*.css`)**
-- Light mode theme (not dark mode)
+### Existing Components (preserved for llm-council mode)
+
+**`App.jsx`** — Main orchestration, manages conversations + simulations
+**`components/ChatInterface.jsx`** — Chat mode (llm-council)
+**`components/Stage1.jsx`** — Tab view of model responses
+**`components/Stage2.jsx`** — Anonymized critique display with de-anonymization
+**`components/Stage3.jsx`** — Chairman synthesis (green-tinted)
+**`components/Sidebar.jsx`** — Conversation/simulation list
+
+### New Components (Genesis Chamber mode)
+
+**`components/SimulationLauncher.jsx`** — Select type, participants, brief
+**`components/RoundProgress.jsx`** — Visual round/stage progress indicator
+**`components/ConceptCard.jsx`** — Individual concept display with evolution
+**`components/CritiquePanel.jsx`** — Anonymized critique scores + feedback
+**`components/ModeratorDirection.jsx`** — Moderator decisions, eliminations
+**`components/QualityGate.jsx`** — Human approval checkpoints
+**`components/PresentationGallery.jsx`** — Browse concepts across rounds
+**`components/TranscriptViewer.jsx`** — Interactive full transcript
+
+### Styling
+- Light mode theme
 - Primary color: #4a90e2 (blue)
+- Genesis Chamber uses dark theme with teal (#00D9C4) accent per blueprint
 - Global markdown styling in `index.css` with `.markdown-content` class
-- 12px padding on all markdown content to prevent cluttered appearance
 
 ## Key Design Decisions
 
-### Stage 2 Prompt Format
-The Stage 2 prompt is very specific to ensure parseable output:
-```
-1. Evaluate each response individually first
-2. Provide "FINAL RANKING:" header
-3. Numbered list format: "1. Response C", "2. Response A", etc.
-4. No additional text after ranking section
-```
+### Five-Stage Round System
+1. **CREATE** — Independent concept generation (soul-loaded)
+2. **CRITIQUE** — Anonymized peer review (concepts as A, B, C)
+3. **SYNTHESIZE** — Moderator direction + evaluator craft assessment
+4. **REFINE** — Directed revision based on feedback
+5. **PRESENT** — Group presentation with moderator reaction
 
-This strict format allows reliable parsing while still getting thoughtful evaluations.
+### Structured Output Parsing
+Genesis Chamber uses `===TAG_START===` / `===TAG_END===` delimiters instead of llm-council's "FINAL RANKING:" format. More robust, supports multi-field structured output.
 
-### De-anonymization Strategy
-- Models receive: "Response A", "Response B", etc.
-- Backend creates mapping: `{"Response A": "openai/gpt-5.1", ...}`
-- Frontend displays model names in **bold** for readability
-- Users see explanation that original evaluation used anonymous labels
-- This prevents bias while maintaining transparency
+### Multi-Model Cognitive Diversity
+Different LLMs for different personas:
+- Moderator (Jobs): Claude Opus — synthesis + judgment
+- Evaluator (Ive): Claude Sonnet — craft precision
+- Analytical: Gemini Pro — research, long context
+- Creative: GPT-5.1 — emotional depth
+- Provocative: Grok 4 — unfiltered
+- Direct: Llama Maverick — efficient
 
-### Error Handling Philosophy
-- Continue with successful responses if some models fail (graceful degradation)
-- Never fail the entire request due to single model failure
-- Log errors but don't expose to user unless all models fail
+### Anonymized Critique (Sacred Principle)
+Inherited from llm-council. Concepts labeled "Concept A, B, C" — nobody knows whose is whose. Prevents ego-protection. Creates honest feedback. NEVER break this anonymization.
 
-### UI/UX Transparency
-- All raw outputs are inspectable via tabs
-- Parsed rankings shown below raw text for validation
-- Users can verify system's interpretation of model outputs
-- This builds trust and allows debugging of edge cases
+### State Persistence + Resume
+Full simulation state saved after every stage as JSON. Supports resume from any point. Critical for long simulations (2+ hours).
+
+### Quality Gates
+Configured rounds where simulation pauses for human approval. System proposes, human decides. No fully autonomous creative decisions.
+
+### Backward Compatibility
+Original llm-council endpoints and components stay functional. Genesis Chamber is additive, not destructive.
 
 ## Important Implementation Details
 
 ### Relative Imports
-All backend modules use relative imports (e.g., `from .config import ...`) not absolute imports. This is critical for Python's module system to work correctly when running as `python -m backend.main`.
+All backend modules use relative imports (e.g., `from .config import ...`). Run as `python -m backend.main` from project root.
 
 ### Port Configuration
-- Backend: 8001 (changed from 8000 to avoid conflict)
+- Backend: 8001 (NOT 8000)
 - Frontend: 5173 (Vite default)
-- Update both `backend/main.py` and `frontend/src/api.js` if changing
+
+### Soul Document Location
+Soul documents (.md files) live in `souls/` at project root. Soul template in `genesis-chamber-builder/souls/examples/soul-template.md`.
+
+### Prompt Templates
+Stage prompt templates in `genesis-chamber-builder/prompts/` and `genesis-chamber-builder/docs/PROMPT-ENGINEERING.md`.
+
+### Configuration Files
+- `genesis-chamber-builder/config/council-config.example.json` — Full working config example
+- `genesis-chamber-builder/config/simulation-presets.json` — 5 presets with cost estimates
+- `genesis-chamber-builder/config/model-roster.json` — Model tiers + persona mapping
 
 ### Markdown Rendering
-All ReactMarkdown components must be wrapped in `<div className="markdown-content">` for proper spacing. This class is defined globally in `index.css`.
-
-### Model Configuration
-Models are hardcoded in `backend/config.py`. Chairman can be same or different from council members. The current default is Gemini as chairman per user preference.
+All ReactMarkdown components must be wrapped in `<div className="markdown-content">`.
 
 ## Common Gotchas
 
-1. **Module Import Errors**: Always run backend as `python -m backend.main` from project root, not from backend directory
-2. **CORS Issues**: Frontend must match allowed origins in `main.py` CORS middleware
-3. **Ranking Parse Failures**: If models don't follow format, fallback regex extracts any "Response X" patterns in order
-4. **Missing Metadata**: Metadata is ephemeral (not persisted), only available in API responses
+1. **Module Import Errors**: Always run `python -m backend.main` from project root
+2. **CORS Issues**: Frontend must match allowed origins in `main.py`
+3. **Soul Doc Size**: Full docs may exceed system prompt limits — use Soul Compiler for small-context models
+4. **Structured Output Parsing**: If models don't follow `===TAG===` format, implement fallback extraction
+5. **Long Simulations**: Always save state after each stage — network failures happen
+6. **Elimination Bookkeeping**: Track eliminated concepts + which elements were merged into survivors
+7. **Missing Metadata**: In llm-council mode, metadata is ephemeral (not persisted)
 
-## Future Enhancement Ideas
+## Reference Documentation
 
-- Configurable council/chairman via UI instead of config file
-- Streaming responses instead of batch loading
-- Export conversations to markdown/PDF
-- Model performance analytics over time
-- Custom ranking criteria (not just accuracy/insight)
-- Support for reasoning models (o1, etc.) with special handling
-
-## Testing Notes
-
-Use `test_openrouter.py` to verify API connectivity and test different model identifiers before adding to council. The script tests both streaming and non-streaming modes.
+All detailed specs are in `genesis-chamber-builder/`:
+- `docs/ARCHITECTURE.md` — Full system architecture
+- `docs/SOUL-FORMAT.md` — Soul document specification + template
+- `docs/SIMULATION-PROTOCOL.md` — Round rules, 5 stages, elimination
+- `docs/PROMPT-ENGINEERING.md` — System prompts for all 5 stages
+- `docs/INTEGRATION-GUIDE.md` — fal.ai, ElevenLabs, production pipeline
+- `architecture/llm-council-delta.md` — Exact file-by-file modifications
+- `architecture/flow-diagram.md` — Mermaid diagrams
+- `architecture/state-machine.md` — State schema + resume capability
+- `config/council-config.example.json` — Full working config
+- `prompts/output-format.md` — Structured output + parsing code
 
 ## Data Flow Summary
 
+### llm-council Mode (preserved)
 ```
-User Query
-    ↓
-Stage 1: Parallel queries → [individual responses]
-    ↓
-Stage 2: Anonymize → Parallel ranking queries → [evaluations + parsed rankings]
-    ↓
-Aggregate Rankings Calculation → [sorted by avg position]
-    ↓
-Stage 3: Chairman synthesis with full context
-    ↓
-Return: {stage1, stage2, stage3, metadata}
-    ↓
-Frontend: Display with tabs + validation UI
+User Query → Stage 1 (parallel) → Stage 2 (anonymized ranking) → Stage 3 (synthesis) → Response
 ```
 
-The entire flow is async/parallel where possible to minimize latency.
+### Genesis Chamber Mode (new)
+```
+Brief + Souls
+    ↓
+Round 1: DIVERGE (5 stages) → 10-18 concepts
+    ↓
+Round 2: CONVERGE (5 stages, eliminate 40%) → 6-10 concepts
+    ↓
+Round 3: DEEPEN (5 stages, eliminate 50%) → 3-5 concepts
+    ↓ [QUALITY GATE — human approval]
+Round 4: GLADIATOR (5 stages, eliminate 67%) → 1-2 concepts
+    ↓
+Round 5: POLISH (full team on winner)
+    ↓
+Round 6: SPEC (production specification)
+    ↓ [QUALITY GATE — human approval]
+Output Engine → Transcript, Presentations, Images, Videos, Package
+```
