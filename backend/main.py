@@ -21,6 +21,7 @@ from .config import (
 )
 from .output_engine import OutputEngine
 from .image_generator import ImageGenerator
+from .video_generator import VideoGenerator, VIDEO_QUALITY_TIERS
 
 app = FastAPI(title="LLM Council + Genesis Chamber API")
 simulation_store = SimulationStore()
@@ -593,6 +594,93 @@ async def get_generated_images(sim_id: str):
         images = json.load(f)
 
     return {"images": images, "status": "complete"}
+
+
+class GenerateVideosRequest(BaseModel):
+    quality: str = "standard"  # hero, standard, draft
+
+
+@app.get("/api/simulation/{sim_id}/video-tiers")
+async def get_video_tiers():
+    """Get available video quality tiers and cost estimates."""
+    return VIDEO_QUALITY_TIERS
+
+
+@app.post("/api/simulation/{sim_id}/generate-videos")
+async def generate_videos(sim_id: str, request: GenerateVideosRequest):
+    """Generate videos for winner/finalist concepts via fal.ai.
+
+    Optional post-processing step — only for winners/finalists.
+    """
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+
+    if request.quality not in VIDEO_QUALITY_TIERS:
+        raise HTTPException(status_code=400, detail=f"Unknown quality tier: {request.quality}")
+
+    # Collect video prompts from winner/finalist concepts only
+    active_concepts = state.concepts.get("active", [])
+    winner_concepts = [c for c in active_concepts if c.status in ("winner", "finalist", "active")]
+
+    if not winner_concepts:
+        return {"status": "no_concepts", "count": 0}
+
+    prompts = []
+    # Check if we have generated images to use as source (image-to-video is better)
+    images_path = Path(SIMULATION_OUTPUT_DIR) / sim_id / "generated_images.json"
+    image_map = {}
+    if images_path.exists():
+        with open(images_path) as f:
+            for img in json.load(f):
+                image_map[img.get("concept_name", "")] = img.get("url")
+
+    for concept in winner_concepts:
+        video_prompt = concept.video_prompt or concept.image_prompt or concept.idea or ""
+        if not video_prompt:
+            continue
+
+        prompt_data = {
+            "concept_name": concept.name,
+            "prompt": video_prompt,
+            "persona": concept.persona_name,
+            "status": concept.status,
+        }
+        # Attach image URL if available (enables image-to-video)
+        if concept.name in image_map:
+            prompt_data["image_url"] = image_map[concept.name]
+
+        prompts.append(prompt_data)
+
+    if not prompts:
+        return {"status": "no_prompts", "count": 0}
+
+    generator = VideoGenerator()
+
+    async def run_generation():
+        await generator.generate_for_concepts(prompts, sim_id, request.quality)
+
+    asyncio.create_task(run_generation())
+
+    return {
+        "status": "generating",
+        "count": len(prompts),
+        "quality": request.quality,
+        "cost_estimate": VIDEO_QUALITY_TIERS[request.quality]["cost_estimate"],
+    }
+
+
+@app.get("/api/simulation/{sim_id}/videos")
+async def get_generated_videos(sim_id: str):
+    """Get generated video results."""
+    results_path = Path(SIMULATION_OUTPUT_DIR) / sim_id / "generated_videos.json"
+    if not results_path.exists():
+        return {"videos": [], "status": "not_generated"}
+
+    with open(results_path) as f:
+        videos = json.load(f)
+
+    return {"videos": videos, "status": "complete"}
 
 
 if __name__ == "__main__":

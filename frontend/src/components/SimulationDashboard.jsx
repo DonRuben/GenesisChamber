@@ -14,6 +14,7 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
   const [activeView, setActiveView] = useState('concepts'); // concepts | critiques | direction | transcript
   const [selectedRound, setSelectedRound] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [videoStatus, setVideoStatus] = useState(null); // null | 'generating' | 'complete'
 
   // Load simulation state when selected
   useEffect(() => {
@@ -115,13 +116,39 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
             {activeConcepts.length} active / {eliminatedConcepts.length} eliminated
           </span>
           {simState.status === 'completed' && (
-            <button
-              className="genesis-btn genesis-btn-secondary"
-              style={{ padding: '6px 14px', fontSize: 12 }}
-              onClick={() => window.open(`http://localhost:8001/api/simulation/${currentSimId}/presentation`, '_blank')}
-            >
-              Download Presentation
-            </button>
+            <>
+              <button
+                className="genesis-btn genesis-btn-secondary"
+                style={{ padding: '6px 14px', fontSize: 12 }}
+                onClick={() => window.open(`http://localhost:8001/api/simulation/${currentSimId}/presentation`, '_blank')}
+              >
+                Download Presentation
+              </button>
+              <button
+                className="genesis-btn genesis-btn-secondary"
+                style={{ padding: '6px 14px', fontSize: 12 }}
+                disabled={videoStatus === 'generating'}
+                onClick={async () => {
+                  setVideoStatus('generating');
+                  try {
+                    await api.generateVideos(currentSimId, 'standard');
+                    // Poll for completion
+                    const poll = setInterval(async () => {
+                      const result = await api.getVideos(currentSimId);
+                      if (result.status === 'complete') {
+                        setVideoStatus('complete');
+                        clearInterval(poll);
+                      }
+                    }, 10000);
+                  } catch (e) {
+                    console.error('Video generation failed:', e);
+                    setVideoStatus(null);
+                  }
+                }}
+              >
+                {videoStatus === 'generating' ? 'Generating Videos...' : videoStatus === 'complete' ? 'Videos Ready' : 'Generate Videos'}
+              </button>
+            </>
           )}
         </div>
       </div>
