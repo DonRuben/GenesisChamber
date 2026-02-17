@@ -23,3 +23,22 @@
   line-height: 1.7;
   font-size: 15px;
 }
+
+/* Genesis dark mode */
+.genesis-mode .stage3 {
+  background: rgba(16,185,129,0.08);
+  border-color: rgba(16,185,129,0.2);
+}
+
+.genesis-mode .final-response {
+  background: #1a2332;
+  border-color: rgba(16,185,129,0.2);
+}
+
+.genesis-mode .chairman-label {
+  color: #10B981;
+}
+
+.genesis-mode .final-text {
+  color: #E5E7EB;
+}

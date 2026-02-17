@@ -29,7 +29,7 @@ app = FastAPI(title="LLM Council + Genesis Chamber API")
 simulation_store = SimulationStore()
 
 # CORS — configurable via ALLOWED_ORIGINS env var (comma-separated)
-_default_origins = "http://localhost:5173,http://localhost:3000"
+_default_origins = "http://localhost:5173,http://localhost:3000,https://genesis-chamber-two.vercel.app"
 _allowed_origins = os.getenv("ALLOWED_ORIGINS", _default_origins).split(",")
 app.add_middleware(
     CORSMiddleware,

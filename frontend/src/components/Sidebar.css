@@ -1,5 +1,7 @@
+/* === Sidebar — supports both light and genesis dark mode === */
+
 .sidebar {
-  width: 260px;
+  width: 280px;
   background: #f8f8f8;
   border-right: 1px solid #e0e0e0;
   display: flex;
@@ -8,14 +10,16 @@
 }
 
 .sidebar-header {
-  padding: 16px;
+  padding: 20px 16px 16px;
   border-bottom: 1px solid #e0e0e0;
 }
 
 .sidebar-header h1 {
-  font-size: 18px;
-  margin: 0 0 12px 0;
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 4px 0;
   color: #333;
+  letter-spacing: -0.3px;
 }
 
 .new-conversation-btn {
@@ -23,12 +27,12 @@
   padding: 10px;
   background: #4a90e2;
   border: 1px solid #4a90e2;
-  border-radius: 6px;
+  border-radius: 8px;
   color: #fff;
   cursor: pointer;
   font-size: 14px;
-  transition: background 0.2s;
-  font-weight: 500;
+  font-weight: 600;
+  transition: all 0.2s;
 }
 
 .new-conversation-btn:hover {
@@ -43,41 +47,48 @@
 }
 
 .no-conversations {
-  padding: 16px;
+  padding: 24px 16px;
   text-align: center;
   color: #999;
-  font-size: 14px;
+  font-size: 13px;
 }
 
-.conversation-item {
+.conversation-item,
+.simulation-item {
   padding: 12px;
-  margin-bottom: 4px;
-  border-radius: 6px;
+  margin-bottom: 2px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.15s;
+  border: 1px solid transparent;
 }
 
-.conversation-item:hover {
+.conversation-item:hover,
+.simulation-item:hover {
   background: #f0f0f0;
 }
 
-.conversation-item.active {
+.conversation-item.active,
+.simulation-item.active {
   background: #e8f0fe;
-  border: 1px solid #4a90e2;
+  border-color: #4a90e2;
 }
 
-.conversation-title {
+.conversation-title,
+.simulation-title {
   color: #333;
   font-size: 14px;
+  font-weight: 500;
   margin-bottom: 4px;
 }
 
-.conversation-meta {
+.conversation-meta,
+.simulation-meta {
   color: #999;
   font-size: 12px;
 }
 
-/* Mode toggle (light theme version) */
+/* Mode toggle — light theme */
 .mode-toggle {
   display: flex;
   gap: 4px;
@@ -111,4 +122,88 @@
   color: #999;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+/* ============================================
+   GENESIS DARK MODE OVERRIDES
+   ============================================ */
+
+.genesis-mode .sidebar {
+  background: #111827;
+  border-right-color: rgba(255,255,255,0.08);
+}
+
+.genesis-mode .sidebar-header {
+  border-bottom-color: rgba(255,255,255,0.08);
+}
+
+.genesis-mode .sidebar-header h1 {
+  color: #00D9C4;
+}
+
+.genesis-mode .subtitle {
+  color: #9CA3AF;
+}
+
+.genesis-mode .mode-toggle {
+  background: #1a2332;
+}
+
+.genesis-mode .mode-toggle button {
+  border-color: rgba(255,255,255,0.08);
+  color: #9CA3AF;
+}
+
+.genesis-mode .mode-toggle button.active {
+  background: rgba(0,217,196,0.15);
+  color: #00D9C4;
+  border-color: rgba(0,217,196,0.3);
+}
+
+.genesis-mode .new-conversation-btn {
+  background: rgba(0,217,196,0.15);
+  color: #00D9C4;
+  border-color: rgba(0,217,196,0.3);
+}
+
+.genesis-mode .new-conversation-btn:hover {
+  background: rgba(0,217,196,0.25);
+  border-color: rgba(0,217,196,0.4);
+}
+
+.genesis-mode .conversation-list {
+  scrollbar-width: thin;
+  scrollbar-color: #1a2332 #111827;
+}
+
+.genesis-mode .no-conversations {
+  color: #9CA3AF;
+}
+
+.genesis-mode .conversation-item,
+.genesis-mode .simulation-item {
+  color: #E5E7EB;
+  border-color: transparent;
+}
+
+.genesis-mode .conversation-item:hover,
+.genesis-mode .simulation-item:hover {
+  background: #1a2332;
+}
+
+.genesis-mode .conversation-item.active,
+.genesis-mode .simulation-item.active {
+  background: rgba(0,217,196,0.1);
+  border-color: rgba(0,217,196,0.3);
+  border-left: 3px solid #00D9C4;
+}
+
+.genesis-mode .conversation-title,
+.genesis-mode .simulation-title {
+  color: #E5E7EB;
+}
+
+.genesis-mode .conversation-meta,
+.genesis-mode .simulation-meta {
+  color: #9CA3AF;
 }

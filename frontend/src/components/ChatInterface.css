@@ -1,3 +1,5 @@
+/* === ChatInterface — supports both light and genesis dark mode === */
+
 .chat-interface {
   flex: 1;
   display: flex;
@@ -160,4 +162,86 @@
   cursor: not-allowed;
   background: #ccc;
   border-color: #ccc;
+}
+
+/* ============================================
+   GENESIS DARK MODE OVERRIDES
+   ============================================ */
+
+.genesis-mode .chat-interface {
+  background: #0A0E17;
+}
+
+.genesis-mode .empty-state {
+  color: #9CA3AF;
+}
+
+.genesis-mode .empty-state h2 {
+  color: #00D9C4;
+}
+
+.genesis-mode .message-label {
+  color: #9CA3AF;
+}
+
+.genesis-mode .user-message .message-content {
+  background: rgba(0,217,196,0.08);
+  border-color: rgba(0,217,196,0.2);
+  color: #E5E7EB;
+}
+
+.genesis-mode .loading-indicator {
+  color: #9CA3AF;
+}
+
+.genesis-mode .stage-loading {
+  background: #1a2332;
+  border-color: rgba(255,255,255,0.08);
+  color: #9CA3AF;
+}
+
+.genesis-mode .spinner {
+  border-color: rgba(255,255,255,0.1);
+  border-top-color: #00D9C4;
+}
+
+.genesis-mode .input-form {
+  background: #111827;
+  border-top-color: rgba(255,255,255,0.08);
+}
+
+.genesis-mode .message-input {
+  background: #1a2332;
+  border-color: rgba(255,255,255,0.08);
+  color: #E5E7EB;
+}
+
+.genesis-mode .message-input:focus {
+  border-color: rgba(0,217,196,0.5);
+  box-shadow: 0 0 0 3px rgba(0,217,196,0.1);
+}
+
+.genesis-mode .message-input:disabled {
+  background: #111827;
+}
+
+.genesis-mode .message-input::placeholder {
+  color: #6B7280;
+}
+
+.genesis-mode .send-button {
+  background: #00D9C4;
+  border-color: #00D9C4;
+  color: #0A0E17;
+}
+
+.genesis-mode .send-button:hover:not(:disabled) {
+  background: #00f0d6;
+  border-color: #00f0d6;
+}
+
+.genesis-mode .send-button:disabled {
+  background: #1a2332;
+  border-color: rgba(255,255,255,0.08);
+  color: #6B7280;
 }
