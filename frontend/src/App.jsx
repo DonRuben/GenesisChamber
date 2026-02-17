@@ -10,6 +10,10 @@ function App() {
   // Mode: "council" (original llm-council) or "genesis" (Genesis Chamber)
   const [mode, setMode] = useState('genesis');
 
+  // Backend connection status
+  const [backendStatus, setBackendStatus] = useState('connecting'); // 'connecting' | 'connected' | 'error'
+  const [backendError, setBackendError] = useState(null);
+
   // Council mode state
   const [conversations, setConversations] = useState([]);
   const [currentConversationId, setCurrentConversationId] = useState(null);
@@ -20,14 +24,44 @@ function App() {
   const [simulations, setSimulations] = useState([]);
   const [currentSimId, setCurrentSimId] = useState(null);
 
-  // Load data on mount and mode change
+  // Health check with retry (Render free tier cold starts take 30-60s)
   useEffect(() => {
+    let cancelled = false;
+    const checkBackend = async () => {
+      for (let attempt = 1; attempt <= 6; attempt++) {
+        if (cancelled) return;
+        try {
+          await api.healthCheck();
+          if (!cancelled) {
+            setBackendStatus('connected');
+            setBackendError(null);
+          }
+          return;
+        } catch (err) {
+          console.warn(`[Genesis Chamber] Backend attempt ${attempt}/6 failed:`, err.message);
+          if (attempt < 6) {
+            await new Promise(r => setTimeout(r, attempt * 5000));
+          }
+        }
+      }
+      if (!cancelled) {
+        setBackendStatus('error');
+        setBackendError('Could not reach the backend. Is Render deployed?');
+      }
+    };
+    checkBackend();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Load data once backend is connected
+  useEffect(() => {
+    if (backendStatus !== 'connected') return;
     if (mode === 'council') {
       loadConversations();
     } else {
       loadSimulations();
     }
-  }, [mode]);
+  }, [mode, backendStatus]);
 
   // Load conversation details when selected
   useEffect(() => {
@@ -195,6 +229,19 @@ function App() {
 
   return (
     <div className={`app ${mode === 'genesis' ? 'genesis-mode' : ''}`}>
+      {backendStatus === 'connecting' && (
+        <div className="backend-banner backend-connecting">
+          Connecting to backend... (Render free tier may take 30-60 seconds to wake up)
+        </div>
+      )}
+      {backendStatus === 'error' && (
+        <div className="backend-banner backend-error">
+          {backendError || 'Backend unreachable'} — Check browser console for details.
+          <button onClick={() => { setBackendStatus('connecting'); setBackendError(null); window.location.reload(); }}>
+            Retry
+          </button>
+        </div>
+      )}
       <Sidebar
         mode={mode}
         onModeChange={setMode}

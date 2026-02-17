@@ -4,7 +4,19 @@
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8001';
 
+// Log the API URL so users can verify in devtools
+console.log('[Genesis Chamber] API URL:', API_BASE);
+
 export const api = {
+  /**
+   * Health check — ping the backend. Returns true if reachable.
+   */
+  async healthCheck() {
+    const response = await fetch(`${API_BASE}/`, { signal: AbortSignal.timeout(10000) });
+    if (!response.ok) throw new Error(`Backend returned ${response.status}`);
+    return response.json();
+  },
+
   /**
    * List all conversations.
    */
