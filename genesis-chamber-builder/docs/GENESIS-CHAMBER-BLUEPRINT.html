@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Genesis Chamber — Technical Blueprint</title>
+<style>
+:root {
+  --void: #0A0E17;
+  --surface: #111827;
+  --surface-2: #1a2332;
+  --teal: #00D9C4;
+  --teal-dim: rgba(0,217,196,0.15);
+  --gold: #F59E0B;
+  --gold-dim: rgba(245,158,11,0.15);
+  --red: #EF4444;
+  --green: #10B981;
+  --purple: #8B5CF6;
+  --blue: #3B82F6;
+  --pink: #EC4899;
+  --text: #E5E7EB;
+  --text-dim: #9CA3AF;
+  --border: rgba(255,255,255,0.08);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--void); color:var(--text); font-family:'Inter',-apple-system,sans-serif; line-height:1.7; }
+.container { max-width:1000px; margin:0 auto; padding:40px 24px; }
+h1 { font-size:36px; font-weight:800; margin-bottom:8px; }
+h1 span { color:var(--teal); }
+.subtitle { color:var(--text-dim); font-size:16px; margin-bottom:48px; }
+h2 { font-size:22px; font-weight:700; color:var(--teal); margin:48px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+h3 { font-size:17px; font-weight:600; color:var(--gold); margin:24px 0 8px; }
+p { margin-bottom:12px; color:var(--text); }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; margin:16px 0; }
+.card-header { font-weight:700; font-size:15px; margin-bottom:8px; }
+.badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+.badge-teal { background:var(--teal-dim); color:var(--teal); }
+.badge-gold { background:var(--gold-dim); color:var(--gold); }
+.badge-red { background:rgba(239,68,68,0.15); color:var(--red); }
+.badge-green { background:rgba(16,185,129,0.15); color:var(--green); }
+.badge-purple { background:rgba(139,92,246,0.15); color:var(--purple); }
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+.flow-step { background:var(--surface); border-left:3px solid var(--teal); padding:16px 20px; margin:8px 0; border-radius:0 8px 8px 0; }
+.flow-step .step-num { color:var(--teal); font-weight:700; font-size:13px; }
+.flow-step .step-title { font-weight:600; margin:4px 0; }
+.flow-step .step-desc { color:var(--text-dim); font-size:14px; }
+code { background:rgba(0,217,196,0.1); color:var(--teal); padding:2px 6px; border-radius:4px; font-size:13px; font-family:'JetBrains Mono',monospace; }
+pre { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; overflow-x:auto; font-size:13px; line-height:1.5; margin:12px 0; }
+pre code { background:none; padding:0; }
+table { width:100%; border-collapse:collapse; margin:16px 0; }
+th { background:var(--surface-2); color:var(--teal); text-align:left; padding:10px 14px; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; }
+td { padding:10px 14px; border-bottom:1px solid var(--border); font-size:14px; }
+.arrow { display:flex; align-items:center; justify-content:center; font-size:32px; color:var(--teal); margin:16px 0; }
+.highlight { background:var(--teal-dim); border:1px solid rgba(0,217,196,0.3); border-radius:8px; padding:16px; margin:16px 0; }
+.highlight strong { color:var(--teal); }
+.warn { background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); border-radius:8px; padding:16px; margin:16px 0; }
+.warn strong { color:var(--gold); }
+.toc { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; margin:24px 0; }
+.toc a { color:var(--teal); text-decoration:none; display:block; padding:4px 0; font-size:14px; }
+.toc a:hover { text-decoration:underline; }
+@media(max-width:768px) { .grid-2,.grid-3 { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Genesis <span>Chamber</span></h1>
+<p class="subtitle">Multi-AI Creative Simulation Engine — Technical Blueprint for Claude Code Implementation</p>
+
+<div class="toc">
+<strong style="color:var(--teal); font-size:13px; text-transform:uppercase; letter-spacing:1px;">Contents</strong>
+<a href="#what">1. What This Is</a>
+<a href="#base">2. Base: karpathy/llm-council</a>
+<a href="#architecture">3. Architecture Overview</a>
+<a href="#souls">4. Soul Engine</a>
+<a href="#stages">5. Five-Stage Round System</a>
+<a href="#rounds">6. Multi-Round Orchestration</a>
+<a href="#chaining">7. Simulation Chaining</a>
+<a href="#output">8. Output Engine</a>
+<a href="#media">9. Media Integration</a>
+<a href="#models">10. Model Strategy</a>
+<a href="#state">11. State Management</a>
+<a href="#delta">12. Implementation Delta from llm-council</a>
+<a href="#files">13. Folder Structure</a>
+<a href="#priority">14. Build Priority</a>
+</div>
+
+<!-- SECTION 1 -->
+<h2 id="what">1. What This Is</h2>
+<p>The Genesis Chamber is a standalone tool that runs multi-persona AI debates for creative projects. Think of it as a virtual creative agency where 5-13 AI participants — each loaded with a deep consciousness profile of a legendary creative figure — debate, critique, and refine ideas across multiple rounds until a winning concept emerges.</p>
+
+<div class="highlight">
+<strong>Core Idea:</strong> Instead of asking one AI "give me a marketing concept," you ask 5 AI personas of legendary marketers to independently create concepts, anonymously critique each other, get directed by an AI Steve Jobs, refine, and repeat for 6+ rounds. The output quality is dramatically higher.
+</div>
+
+<!-- SECTION 2 -->
+<h2 id="base">2. Base: karpathy/llm-council</h2>
+<div class="card">
+<div class="card-header">What llm-council Does (3 Stages)</div>
+<div class="grid-3">
+<div class="flow-step">
+<div class="step-num">STAGE 1</div>
+<div class="step-title">Independent Response</div>
+<div class="step-desc">Each model answers the question separately</div>
+</div>
+<div class="flow-step">
+<div class="step-num">STAGE 2</div>
+<div class="step-title">Blind Ranking</div>
+<div class="step-desc">Each model ranks all responses anonymously</div>
+</div>
+<div class="flow-step">
+<div class="step-num">STAGE 3</div>
+<div class="step-title">Chairman Synthesis</div>
+<div class="step-desc">One model synthesizes the final answer</div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-header">What We Add</div>
+<table>
+<tr><th>Feature</th><th>llm-council</th><th>Genesis Chamber</th></tr>
+<tr><td>Persona depth</td><td>None (raw model)</td><td>40-60KB soul documents</td></tr>
+<tr><td>Rounds</td><td>1 (single pass)</td><td>4-8 (iterative)</td></tr>
+<tr><td>Stages per round</td><td>3</td><td>5</td></tr>
+<tr><td>Output type</td><td>Text answer</td><td>Concepts, visuals, scripts</td></tr>
+<tr><td>Critique</td><td>Ranking only</td><td>Ranking + qualitative + voice</td></tr>
+<tr><td>Chairman</td><td>Synthesis</td><td>Direction + elimination + constraints</td></tr>
+<tr><td>State</td><td>Stateless</td><td>Persistent across rounds</td></tr>
+<tr><td>Chaining</td><td>No</td><td>Sim A → Sim B pipeline</td></tr>
+<tr><td>Image gen</td><td>No</td><td>Integrated prompts</td></tr>
+</table>
+</div>
+
+<!-- SECTION 3 -->
+<h2 id="architecture">3. Architecture Overview</h2>
+<div class="card">
+<pre><code>┌─────────────────────────────────────────────┐
+│              GENESIS CHAMBER                │
+├───────────┬───────────┬─────────────────────┤
+│  SOUL     │ COUNCIL   │ OUTPUT              │
+│  ENGINE   │ ENGINE    │ ENGINE              │
+│           │           │                     │
+│ Load &    │ Run 5     │ Transcript HTML     │
+│ compile   │ stages    │ Presentations       │
+│ personas  │ per round │ Image prompts       │
+│ + brief   │ N rounds  │ Video scripts       │
+│ calibrate │ eliminate │ Production package  │
+└───────────┴───────────┴─────────────────────┘
+     ↑             ↑              ↓
+  Soul Docs    OpenRouter     Output Files
+  + Brief      API calls      + fal.ai
+  + Brand      (parallel)     + ElevenLabs</code></pre>
+</div>
+
+<!-- SECTION 4 -->
+<h2 id="souls">4. Soul Engine</h2>
+<p>The Soul Engine loads markdown files (40-60KB each) and compiles them into system prompts. Each soul document has 7 sections:</p>
+
+<div class="grid-2">
+<div class="card">
+<div class="card-header">📚 Document Layers</div>
+<div class="flow-step"><div class="step-num">LAYER 1</div><div class="step-title">Cognitive</div><div class="step-desc">How they think, decide, create. 8-12KB.</div></div>
+<div class="flow-step"><div class="step-num">LAYER 2</div><div class="step-title">Emotional</div><div class="step-desc">What drives them, angers them, scares them. 5-8KB.</div></div>
+<div class="flow-step"><div class="step-num">LAYER 3</div><div class="step-title">Behavioral</div><div class="step-desc">Speech patterns, debate style, habits. 5-8KB.</div></div>
+<div class="flow-step"><div class="step-num">LAYER 4</div><div class="step-title">Calibration</div><div class="step-desc">How they'd approach THIS specific project. 3-5KB.</div></div>
+</div>
+<div class="card">
+<div class="card-header">⚙️ Compilation</div>
+<p>Full documents are too long for most system prompts (~4000 token limit). The Soul Compiler extracts:</p>
+<div class="flow-step"><div class="step-desc">Core philosophy (3 sentences)</div></div>
+<div class="flow-step"><div class="step-desc">Top 5 principles (1 sentence each)</div></div>
+<div class="flow-step"><div class="step-desc">Communication style rules</div></div>
+<div class="flow-step"><div class="step-desc">5-7 best quotes</div></div>
+<div class="flow-step"><div class="step-desc">Full project calibration</div></div>
+<div class="flow-step"><div class="step-desc">Full simulation instructions</div></div>
+<p style="margin-top:12px; color:var(--gold); font-size:13px;">For Claude/Gemini (200K+ context): inject the FULL document.</p>
+</div>
+</div>
+
+<!-- SECTION 5 -->
+<h2 id="stages">5. Five-Stage Round System</h2>
+
+<div class="flow-step" style="border-left-color:var(--green);">
+<div class="step-num" style="color:var(--green);">STAGE 1 — CREATE</div>
+<div class="step-title">Independent Concept Generation</div>
+<div class="step-desc">Each participant works alone. Soul document fully loaded. Generates 1-3 concepts with name, idea, headline, visual direction, copy, rationale, image prompt, video prompt. No access to others' work.</div>
+</div>
+
+<div class="flow-step" style="border-left-color:var(--gold);">
+<div class="step-num" style="color:var(--gold);">STAGE 2 — CRITIQUE</div>
+<div class="step-title">Anonymized Peer Review</div>
+<div class="step-desc">All concepts shuffled and labeled "Concept A, B, C..." — nobody knows whose is whose. Each participant scores and critiques EVERY concept (including their own, unknowingly). Prevents ego-protection. Creates honest feedback.</div>
+</div>
+
+<div class="flow-step" style="border-left-color:var(--red);">
+<div class="step-num" style="color:var(--red);">STAGE 3 — SYNTHESIZE</div>
+<div class="step-title">Moderator Direction Setting</div>
+<div class="step-desc">Steve Jobs (moderator) receives all concepts + all critiques + aggregate scores. Identifies consensus, dissent, hidden gems. Eliminates weak concepts. Sets direction and constraints for next round. Jony Ive (evaluator) adds craft assessment.</div>
+</div>
+
+<div class="flow-step" style="border-left-color:var(--blue);">
+<div class="step-num" style="color:var(--blue);">STAGE 4 — REFINE</div>
+<div class="step-title">Directed Evolution</div>
+<div class="step-desc">Each participant revises based on critique + moderator direction. Can evolve, merge with another concept, pivot entirely, or defend unchanged. Eliminated participants join surviving concepts as collaborators.</div>
+</div>
+
+<div class="flow-step" style="border-left-color:var(--purple);">
+<div class="step-num" style="color:var(--purple);">STAGE 5 — PRESENT</div>
+<div class="step-title">Group Presentation</div>
+<div class="step-desc">Each participant presents refined concept. Includes evolution notes (what changed and why). Moderator gives immediate 3-sentence reaction. Sets up next round.</div>
+</div>
+
+<!-- SECTION 6 -->
+<h2 id="rounds">6. Multi-Round Orchestration</h2>
+<table>
+<tr><th>Round</th><th>Mode</th><th>Goal</th><th>Elimination</th><th>Expected Concepts</th></tr>
+<tr><td><span class="badge badge-green">R1</span></td><td>DIVERGE</td><td>Maximum creative breadth</td><td>0%</td><td>10-18 created</td></tr>
+<tr><td><span class="badge badge-gold">R2</span></td><td>CONVERGE</td><td>React to critique, find strongest</td><td>40%</td><td>6-10 surviving</td></tr>
+<tr><td><span class="badge badge-gold">R3</span></td><td>DEEPEN</td><td>Near-production quality</td><td>50%</td><td>3-5 surviving</td></tr>
+<tr><td><span class="badge badge-red">R4</span></td><td>GLADIATOR</td><td>Final battle between top concepts</td><td>67%</td><td>1-2 surviving</td></tr>
+<tr><td><span class="badge badge-purple">R5</span></td><td>POLISH</td><td>Full team refines winner</td><td>0%</td><td>1 winner</td></tr>
+<tr><td><span class="badge badge-teal">R6</span></td><td>SPEC</td><td>Production specification</td><td>0%</td><td>Final spec</td></tr>
+</table>
+
+<!-- SECTION 7 -->
+<h2 id="chaining">7. Simulation Chaining</h2>
+<div class="card">
+<div class="grid-2">
+<div>
+<h3 style="color:var(--gold);">SIM A: Message Lab</h3>
+<p><strong>Who:</strong> 5 Marketing Geniuses + Jobs</p>
+<p><strong>Rounds:</strong> 6</p>
+<p><strong>Output:</strong> Message Blueprint</p>
+<p style="font-size:13px; color:var(--text-dim);">Defines WHAT to say, HOW to say it, WHO to target, WHAT emotion to trigger</p>
+</div>
+<div>
+<h3 style="color:var(--purple);">SIM B: Genesis Chamber</h3>
+<p><strong>Who:</strong> 6 Designers + Jobs + Ive</p>
+<p><strong>Rounds:</strong> 8</p>
+<p><strong>Output:</strong> Visual System</p>
+<p style="font-size:13px; color:var(--text-dim);">Defines HOW it looks, logo, colors, typography, imagery, component library</p>
+</div>
+</div>
+<div class="arrow">↓ Sim A output becomes Sim B's brief ↓</div>
+<p style="text-align:center; color:var(--text-dim);">Total: 14 rounds, 13 unique personas, 86+ deliverables</p>
+</div>
+
+<!-- SECTION 8 -->
+<h2 id="output">8. Output Engine</h2>
+<div class="grid-3">
+<div class="card"><div class="card-header">📄 Transcript</div><p style="font-size:13px;">Full simulation as interactive HTML. Every round, every stage, every concept, every critique.</p></div>
+<div class="card"><div class="card-header">🎨 Presentations</div><p style="font-size:13px;">Per-persona HTML showing concept evolution across rounds. 3 concepts → refined → winner.</p></div>
+<div class="card"><div class="card-header">🖼️ Image Prompts</div><p style="font-size:13px;">Per-slide Nano Banana Pro / Recraft / Flux prompts. Ready for fal.ai generation.</p></div>
+<div class="card"><div class="card-header">🎬 Video Scripts</div><p style="font-size:13px;">Scene-by-scene breakdowns with Kling 3.0 / Veo 3.1 prompts per scene.</p></div>
+<div class="card"><div class="card-header">🏆 Winner Deep Dive</div><p style="font-size:13px;">Full specification of winning concept: copy, visuals, applications, moodboard.</p></div>
+<div class="card"><div class="card-header">📦 Production Package</div><p style="font-size:13px;">Interactive HTML bundling everything: assets, prompts, scripts, timeline.</p></div>
+</div>
+
+<!-- SECTION 9 -->
+<h2 id="media">9. Media Integration (fal.ai + ElevenLabs)</h2>
+<table>
+<tr><th>Type</th><th>Tool</th><th>Use Case</th><th>Triggered By</th></tr>
+<tr><td><span class="badge badge-green">Image</span></td><td>Nano Banana Pro</td><td>Hero images, concept art</td><td>IMAGE_PROMPT field in concept output</td></tr>
+<tr><td><span class="badge badge-green">Image</span></td><td>Recraft V3</td><td>Brand elements, icons, logos</td><td>Brand system concepts</td></tr>
+<tr><td><span class="badge badge-green">Image</span></td><td>Ideogram V3</td><td>Text-heavy images, posters</td><td>Concepts with text overlay</td></tr>
+<tr><td><span class="badge badge-gold">Video</span></td><td>Kling 3.0</td><td>Dynamic brand videos</td><td>VIDEO_PROMPT field</td></tr>
+<tr><td><span class="badge badge-gold">Video</span></td><td>Veo 3.1</td><td>Cinematic + audio</td><td>Emotional/atmospheric scenes</td></tr>
+<tr><td><span class="badge badge-purple">Voice</span></td><td>ElevenLabs V3</td><td>Voice-over narration</td><td>VOICEOVER_SCRIPT field</td></tr>
+<tr><td><span class="badge badge-purple">Music</span></td><td>ElevenLabs Music</td><td>Background tracks</td><td>MUSIC_PROMPT field</td></tr>
+</table>
+
+<!-- SECTION 10 -->
+<h2 id="models">10. Model Strategy</h2>
+<div class="warn">
+<strong>Key Insight:</strong> Using DIFFERENT underlying models for each persona creates genuine cognitive diversity. Claude thinks differently than GPT thinks differently than Gemini. Combined with soul documents, this produces outputs that are measurably more diverse than any single-model approach.
+</div>
+
+<table>
+<tr><th>Persona Type</th><th>Recommended Model</th><th>Why</th></tr>
+<tr><td>Moderator (Jobs)</td><td>Claude Opus 4.5</td><td>Best synthesis + judgment</td></tr>
+<tr><td>Evaluator (Ive)</td><td>Claude Sonnet 4.5</td><td>Precise craft assessment</td></tr>
+<tr><td>Analytical personas</td><td>Gemini 2.5 Pro</td><td>Research-heavy, long context</td></tr>
+<tr><td>Creative personas</td><td>GPT-5.1</td><td>Strong emotional + narrative</td></tr>
+<tr><td>Bold/provocative</td><td>Grok 4</td><td>Unfiltered, unconventional</td></tr>
+<tr><td>Direct/simple</td><td>Llama 4 Maverick</td><td>No-nonsense, efficient</td></tr>
+</table>
+
+<!-- SECTION 11 -->
+<h2 id="state">11. State Management</h2>
+<p>Full JSON state persisted after every stage. Supports resume from any point. Every state transition logged for transcript generation.</p>
+<div class="card">
+<pre><code>{
+  "simulation_id": "sim_001",
+  "status": "running",
+  "current": { "round": 2, "stage": 3 },
+  "concepts": {
+    "active": [...],
+    "eliminated": [...],
+    "merged": [...]
+  },
+  "quality_gates": [
+    { "after_round": 3, "status": "approved" },
+    { "after_round": 6, "status": "pending" }
+  ]
+}</code></pre>
+</div>
+
+<!-- SECTION 12 -->
+<h2 id="delta">12. Implementation Delta from llm-council</h2>
+<table>
+<tr><th>File</th><th>Change Level</th><th>What Changes</th></tr>
+<tr><td><code>config.py</code></td><td><span class="badge badge-red">Heavy</span></td><td>Persona configs, soul paths, round settings, elimination schedule</td></tr>
+<tr><td><code>council.py</code></td><td><span class="badge badge-red">Heavy</span></td><td>→ <code>simulation.py</code>: 5 stages, multi-round, soul injection, state mgmt</td></tr>
+<tr><td><code>main.py</code></td><td><span class="badge badge-gold">Moderate</span></td><td>New endpoints: /simulation/start, /status, /gate/approve, /transcript</td></tr>
+<tr><td><code>storage.py</code></td><td><span class="badge badge-gold">Moderate</span></td><td>Multi-round state, concept tracking, event log</td></tr>
+<tr><td><code>openrouter.py</code></td><td><span class="badge badge-green">Minor</span></td><td>Add soul prompt injection into system messages</td></tr>
+<tr><td><code>soul_engine.py</code></td><td><span class="badge badge-purple">New</span></td><td>Load, parse, compile soul documents</td></tr>
+<tr><td><code>output_engine.py</code></td><td><span class="badge badge-purple">New</span></td><td>Transcript, presentations, prompts, scripts generators</td></tr>
+<tr><td><code>image_generator.py</code></td><td><span class="badge badge-purple">New</span></td><td>fal.ai integration for concept images</td></tr>
+<tr><td><code>models.py</code></td><td><span class="badge badge-purple">New</span></td><td>Pydantic models for concepts, critiques, directions</td></tr>
+</table>
+
+<!-- SECTION 13 -->
+<h2 id="files">13. Folder Structure</h2>
+<div class="card">
+<pre><code>genesis-chamber/
+├── backend/
+│   ├── config.py              ← Personas, rounds, gates
+│   ├── simulation.py          ← Core 5-stage engine (was council.py)
+│   ├── soul_engine.py         ← NEW: Load & compile souls
+│   ├── output_engine.py       ← NEW: Generate deliverables
+│   ├── image_generator.py     ← NEW: fal.ai integration
+│   ├── models.py              ← NEW: Pydantic schemas
+│   ├── main.py                ← FastAPI routes
+│   ├── openrouter.py          ← API client
+│   └── storage.py             ← JSON persistence
+├── souls/                     ← Soul documents (.md)
+├── briefs/                    ← Project briefs
+├── context/                   ← Brand context files
+├── output/                    ← Generated output per simulation
+├── prompts/                   ← Stage prompt templates
+└── frontend/                  ← React dashboard (rebuilt)</code></pre>
+</div>
+
+<!-- SECTION 14 -->
+<h2 id="priority">14. Build Priority</h2>
+
+<div class="flow-step" style="border-left-color:var(--green);">
+<div class="step-num" style="color:var(--green);">WEEK 1</div>
+<div class="step-title">Core Engine</div>
+<div class="step-desc">Fork repo → Soul Engine → 5-stage system → multi-round orchestration → state persistence. This gets the simulation running in the terminal.</div>
+</div>
+
+<div class="flow-step" style="border-left-color:var(--blue);">
+<div class="step-num" style="color:var(--blue);">WEEK 2</div>
+<div class="step-title">Output Engine</div>
+<div class="step-desc">Transcript HTML generator → per-persona presentations → image prompt generator → video script writer. This makes results usable.</div>
+</div>
+
+<div class="flow-step" style="border-left-color:var(--purple);">
+<div class="step-num" style="color:var(--purple);">WEEK 3</div>
+<div class="step-title">Integrations</div>
+<div class="step-desc">fal.ai image generation → ElevenLabs voice → quality gate API → simulation chaining (Sim A → Sim B). This connects to production tools.</div>
+</div>
+
+<div class="flow-step" style="border-left-color:var(--gold);">
+<div class="step-num" style="color:var(--gold);">WEEK 4</div>
+<div class="step-title">Frontend</div>
+<div class="step-desc">React dashboard → real-time round monitoring → concept gallery → quality gate approval UI → production package builder. This makes it beautiful.</div>
+</div>
+
+<div class="highlight" style="margin-top:32px;">
+<strong>This documentation folder contains everything needed to build the Genesis Chamber.</strong> Start with <code>architecture/llm-council-delta.md</code> for exact code changes, use <code>souls/examples/soul-template.md</code> for creating personas, and follow <code>docs/SIMULATION-PROTOCOL.md</code> for the round system.
+</div>
+
+<p style="text-align:center; color:var(--text-dim); margin-top:48px; font-size:13px;">Genesis Chamber Blueprint v1.0 — Built for Claude Code Implementation</p>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,48 @@
+{
+  "presets": {
+    "message_lab": {
+      "description": "Strategy simulation — define messaging and positioning",
+      "recommended_participants": "3-5 marketing strategists",
+      "recommended_rounds": 6,
+      "stages": 5,
+      "output": "Message Blueprint",
+      "typical_duration": "45-90 minutes API time",
+      "estimated_cost": "$15-40 (OpenRouter)"
+    },
+    "genesis_chamber": {
+      "description": "Creative simulation — visual identity and design system",
+      "recommended_participants": "4-6 designers/creative directors",
+      "recommended_rounds": 8,
+      "stages": 5,
+      "output": "Visual System + Logo Concepts",
+      "typical_duration": "60-120 minutes API time",
+      "estimated_cost": "$25-60 (OpenRouter) + $5-20 (image generation)"
+    },
+    "assembly_line": {
+      "description": "Production simulation — generate campaign assets",
+      "recommended_participants": "3-5 copywriters/art directors",
+      "recommended_rounds": 5,
+      "stages": 5,
+      "output": "Campaign Assets + Video Scripts",
+      "typical_duration": "30-60 minutes API time",
+      "estimated_cost": "$10-30 (OpenRouter) + $10-50 (media generation)"
+    },
+    "full_pipeline": {
+      "description": "Complete: Strategy → Creative → Production",
+      "total_rounds": "14-19 across 2-3 simulations",
+      "total_participants": "8-13 unique personas",
+      "output": "Everything — from message to finished assets",
+      "typical_duration": "2-5 hours API time",
+      "estimated_cost": "$50-130 total"
+    },
+    "quick_test": {
+      "description": "Fast 3-round test to validate soul documents",
+      "recommended_participants": "2-3",
+      "recommended_rounds": 3,
+      "stages": 3,
+      "output": "Test concepts (not production quality)",
+      "typical_duration": "15-30 minutes",
+      "estimated_cost": "$5-10"
+    }
+  }
+}

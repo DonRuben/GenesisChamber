@@ -1,0 +1,110 @@
+{
+  "simulation": {
+    "name": "Olivia Sales Machine",
+    "type": "message_lab",
+    "version": "1.0",
+    "rounds": 6,
+    "stages_per_round": 5,
+    "concepts_round_1": 3,
+    "concepts_round_2_plus": 1
+  },
+  "participants": {
+    "ogilvy": {
+      "display_name": "David Ogilvy",
+      "model": "anthropic/claude-sonnet-4.5",
+      "soul_document": "souls/david-ogilvy.md",
+      "role": "participant",
+      "temperature": 0.7,
+      "max_tokens": 2000,
+      "speciality": "Research-driven persuasion",
+      "color": "#F59E0B"
+    },
+    "hopkins": {
+      "display_name": "Claude Hopkins",
+      "model": "google/gemini-2.5-pro",
+      "soul_document": "souls/claude-hopkins.md",
+      "role": "participant",
+      "temperature": 0.6,
+      "max_tokens": 1800,
+      "speciality": "Scientific desire creation",
+      "color": "#3B82F6"
+    },
+    "burnett": {
+      "display_name": "Leo Burnett",
+      "model": "openai/gpt-5.1",
+      "soul_document": "souls/leo-burnett.md",
+      "role": "participant",
+      "temperature": 0.8,
+      "max_tokens": 2000,
+      "speciality": "Emotional brand mythology",
+      "color": "#10B981"
+    },
+    "wells": {
+      "display_name": "Mary Wells Lawrence",
+      "model": "x-ai/grok-4",
+      "soul_document": "souls/mary-wells-lawrence.md",
+      "role": "participant",
+      "temperature": 0.7,
+      "max_tokens": 2000,
+      "speciality": "Lifestyle transformation",
+      "color": "#EC4899"
+    },
+    "halbert": {
+      "display_name": "Gary Halbert",
+      "model": "meta/llama-4-maverick",
+      "soul_document": "souls/gary-halbert.md",
+      "role": "participant",
+      "temperature": 0.9,
+      "max_tokens": 2200,
+      "speciality": "Kitchen-table direct selling",
+      "color": "#EF4444"
+    }
+  },
+  "moderator": {
+    "display_name": "Steve Jobs",
+    "model": "anthropic/claude-opus-4.5",
+    "soul_document": "souls/steve-jobs.md",
+    "role": "moderator",
+    "temperature": 0.5,
+    "max_tokens": 3000,
+    "color": "#6B7280"
+  },
+  "evaluator": {
+    "display_name": "Sir Jony Ive",
+    "model": "anthropic/claude-sonnet-4.5",
+    "soul_document": "souls/jony-ive.md",
+    "role": "evaluator",
+    "temperature": 0.4,
+    "max_tokens": 1500,
+    "color": "#9CA3AF"
+  },
+  "elimination_schedule": {
+    "1": 0.0,
+    "2": 0.4,
+    "3": 0.5,
+    "4": 0.67,
+    "5": 0.0,
+    "6": 0.0
+  },
+  "quality_gates": [3, 6],
+  "brief": {
+    "path": "briefs/olivia-sales.md",
+    "brand_context": "context/olivia-brand.md",
+    "target_audience": "Everyday people (25-65+), Nexora sales force, kitchen table scenarios",
+    "success_metric": "A 55-year-old who has never heard of blockchain must understand and WANT Olivia ownership within 90 seconds"
+  },
+  "output": {
+    "directory": "output/",
+    "transcript_format": "html",
+    "generate_presentations": true,
+    "generate_image_prompts": true,
+    "generate_video_scripts": true,
+    "image_model_default": "nano_banana_pro",
+    "video_model_default": "kling_3.0"
+  },
+  "api_keys": {
+    "openrouter": "${OPENROUTER_API_KEY}",
+    "fal_ai": "${FAL_KEY}",
+    "elevenlabs": "${ELEVENLABS_API_KEY}"
+  }
+}
