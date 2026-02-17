@@ -1,0 +1,19 @@
+# Render.com Blueprint — Genesis Chamber Backend
+# Deploy: Dashboard > New > Blueprint > connect this repo
+services:
+  - type: web
+    name: genesis-chamber-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m backend.main
+    envVars:
+      - key: PORT
+        value: 8001
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: FAL_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.10.0

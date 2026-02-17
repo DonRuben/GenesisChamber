@@ -1,4 +1,4 @@
-openai_api_key = "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"
+openai_api_key = "YOUR_OPENAI_API_KEY_HERE"
 
 [general]
 app_name = "AI Expert Council Simulator"

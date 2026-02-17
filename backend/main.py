@@ -10,6 +10,8 @@ import json
 import asyncio
 from pathlib import Path
 
+import os
+
 from . import storage
 from .council import run_full_council, generate_conversation_title, stage1_collect_responses, stage2_collect_rankings, stage3_synthesize_final, calculate_aggregate_rankings
 from .models import StartSimulationRequest, GateApprovalRequest, SimulationConfig, ParticipantConfig
@@ -26,10 +28,12 @@ from .video_generator import VideoGenerator, VIDEO_QUALITY_TIERS
 app = FastAPI(title="LLM Council + Genesis Chamber API")
 simulation_store = SimulationStore()
 
-# Enable CORS for local development
+# CORS — configurable via ALLOWED_ORIGINS env var (comma-separated)
+_default_origins = "http://localhost:5173,http://localhost:3000"
+_allowed_origins = os.getenv("ALLOWED_ORIGINS", _default_origins).split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=[o.strip() for o in _allowed_origins],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -685,4 +689,5 @@ async def get_generated_videos(sim_id: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    port = int(os.getenv("PORT", "8001"))
+    uvicorn.run(app, host="0.0.0.0", port=port)
