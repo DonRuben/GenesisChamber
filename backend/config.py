@@ -166,9 +166,17 @@ DEFAULT_PARTICIPANTS = {
     },
 }
 
+# High-end models for moderator + evaluator (most critical roles)
+# These two roles judge, eliminate, and assess craft — they need the strongest reasoning.
+# Benchmark both Claude Opus 4.6 and GPT-5.2, then pick the best for each role.
+# To switch: just change the "model" field below.
+#   Option A: "anthropic/claude-opus-4-6"   — deepest reasoning, best synthesis
+#   Option B: "openai/gpt-5.2"             — strong creative reasoning, fast
+#   Option C: Hybrid (Jobs on one, Ive on the other for max cognitive diversity)
+
 DEFAULT_MODERATOR = {
     "name": "Steve Jobs",
-    "model": "anthropic/claude-opus-4-0-20250514",
+    "model": "anthropic/claude-opus-4-6",
     "soul_document": "souls/steve-jobs.md",
     "role": "moderator",
     "temperature": 0.6,
@@ -178,10 +186,10 @@ DEFAULT_MODERATOR = {
 
 DEFAULT_EVALUATOR = {
     "name": "Jony Ive",
-    "model": "anthropic/claude-sonnet-4-5-20250929",
+    "model": "anthropic/claude-opus-4-6",
     "soul_document": "souls/jony-ive.md",
     "role": "evaluator",
     "temperature": 0.5,
-    "max_tokens": 3000,
+    "max_tokens": 4000,
     "color": "#9CA3AF",
 }

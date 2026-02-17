@@ -1,10 +1,10 @@
 {
   "recommended_models": {
     "tier_1_premium": {
-      "description": "Best quality, highest cost. Use for moderator + key participants.",
+      "description": "Best quality, highest cost. Reserved for Moderator (Jobs) and Evaluator (Ive) — the two most critical reasoning roles.",
       "models": [
-        { "id": "anthropic/claude-opus-4.5", "cost_per_1m_tokens": 15.0, "context": "200K", "best_for": "Moderator (Jobs), complex synthesis" },
-        { "id": "openai/gpt-5.1", "cost_per_1m_tokens": 10.0, "context": "128K", "best_for": "Creative concepts, emotional depth" },
+        { "id": "anthropic/claude-opus-4-6", "cost_per_1m_tokens": 15.0, "context": "200K", "best_for": "Moderator (Jobs) + Evaluator (Ive) — deepest reasoning, best synthesis, nuanced judgment" },
+        { "id": "openai/gpt-5.2", "cost_per_1m_tokens": 15.0, "context": "128K", "best_for": "Alternative for Jobs/Ive — strong creative reasoning, benchmark against Claude Opus 4.6" },
         { "id": "google/gemini-3-pro", "cost_per_1m_tokens": 7.0, "context": "2M", "best_for": "Long context, full soul doc injection" }
       ]
     },
@@ -33,8 +33,8 @@
       "burnett": "gpt-5.1 (emotional, storytelling)",
       "wells": "grok-4 (bold, unconventional)",
       "halbert": "llama-4-maverick (direct, unfiltered)",
-      "jobs_moderator": "claude-opus-4.5 (synthesis, judgment)",
-      "ive_evaluator": "claude-sonnet-4.5 (craft, precision)"
+      "jobs_moderator": "claude-opus-4-6 OR gpt-5.2 (synthesis, judgment — benchmark both)",
+      "ive_evaluator": "claude-opus-4-6 OR gpt-5.2 (craft, precision — benchmark both)"
     }
   },
   "cost_estimates": {
