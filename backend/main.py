@@ -1,18 +1,27 @@
-"""FastAPI backend for LLM Council."""
+"""FastAPI backend for LLM Council + Genesis Chamber."""
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import uuid
 import json
 import asyncio
+from pathlib import Path
 
 from . import storage
 from .council import run_full_council, generate_conversation_title, stage1_collect_responses, stage2_collect_rankings, stage3_synthesize_final, calculate_aggregate_rankings
+from .models import StartSimulationRequest, GateApprovalRequest, SimulationConfig, ParticipantConfig
+from .simulation import GenesisSimulation
+from .simulation_store import SimulationStore
+from .config import (
+    SIMULATION_PRESETS, DEFAULT_PARTICIPANTS, DEFAULT_MODERATOR,
+    DEFAULT_EVALUATOR, SOULS_DIR, PERSONA_COLORS,
+)
 
-app = FastAPI(title="LLM Council API")
+app = FastAPI(title="LLM Council + Genesis Chamber API")
+simulation_store = SimulationStore()
 
 # Enable CORS for local development
 app.add_middleware(
@@ -192,6 +201,314 @@ async def send_message_stream(conversation_id: str, request: SendMessageRequest)
             "Connection": "keep-alive",
         }
     )
+
+
+# === GENESIS CHAMBER ENDPOINTS ===
+
+# In-memory registry of running simulations
+_running_simulations: Dict[str, GenesisSimulation] = {}
+
+
+@app.get("/api/souls")
+async def list_souls():
+    """List available soul documents."""
+    souls_path = Path(SOULS_DIR)
+    if not souls_path.exists():
+        return []
+
+    souls = []
+    for f in sorted(souls_path.glob("*.md")):
+        persona_id = f.stem
+        # Read first few lines to get name
+        with open(f, "r") as fh:
+            first_lines = fh.read(500)
+        # Extract name from # SOUL DOCUMENT: NAME or # NAME
+        import re
+        name_match = re.search(r'^#\s+(?:SOUL DOCUMENT:\s*)?(.+)', first_lines, re.MULTILINE)
+        name = name_match.group(1).strip() if name_match else persona_id.replace("-", " ").title()
+
+        souls.append({
+            "id": persona_id,
+            "name": name,
+            "file": str(f),
+            "color": PERSONA_COLORS.get(persona_id, "#666666"),
+        })
+
+    return souls
+
+
+@app.get("/api/simulation/presets")
+async def list_presets():
+    """List available simulation presets."""
+    return SIMULATION_PRESETS
+
+
+@app.get("/api/simulations")
+async def list_simulations():
+    """List all simulations."""
+    return simulation_store.list_simulations()
+
+
+@app.post("/api/simulation/start")
+async def start_simulation(request: StartSimulationRequest, background_tasks: BackgroundTasks):
+    """Start a new simulation. Returns sim_id immediately, runs in background."""
+    config = request.config
+    sim = GenesisSimulation(config)
+    _running_simulations[sim.sim_id] = sim
+
+    async def run_sim():
+        try:
+            await sim.run()
+        except Exception as e:
+            sim.state.status = "failed"
+            sim.state.event_log.append({
+                "type": "error",
+                "message": str(e),
+            })
+            simulation_store.save_state(sim.state)
+        finally:
+            _running_simulations.pop(sim.sim_id, None)
+
+    background_tasks.add_task(asyncio.ensure_future, run_sim())
+
+    return {"sim_id": sim.sim_id, "status": "started"}
+
+
+@app.post("/api/simulation/start/stream")
+async def start_simulation_stream(request: StartSimulationRequest):
+    """Start a new simulation with SSE streaming."""
+    config = request.config
+    sim = GenesisSimulation(config)
+    _running_simulations[sim.sim_id] = sim
+
+    async def event_generator():
+        event_queue: asyncio.Queue = asyncio.Queue()
+
+        async def on_stage(round_num, stage_num, stage_name, result):
+            await event_queue.put({
+                "type": f"stage_{stage_num}_complete",
+                "round": round_num,
+                "stage": stage_num,
+                "stage_name": stage_name,
+                "status": result.status,
+            })
+
+        async def on_round(round_num, round_result):
+            await event_queue.put({
+                "type": "round_complete",
+                "round": round_num,
+                "mode": round_result.mode,
+                "concepts_surviving": round_result.concepts_surviving,
+                "concepts_eliminated": round_result.concepts_eliminated,
+            })
+
+        async def on_gate(round_num, gate):
+            await event_queue.put({
+                "type": "quality_gate",
+                "round": round_num,
+                "gate": gate,
+            })
+
+        async def run_and_signal():
+            try:
+                yield_data = {"type": "simulation_started", "sim_id": sim.sim_id}
+                await event_queue.put(yield_data)
+
+                await sim.run(
+                    on_stage_complete=on_stage,
+                    on_round_complete=on_round,
+                    on_gate_reached=on_gate,
+                )
+
+                await event_queue.put({
+                    "type": "simulation_complete",
+                    "sim_id": sim.sim_id,
+                })
+            except Exception as e:
+                await event_queue.put({
+                    "type": "error",
+                    "message": str(e),
+                })
+            finally:
+                await event_queue.put(None)  # Sentinel
+                _running_simulations.pop(sim.sim_id, None)
+
+        # Start simulation in background
+        sim_task = asyncio.create_task(run_and_signal())
+
+        try:
+            while True:
+                event = await event_queue.get()
+                if event is None:
+                    break
+                yield f"data: {json.dumps(event, default=str)}\n\n"
+        finally:
+            if not sim_task.done():
+                sim_task.cancel()
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
+    )
+
+
+@app.get("/api/simulation/{sim_id}/status")
+async def get_simulation_status(sim_id: str):
+    """Get current simulation status."""
+    # Check running simulations first
+    if sim_id in _running_simulations:
+        sim = _running_simulations[sim_id]
+        return {
+            "id": sim_id,
+            "status": sim.state.status,
+            "current_round": sim.state.current_round,
+            "current_stage": sim.state.current_stage,
+            "current_stage_name": sim.state.current_stage_name,
+            "total_rounds": sim.config.rounds,
+        }
+
+    # Check stored state
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+
+    return {
+        "id": sim_id,
+        "status": state.status,
+        "current_round": state.current_round,
+        "current_stage": state.current_stage,
+        "current_stage_name": state.current_stage_name,
+        "total_rounds": state.config.rounds,
+    }
+
+
+@app.get("/api/simulation/{sim_id}/round/{round_num}")
+async def get_round_results(sim_id: str, round_num: int):
+    """Get results for a specific round."""
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+
+    for r in state.rounds:
+        if r.round_num == round_num:
+            return r.model_dump(mode="json")
+
+    raise HTTPException(status_code=404, detail=f"Round {round_num} not found")
+
+
+@app.get("/api/simulation/{sim_id}/state")
+async def get_simulation_state(sim_id: str):
+    """Get full simulation state."""
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    return state.model_dump(mode="json")
+
+
+@app.post("/api/simulation/{sim_id}/gate/{round_num}/approve")
+async def approve_gate(sim_id: str, round_num: int, request: GateApprovalRequest):
+    """Approve or redirect a quality gate."""
+    state = simulation_store.save_quality_gate(
+        sim_id, round_num, request.decision, request.notes
+    )
+    return {"status": "ok", "simulation_status": state.status}
+
+
+@app.get("/api/simulation/{sim_id}/transcript")
+async def get_transcript(sim_id: str):
+    """Get full simulation transcript."""
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    return {
+        "entries": state.transcript_entries,
+        "event_log": state.event_log,
+    }
+
+
+@app.post("/api/simulation/quick-start")
+async def quick_start_simulation(
+    preset: str = "quick_test",
+    brief: Optional[str] = None,
+    participants: Optional[List[str]] = None,
+):
+    """Quick-start a simulation with defaults. Minimal configuration needed."""
+    preset_config = SIMULATION_PRESETS.get(preset)
+    if not preset_config:
+        raise HTTPException(status_code=400, detail=f"Unknown preset: {preset}")
+
+    # Load default brief if none provided
+    if not brief:
+        brief_path = Path("briefs/example-brief.md")
+        if brief_path.exists():
+            brief = brief_path.read_text(encoding="utf-8")
+        else:
+            brief = "Create a compelling brand concept."
+
+    # Select participants
+    selected = participants or list(DEFAULT_PARTICIPANTS.keys())[:3]
+    participant_configs = {}
+    for pid in selected:
+        if pid in DEFAULT_PARTICIPANTS:
+            p = DEFAULT_PARTICIPANTS[pid]
+            participant_configs[pid] = ParticipantConfig(
+                display_name=p["name"],
+                model=p["model"],
+                soul_document=p["soul_document"],
+                role=p["role"],
+                temperature=p["temperature"],
+                max_tokens=p["max_tokens"],
+                color=p["color"],
+            )
+
+    moderator = ParticipantConfig(
+        display_name=DEFAULT_MODERATOR["name"],
+        model=DEFAULT_MODERATOR["model"],
+        soul_document=DEFAULT_MODERATOR["soul_document"],
+        role="moderator",
+        temperature=DEFAULT_MODERATOR["temperature"],
+        max_tokens=DEFAULT_MODERATOR["max_tokens"],
+        color=DEFAULT_MODERATOR["color"],
+    )
+
+    config = SimulationConfig(
+        name=preset_config["name"],
+        type=preset_config["type"],
+        rounds=preset_config["rounds"],
+        stages_per_round=preset_config["stages_per_round"],
+        concepts_round_1=preset_config["concepts_round_1"],
+        concepts_round_2_plus=preset_config["concepts_round_2_plus"],
+        participants=participant_configs,
+        moderator=moderator,
+        elimination_schedule=preset_config["elimination_schedule"],
+        quality_gates=preset_config["quality_gates"],
+        brief=brief,
+    )
+
+    sim = GenesisSimulation(config)
+    _running_simulations[sim.sim_id] = sim
+
+    # Run in background
+    async def run_sim():
+        try:
+            await sim.run()
+        except Exception as e:
+            sim.state.status = "failed"
+            sim.state.event_log.append({"type": "error", "message": str(e)})
+            simulation_store.save_state(sim.state)
+        finally:
+            _running_simulations.pop(sim.sim_id, None)
+
+    asyncio.create_task(run_sim())
+
+    return {
+        "sim_id": sim.sim_id,
+        "status": "started",
+        "preset": preset,
+        "participants": list(participant_configs.keys()),
+        "rounds": config.rounds,
+    }
 
 
 if __name__ == "__main__":

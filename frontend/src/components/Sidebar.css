@@ -76,3 +76,39 @@
   color: #999;
   font-size: 12px;
 }
+
+/* Mode toggle (light theme version) */
+.mode-toggle {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  background: #f0f0f0;
+  border-radius: 8px;
+  margin: 8px 12px;
+}
+
+.mode-toggle button {
+  flex: 1;
+  padding: 6px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: transparent;
+  color: #666;
+}
+
+.mode-toggle button.active {
+  background: #e8f0fe;
+  color: #4a90e2;
+  border-color: #4a90e2;
+}
+
+.subtitle {
+  font-size: 11px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
