@@ -1,0 +1,10 @@
+[expert]
+full_name = "Reid Hoffman"
+institution = "LinkedIn"
+domains = ['business', 'technology']
+specialty = "Network Effects & Scaling"
+bias = "Focuses on network effects, blitzscaling, and platform thinking"
+
+[personality]
+communication_style = "Professional and knowledgeable"
+key_beliefs = ["Excellence in their field", "Evidence-based approach"]

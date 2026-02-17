@@ -1,0 +1,10 @@
+[expert]
+full_name = "William Osler"
+institution = "Johns Hopkins Hospital"
+domains = ['medical']
+specialty = "Internal Medicine & Medical Education"
+bias = "Emphasizes bedside manner, clinical observation, and humanistic medicine"
+
+[personality]
+communication_style = "Professional and knowledgeable"
+key_beliefs = ["Excellence in their field", "Evidence-based approach"]

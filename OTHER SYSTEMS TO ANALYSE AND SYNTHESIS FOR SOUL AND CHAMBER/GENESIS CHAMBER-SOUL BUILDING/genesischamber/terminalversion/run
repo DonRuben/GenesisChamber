@@ -1,0 +1,190 @@
+#!/bin/bash
+
+# AI Expert Council Simulator - Run Script
+# This script handles virtual environment setup and runs the application
+
+set -e  # Exit on error
+
+# Colors for output
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+# Function to print colored output
+print_status() {
+    echo -e "${GREEN}[✓]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[!]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[✗]${NC} $1"
+}
+
+# Check if uv is installed
+if ! command -v uv &> /dev/null; then
+    print_error "uv is not installed. Please install it first:"
+    echo "curl -LsSf https://astral.sh/uv/install.sh | sh"
+    exit 1
+fi
+
+# Check if virtual environment exists
+if [ ! -d ".venv" ]; then
+    print_warning "Virtual environment not found. Creating..."
+    uv venv
+    print_status "Virtual environment created"
+fi
+
+# Activate virtual environment
+print_status "Activating virtual environment"
+source .venv/bin/activate
+
+# Function to check if a Python package is installed
+check_package() {
+    python -c "import $1" 2>/dev/null
+    return $?
+}
+
+# Check if dependencies are installed by testing key packages
+if ! check_package "langchain" || ! check_package "openai" || ! check_package "toml"; then
+    print_warning "Dependencies not fully installed. Installing..."
+    uv pip install -r requirements.txt
+    print_status "Dependencies installed"
+else
+    print_status "Dependencies already installed"
+fi
+
+# Check if .env file exists
+if [ ! -f ".env" ]; then
+    print_error ".env file not found!"
+    print_warning "Creating .env from template..."
+    cp .env.example .env
+    echo ""
+    echo "Please edit .env and add your OpenAI API key before running."
+    echo "Then run this script again."
+    exit 1
+fi
+
+# Check if API key is set in .env
+if grep -q "your_openai_api_key_here" .env; then
+    print_error "OpenAI API key not configured in .env!"
+    echo "Please edit .env and add your actual API key."
+    exit 1
+fi
+
+# If no arguments provided, launch the UI
+if [ $# -eq 0 ]; then
+    print_status "Launching interactive UI..."
+    python ui.py
+    exit $?
+fi
+
+# Parse complexity and model flags
+COMPLEXITY=""
+MODEL=""
+ARGS=()
+
+i=1
+while [ $i -le $# ]; do
+    arg="${!i}"
+    case $arg in
+        -simple)
+            COMPLEXITY="simple"
+            i=$((i+1))
+            ;;
+        -complex)
+            COMPLEXITY="complex"
+            i=$((i+1))
+            ;;
+        -model)
+            i=$((i+1))
+            if [ $i -le $# ]; then
+                MODEL="${!i}"
+                i=$((i+1))
+            else
+                print_error "Error: -model flag requires an argument"
+                exit 1
+            fi
+            ;;
+        *)
+            ARGS+=("$arg")
+            i=$((i+1))
+            ;;
+    esac
+done
+
+# Check if complexity flag was provided
+if [ -z "$COMPLEXITY" ]; then
+    print_error "Complexity flag required!"
+    echo ""
+    echo "AI Expert Council Simulator"
+    echo "=========================="
+    echo ""
+    echo "Usage: ./run <problem_file> {-simple|-complex} -model <model_name> [options]"
+    echo ""
+    echo "Examples:"
+    echo "  ./run problems/startup_scaling.txt -simple -model gpt-4.1-nano"
+    echo "  ./run problems/startup_scaling.txt -complex -model gpt-4.1"
+    echo "  ./run problems/startup_scaling.txt -simple -model gpt-4.1-nano --no-log"
+    echo ""
+    echo "Available models:"
+    echo "  gpt-4.1-nano  - Fast simple model for testing"
+    echo "  gpt-4.1       - Advanced model with 1M context"
+    echo ""
+    echo "Available problem files:"
+    ls -1 problems/*.txt 2>/dev/null | sed 's/^/  /'
+    echo ""
+    exit 1
+fi
+
+# Check if model flag was provided
+if [ -z "$MODEL" ]; then
+    print_error "Model flag required!"
+    echo ""
+    echo "AI Expert Council Simulator"
+    echo "=========================="
+    echo ""
+    echo "Usage: ./run <problem_file> {-simple|-complex} -model <model_name> [options]"
+    echo ""
+    echo "Examples:"
+    echo "  ./run problems/startup_scaling.txt -simple -model gpt-4.1-nano"
+    echo "  ./run problems/startup_scaling.txt -complex -model gpt-4.1"
+    echo ""
+    echo "Available models:"
+    echo "  gpt-4.1-nano  - Fast simple model for testing"
+    echo "  gpt-4.1       - Advanced model with 1M context"
+    echo ""
+    exit 1
+fi
+
+# Check if any arguments were provided (besides complexity and model flags)
+if [ ${#ARGS[@]} -eq 0 ]; then
+    # No arguments, show help
+    echo ""
+    echo "AI Expert Council Simulator"
+    echo "=========================="
+    echo ""
+    echo "Usage: ./run <problem_file> {-simple|-complex} -model <model_name> [options]"
+    echo ""
+    echo "Examples:"
+    echo "  ./run problems/startup_scaling.txt -simple -model gpt-4.1-nano"
+    echo "  ./run problems/startup_scaling.txt -complex -model gpt-4.1"
+    echo "  ./run problems/startup_scaling.txt -simple -model gpt-4.1-nano --no-log"
+    echo ""
+    echo "Available models:"
+    echo "  gpt-4.1-nano  - Fast simple model for testing"
+    echo "  gpt-4.1       - Advanced model with 1M context"
+    echo ""
+    echo "Available problem files:"
+    ls -1 problems/*.txt 2>/dev/null | sed 's/^/  /'
+    echo ""
+    exit 0
+fi
+
+# Run the application with all provided arguments plus complexity and model
+print_status "Starting AI Expert Council (${COMPLEXITY} mode with ${MODEL})..."
+echo ""
+python main.py --complexity "$COMPLEXITY" --model "$MODEL" "${ARGS[@]}"

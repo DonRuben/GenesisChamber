@@ -1,0 +1,73 @@
+openai_api_key = "YOUR_OPENAI_API_KEY_HERE"
+
+[general]
+app_name = "AI Expert Council Simulator"
+version = "0.1.0"
+debug = false
+output_dir = "outputs"
+save_transcripts = true
+save_summaries = true
+
+[llm]
+temperature = 0.7
+top_p = 0.9
+timeout = 60
+max_retries = 3
+retry_delay = 1.0
+
+[experts]
+experts_dir = "experts"
+max_experts_per_debate = 5
+min_experts_per_debate = 2
+allow_interruptions = false
+max_speaking_turns = 2
+min_speaking_length = 100
+
+[moderation]
+enable_moderator = true
+moderator_intervention_threshold = 5
+moderator_summary_interval = 10
+
+[debate]
+max_debate_rounds = 20
+min_debate_rounds = 5
+consensus_threshold = 0.8
+enable_voting = true
+expert_response_timeout = 30
+total_debate_timeout = 1800
+
+[output]
+show_thinking_indicators = true
+show_token_usage = true
+use_colors = true
+animation_speed = "normal"
+output_format = "markdown"
+include_metadata = true
+include_timestamps = true
+create_summary_file = true
+
+[logging]
+log_level = "INFO"
+log_file = "debate.log"
+log_to_console = true
+log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+[ui_preferences]
+last_complexity = "simple"
+last_problem = "monetec.txt"
+
+[models.gpt-4.1-nano]
+description = "Fast simple model for quick testing"
+max_tokens = 1000
+max_total_tokens = 20000
+token_buffer = 500
+temperature = 0.6
+timeout = 30
+
+[models.gpt-4.1]
+description = "Advanced model with 1 million token context"
+max_tokens = 8000
+max_total_tokens = 200000
+token_buffer = 10000
+temperature = 0.8
+timeout = 120

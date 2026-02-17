@@ -1,0 +1,111 @@
+# Business Analysis Deliverable Configuration
+# This file defines the structure and prompts for business analysis outputs
+
+[metadata]
+name = "Business Analysis"
+description = "Executive-ready business problem analysis with actionable insights"
+version = "1.0"
+
+[system_prompt]
+# Main system prompt for the summarizer agent
+content = """You are an expert business analyst tasked with synthesizing multi-expert discussions into actionable insights.
+
+Your role is to:
+1. Identify key areas of agreement and disagreement
+2. Extract the most valuable insights from each expert
+3. Synthesize recommendations into clear action items
+4. Highlight risks and opportunities discussed
+5. Create structured, executive-ready summaries
+
+Focus on practical, implementable recommendations rather than abstract concepts.
+Be concise but comprehensive. Organize information for maximum clarity and impact."""
+
+[sections.executive_summary]
+enabled = true
+prompt = """Based on the expert discussion about this problem:
+{problem_statement}
+
+Experts involved: {expert_names}
+
+Write a concise executive summary (2-3 paragraphs) that captures:
+1. The core challenge and opportunity
+2. Main strategic recommendations from the experts
+3. Critical success factors identified
+
+Focus on actionable insights for business leaders."""
+
+[sections.key_insights]
+enabled = true
+prompt = """Analyze the expert discussion about: {problem_statement}
+
+The participating experts are: {expert_names}
+
+Extract and organize key insights into:
+1. Points of Agreement - What all experts agreed on
+2. Points of Contention - Where experts had different views  
+3. Unique Insights - Particularly valuable points from individual experts
+
+IMPORTANT: When referencing experts, use their actual names ({expert_names}), NOT company names or generic labels like "Expert A".
+
+Format as:
+AGREEMENTS:
+- Point 1
+- Point 2
+
+CONTENTIONS:
+- Topic: [Expert 1] argued X, while [Expert 2] suggested Y
+- Topic: Different perspective between specific experts
+
+UNIQUE INSIGHTS:
+- [Expert name]: Specific insight
+- [Expert name]: Specific insight"""
+
+[sections.pros_cons]
+enabled = true
+prompt = """Based on the expert discussion about: {problem_statement}
+
+Create a balanced pros/cons analysis table covering the main aspects discussed.
+Focus on 3-5 key aspects.
+
+Format as:
+ASPECT: [aspect name]
+PROS: [list of advantages]
+CONS: [list of disadvantages]
+
+Repeat for each aspect."""
+
+[sections.action_items]
+enabled = true
+prompt = """Based on the expert recommendations for: {problem_statement}
+
+Generate specific, actionable next steps organized by timeframe:
+
+IMMEDIATE (0-3 months):
+- Specific action with clear outcome
+- Include who should do it and success metrics
+
+SHORT-TERM (3-6 months):
+- Strategic initiatives
+
+LONG-TERM (6+ months):
+- Vision and scaling plans
+
+Be specific and practical. Each item should be directly implementable."""
+
+[sections.risks]
+enabled = true
+prompt = """Based on the expert discussion about: {problem_statement}
+
+Identify the top 3-5 risks mentioned or implied, with mitigation strategies.
+
+Format as:
+RISK: [risk description]
+IMPACT: [potential impact if realized]
+MITIGATION: [specific strategies to reduce/eliminate risk]
+
+Focus on the most significant risks that could derail success."""
+
+[output_format]
+style = "business_formal"
+tone = "authoritative"
+length = "comprehensive"

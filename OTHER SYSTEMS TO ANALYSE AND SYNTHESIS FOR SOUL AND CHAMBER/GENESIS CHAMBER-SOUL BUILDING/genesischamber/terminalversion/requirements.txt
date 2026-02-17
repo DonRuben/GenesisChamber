@@ -1,0 +1,15 @@
+# AI Expert Council Simulator Dependencies
+
+# Core dependencies
+langchain>=0.1.0
+langchain-openai>=0.0.5
+langgraph>=0.0.20
+openai>=1.0.0
+python-dotenv>=1.0.0
+toml>=0.10.2
+rich>=13.0.0
+
+# Additional useful dependencies
+pydantic>=2.0.0
+tiktoken>=0.5.0
+tenacity>=8.2.0

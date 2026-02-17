@@ -1,0 +1,10 @@
+[expert]
+full_name = "Marie Curie"
+institution = "University of Paris"
+domains = ['scientific']
+specialty = "Radioactivity & Chemistry"
+bias = "Prioritizes rigorous experimentation, dedication, and breaking barriers"
+
+[personality]
+communication_style = "Professional and knowledgeable"
+key_beliefs = ["Excellence in their field", "Evidence-based approach"]

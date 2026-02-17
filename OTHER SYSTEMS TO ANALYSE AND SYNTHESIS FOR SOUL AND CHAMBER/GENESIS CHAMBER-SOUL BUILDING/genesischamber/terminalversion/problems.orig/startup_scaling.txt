@@ -1,0 +1,25 @@
+TechFlow is a 3-year-old B2B SaaS startup that provides workflow automation tools for small and medium businesses. They currently have:
+
+- 500 paying customers
+- $2M ARR (Annual Recurring Revenue)
+- 15 employees (10 engineers, 3 sales, 2 customer success)
+- $5M in remaining runway from their Series A
+- 120% net revenue retention
+- $4,000 average contract value
+- 6-month sales cycle
+
+The company has achieved product-market fit in the SMB segment but is facing a critical decision: should they continue focusing on the SMB market where they're seeing success, or should they attempt to move upmarket to enterprise customers?
+
+Moving upmarket would require:
+- Significant product development for enterprise features (SSO, advanced security, compliance)
+- Building an enterprise sales team
+- Longer sales cycles (12-18 months)
+- Higher implementation costs
+
+Staying in SMB means:
+- Continued competition from well-funded competitors
+- Lower average contract values
+- Higher churn risk
+- But faster sales cycles and proven playbook
+
+The founders need to decide their strategy for the next 18 months. What path should TechFlow take to maximize their chances of building a sustainable, high-growth business?
