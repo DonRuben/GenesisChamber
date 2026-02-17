@@ -231,6 +231,28 @@ export const api = {
     return response.json();
   },
 
+  async getVideoTiers(simId) {
+    const response = await fetch(`${API_BASE}/api/simulation/${simId}/video-tiers`);
+    if (!response.ok) throw new Error('Failed to get video tiers');
+    return response.json();
+  },
+
+  async generateVideos(simId, quality = 'standard') {
+    const response = await fetch(`${API_BASE}/api/simulation/${simId}/generate-videos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ quality }),
+    });
+    if (!response.ok) throw new Error('Failed to generate videos');
+    return response.json();
+  },
+
+  async getVideos(simId) {
+    const response = await fetch(`${API_BASE}/api/simulation/${simId}/videos`);
+    if (!response.ok) throw new Error('Failed to get videos');
+    return response.json();
+  },
+
   async quickStart(preset = 'quick_test', brief = null, participants = null) {
     const params = new URLSearchParams({ preset });
     if (brief) params.set('brief', brief);

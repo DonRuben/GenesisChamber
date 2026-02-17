@@ -209,12 +209,16 @@ h2 {{ font-size:20px; color:var(--teal); margin:32px 0 16px; padding-bottom:8px;
         for group in ["active", "eliminated"]:
             for concept in state.concepts.get(group, []):
                 if concept.image_prompt:
-                    prompts.append({
+                    entry = {
                         "concept_name": concept.name,
                         "persona": concept.persona_name,
                         "status": concept.status,
                         "prompt": concept.image_prompt,
-                    })
+                        "visual_direction": getattr(concept, "visual_direction", ""),
+                    }
+                    if concept.video_prompt:
+                        entry["video_prompt"] = concept.video_prompt
+                    prompts.append(entry)
 
         path.write_text(json.dumps(prompts, indent=2), encoding="utf-8")
         return path

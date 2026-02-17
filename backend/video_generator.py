@@ -1,0 +1,268 @@
+"""Video Generator — fal.ai integration for concept video visualization.
+
+Optional post-processing step for winner/finalist concepts.
+Same architecture as image_generator.py.
+"""
+
+import asyncio
+import json
+from pathlib import Path
+from typing import Dict, Any, List, Optional
+
+import httpx
+
+from .config import FAL_KEY, SIMULATION_OUTPUT_DIR
+
+
+# fal.ai video model endpoints (via queue API)
+# Using httpx direct REST calls (same pattern as image_generator.py)
+FAL_VIDEO_MODELS = {
+    # Image-to-video (animate a concept image)
+    "kling_i2v": "fal-ai/kling-video/v2.6/pro/image-to-video",
+    "minimax_i2v": "fal-ai/minimax/hailuo-2.3/standard/image-to-video",
+    "luma_i2v": "fal-ai/luma-dream-machine/ray-2/image-to-video",
+    "luma_flash_i2v": "fal-ai/luma-dream-machine/ray-2-flash/image-to-video",
+    # Text-to-video (generate from prompt alone)
+    "kling_t2v": "fal-ai/kling-video/v2.6/pro/text-to-video",
+    "minimax_t2v": "fal-ai/minimax/hailuo-2.3/pro/text-to-video",
+    "luma_t2v": "fal-ai/luma-dream-machine/ray-2",
+    "luma_flash_t2v": "fal-ai/luma-dream-machine/ray-2-flash",
+}
+
+FAL_API_URL = "https://queue.fal.run"
+
+# Fallback chains
+I2V_FALLBACK_CHAIN = ["kling_i2v", "luma_i2v", "minimax_i2v"]
+T2V_FALLBACK_CHAIN = ["minimax_t2v", "kling_t2v", "luma_t2v"]
+
+# Quality tiers for user selection
+VIDEO_QUALITY_TIERS = {
+    "hero": {
+        "description": "Best quality — cinematic, 10s, 1080p",
+        "i2v": "kling_i2v",
+        "t2v": "kling_t2v",
+        "duration": "10",
+        "cost_estimate": "$0.70–$1.40 per clip",
+    },
+    "standard": {
+        "description": "Production quality — 5s, 768p",
+        "i2v": "minimax_i2v",
+        "t2v": "minimax_t2v",
+        "duration": "6",
+        "cost_estimate": "$0.27–$0.50 per clip",
+    },
+    "draft": {
+        "description": "Fast iteration — 5s, 540p",
+        "i2v": "luma_flash_i2v",
+        "t2v": "luma_flash_t2v",
+        "duration": "5",
+        "cost_estimate": "$0.20–$0.27 per clip",
+    },
+}
+
+
+class VideoGenerator:
+    """Generates videos from concept prompts/images via fal.ai.
+
+    Designed as an optional post-processing step for winner/finalist concepts.
+    """
+
+    def __init__(self, api_key: str = FAL_KEY, output_dir: str = SIMULATION_OUTPUT_DIR):
+        self.api_key = api_key
+        self.output_dir = Path(output_dir)
+
+    def select_model(self, concept: Dict[str, Any], quality: str = "standard") -> str:
+        """Select video model based on concept and whether we have a source image.
+
+        If concept has 'image_url', use image-to-video (preferred — better results).
+        Otherwise fall back to text-to-video.
+        """
+        tier = VIDEO_QUALITY_TIERS.get(quality, VIDEO_QUALITY_TIERS["standard"])
+
+        if concept.get("image_url"):
+            return tier["i2v"]
+        else:
+            return tier["t2v"]
+
+    def _build_payload(
+        self,
+        prompt: str,
+        model_key: str,
+        image_url: Optional[str] = None,
+        duration: str = "5",
+        aspect_ratio: str = "16:9",
+    ) -> Dict[str, Any]:
+        """Build model-specific payload."""
+        payload: Dict[str, Any] = {"prompt": prompt}
+
+        if image_url and "_i2v" in model_key:
+            payload["image_url"] = image_url
+
+        # Model-specific parameters
+        if "kling" in model_key:
+            payload["duration"] = duration
+            payload["aspect_ratio"] = aspect_ratio
+            payload["negative_prompt"] = "blur, distort, low quality, watermark"
+        elif "minimax" in model_key:
+            dur = int(duration) if duration.isdigit() else 6
+            payload["duration"] = min(dur, 6)
+            payload["prompt_optimizer"] = True
+        elif "luma" in model_key:
+            payload["aspect_ratio"] = aspect_ratio
+            payload["duration"] = f"{duration}s" if not duration.endswith("s") else duration
+            payload["loop"] = False
+
+        return payload
+
+    async def generate_video(
+        self,
+        prompt: str,
+        model_key: str = "minimax_t2v",
+        image_url: Optional[str] = None,
+        duration: str = "5",
+        aspect_ratio: str = "16:9",
+    ) -> Optional[Dict[str, Any]]:
+        """Generate a single video via fal.ai.
+
+        Returns dict with 'url', 'model', 'prompt' or None on failure.
+        """
+        if not self.api_key:
+            print("Warning: FAL_KEY not set, skipping video generation")
+            return None
+
+        model_id = FAL_VIDEO_MODELS.get(model_key)
+        if not model_id:
+            print(f"Warning: Unknown video model key '{model_key}'")
+            return None
+
+        headers = {
+            "Authorization": f"Key {self.api_key}",
+            "Content-Type": "application/json",
+        }
+
+        payload = self._build_payload(prompt, model_key, image_url, duration, aspect_ratio)
+
+        try:
+            # Video generation takes longer — use 5 minute timeout
+            async with httpx.AsyncClient(timeout=300.0) as client:
+                response = await client.post(
+                    f"{FAL_API_URL}/{model_id}",
+                    headers=headers,
+                    json=payload,
+                )
+                response.raise_for_status()
+                data = response.json()
+
+                # fal.ai video responses vary by model:
+                # - Kling: data.video.url
+                # - Minimax: data.video.url
+                # - Luma: data.video.url
+                video = data.get("video", {})
+                if isinstance(video, dict) and video.get("url"):
+                    return {
+                        "url": video["url"],
+                        "model": model_key,
+                        "prompt": prompt,
+                        "duration": duration,
+                    }
+
+                # Fallback: check data.output or data.url
+                if data.get("url"):
+                    return {
+                        "url": data["url"],
+                        "model": model_key,
+                        "prompt": prompt,
+                        "duration": duration,
+                    }
+
+                output = data.get("output", {})
+                if isinstance(output, dict) and output.get("url"):
+                    return {
+                        "url": output["url"],
+                        "model": model_key,
+                        "prompt": prompt,
+                        "duration": duration,
+                    }
+
+                print(f"Warning: No video URL in response from {model_key}")
+                return None
+
+        except httpx.TimeoutException:
+            print(f"Timeout generating video with {model_key} (>300s)")
+            return None
+        except Exception as e:
+            print(f"Error generating video with {model_key}: {e}")
+            return None
+
+    async def generate_with_fallback(
+        self,
+        prompt: str,
+        preferred_model: str = "minimax_t2v",
+        image_url: Optional[str] = None,
+        duration: str = "5",
+    ) -> Optional[Dict[str, Any]]:
+        """Try preferred model, then fall back through chain."""
+        result = await self.generate_video(prompt, preferred_model, image_url, duration)
+        if result:
+            return result
+
+        # Pick fallback chain based on mode (i2v vs t2v)
+        chain = I2V_FALLBACK_CHAIN if "_i2v" in preferred_model else T2V_FALLBACK_CHAIN
+
+        for model_key in chain:
+            if model_key == preferred_model:
+                continue
+            result = await self.generate_video(prompt, model_key, image_url, duration)
+            if result:
+                return result
+
+        return None
+
+    async def generate_for_concepts(
+        self,
+        concepts: List[Dict[str, Any]],
+        sim_id: str,
+        quality: str = "standard",
+    ) -> List[Dict[str, Any]]:
+        """Generate videos for winner/finalist concepts.
+
+        Args:
+            concepts: List of dicts with 'concept_name', 'prompt' (video_prompt or image_prompt),
+                      'persona', 'status', optionally 'image_url' from prior image generation
+            sim_id: Simulation ID for output directory
+            quality: Quality tier — 'hero', 'standard', or 'draft'
+
+        Returns:
+            List of result dicts with 'concept_name', 'url', 'model', 'prompt'
+        """
+        tier = VIDEO_QUALITY_TIERS.get(quality, VIDEO_QUALITY_TIERS["standard"])
+        results = []
+
+        for concept_data in concepts:
+            model_key = self.select_model(concept_data, quality)
+            image_url = concept_data.get("image_url")
+            prompt = concept_data.get("prompt", "")
+
+            result = await self.generate_with_fallback(
+                prompt=prompt,
+                preferred_model=model_key,
+                image_url=image_url,
+                duration=tier.get("duration", "5"),
+            )
+
+            if result:
+                result["concept_name"] = concept_data.get("concept_name", "Unknown")
+                result["persona"] = concept_data.get("persona", "Unknown")
+                result["quality_tier"] = quality
+                results.append(result)
+
+            # Longer delay for video — avoid rate limiting
+            await asyncio.sleep(3.0)
+
+        # Save results
+        sim_dir = self.output_dir / sim_id
+        sim_dir.mkdir(parents=True, exist_ok=True)
+        results_path = sim_dir / "generated_videos.json"
+        results_path.write_text(json.dumps(results, indent=2), encoding="utf-8")
+
+        return results
