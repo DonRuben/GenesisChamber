@@ -1,14 +1,14 @@
-# Render.com Blueprint — Genesis Chamber Backend
+# Render.com Blueprint — Genesis Chamber
 # Deploy: Dashboard > New > Blueprint > connect this repo
 services:
   - type: web
     name: genesis-chamber-api
     runtime: python
+    plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: python -m backend.main
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
     envVars:
-      - key: PORT
-        value: 8001
       - key: OPENROUTER_API_KEY
         sync: false
       - key: FAL_KEY
@@ -16,4 +16,4 @@ services:
       - key: ALLOWED_ORIGINS
         sync: false
       - key: PYTHON_VERSION
-        value: 3.10.0
+        value: "3.11.0"
