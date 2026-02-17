@@ -69,6 +69,7 @@ ANALYZE:
 2. Which concepts would actually WORK for the target audience?
 3. Where is there hidden consensus? (Multiple critics praised the same element)
 4. Where is there productive disagreement? (Split opinions often mean something interesting)
+5. CONSENSUS CHECK: If all critics agree on something, challenge it. Unanimous praise often hides groupthink — probe what everyone might be missing. If every critic hates the same concept, ask whether they're rejecting what's merely uncomfortable vs. what's truly bad. The best ideas often split the room.
 
 OUTPUT your direction in this format:
 

@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 import uuid
@@ -17,8 +17,11 @@ from .simulation import GenesisSimulation
 from .simulation_store import SimulationStore
 from .config import (
     SIMULATION_PRESETS, DEFAULT_PARTICIPANTS, DEFAULT_MODERATOR,
-    DEFAULT_EVALUATOR, SOULS_DIR, PERSONA_COLORS,
+    DEFAULT_EVALUATOR, SOULS_DIR, PERSONA_COLORS, SIMULATION_OUTPUT_DIR,
 )
+from .output_engine import OutputEngine
+from .image_generator import ImageGenerator
+from .video_generator import VideoGenerator, VIDEO_QUALITY_TIERS
 
 app = FastAPI(title="LLM Council + Genesis Chamber API")
 simulation_store = SimulationStore()
@@ -509,6 +512,175 @@ async def quick_start_simulation(
         "participants": list(participant_configs.keys()),
         "rounds": config.rounds,
     }
+
+
+# === OUTPUT & MEDIA ENDPOINTS ===
+
+
+@app.get("/api/simulation/{sim_id}/presentation")
+async def get_presentation(sim_id: str):
+    """Generate and serve a reveal.js presentation."""
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+
+    engine = OutputEngine()
+    path = engine.generate_reveal_presentation(state)
+
+    return FileResponse(
+        path=str(path),
+        media_type="text/html",
+        filename=f"{sim_id}-presentation.html",
+    )
+
+
+@app.get("/api/simulation/{sim_id}/output/{filename}")
+async def get_output_file(sim_id: str, filename: str):
+    """Serve a generated output file (transcript, summary, etc.)."""
+    if ".." in filename or "/" in filename:
+        raise HTTPException(status_code=400, detail="Invalid filename")
+
+    path = Path(SIMULATION_OUTPUT_DIR) / sim_id / filename
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+
+    media_types = {
+        ".html": "text/html",
+        ".json": "application/json",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+    }
+    media_type = media_types.get(path.suffix, "application/octet-stream")
+
+    return FileResponse(path=str(path), media_type=media_type)
+
+
+@app.post("/api/simulation/{sim_id}/generate-images")
+async def generate_images(sim_id: str):
+    """Generate images for all concept image prompts via fal.ai."""
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+
+    engine = OutputEngine()
+    sim_dir = Path(SIMULATION_OUTPUT_DIR) / sim_id
+    sim_dir.mkdir(parents=True, exist_ok=True)
+    prompts_path = engine.generate_image_prompts(state, sim_dir)
+
+    with open(prompts_path) as f:
+        prompts = json.load(f)
+
+    if not prompts:
+        return {"status": "no_prompts", "count": 0}
+
+    generator = ImageGenerator()
+
+    async def run_generation():
+        await generator.generate_batch(prompts, sim_id)
+
+    asyncio.create_task(run_generation())
+
+    return {"status": "generating", "count": len(prompts)}
+
+
+@app.get("/api/simulation/{sim_id}/images")
+async def get_generated_images(sim_id: str):
+    """Get generated image results."""
+    results_path = Path(SIMULATION_OUTPUT_DIR) / sim_id / "generated_images.json"
+    if not results_path.exists():
+        return {"images": [], "status": "not_generated"}
+
+    with open(results_path) as f:
+        images = json.load(f)
+
+    return {"images": images, "status": "complete"}
+
+
+class GenerateVideosRequest(BaseModel):
+    quality: str = "standard"  # hero, standard, draft
+
+
+@app.get("/api/simulation/{sim_id}/video-tiers")
+async def get_video_tiers():
+    """Get available video quality tiers and cost estimates."""
+    return VIDEO_QUALITY_TIERS
+
+
+@app.post("/api/simulation/{sim_id}/generate-videos")
+async def generate_videos(sim_id: str, request: GenerateVideosRequest):
+    """Generate videos for winner/finalist concepts via fal.ai.
+
+    Optional post-processing step — only for winners/finalists.
+    """
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+
+    if request.quality not in VIDEO_QUALITY_TIERS:
+        raise HTTPException(status_code=400, detail=f"Unknown quality tier: {request.quality}")
+
+    # Collect video prompts from winner/finalist concepts only
+    active_concepts = state.concepts.get("active", [])
+    winner_concepts = [c for c in active_concepts if c.status in ("winner", "finalist", "active")]
+
+    if not winner_concepts:
+        return {"status": "no_concepts", "count": 0}
+
+    prompts = []
+    # Check if we have generated images to use as source (image-to-video is better)
+    images_path = Path(SIMULATION_OUTPUT_DIR) / sim_id / "generated_images.json"
+    image_map = {}
+    if images_path.exists():
+        with open(images_path) as f:
+            for img in json.load(f):
+                image_map[img.get("concept_name", "")] = img.get("url")
+
+    for concept in winner_concepts:
+        video_prompt = concept.video_prompt or concept.image_prompt or concept.idea or ""
+        if not video_prompt:
+            continue
+
+        prompt_data = {
+            "concept_name": concept.name,
+            "prompt": video_prompt,
+            "persona": concept.persona_name,
+            "status": concept.status,
+        }
+        # Attach image URL if available (enables image-to-video)
+        if concept.name in image_map:
+            prompt_data["image_url"] = image_map[concept.name]
+
+        prompts.append(prompt_data)
+
+    if not prompts:
+        return {"status": "no_prompts", "count": 0}
+
+    generator = VideoGenerator()
+
+    async def run_generation():
+        await generator.generate_for_concepts(prompts, sim_id, request.quality)
+
+    asyncio.create_task(run_generation())
+
+    return {
+        "status": "generating",
+        "count": len(prompts),
+        "quality": request.quality,
+        "cost_estimate": VIDEO_QUALITY_TIERS[request.quality]["cost_estimate"],
+    }
+
+
+@app.get("/api/simulation/{sim_id}/videos")
+async def get_generated_videos(sim_id: str):
+    """Get generated video results."""
+    results_path = Path(SIMULATION_OUTPUT_DIR) / sim_id / "generated_videos.json"
+    if not results_path.exists():
+        return {"videos": [], "status": "not_generated"}
+
+    with open(results_path) as f:
+        videos = json.load(f)
+
+    return {"videos": videos, "status": "complete"}
 
 
 if __name__ == "__main__":
