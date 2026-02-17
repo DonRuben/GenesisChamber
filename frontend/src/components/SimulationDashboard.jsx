@@ -120,7 +120,7 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
               <button
                 className="genesis-btn genesis-btn-secondary"
                 style={{ padding: '6px 14px', fontSize: 12 }}
-                onClick={() => window.open(`http://localhost:8001/api/simulation/${currentSimId}/presentation`, '_blank')}
+                onClick={() => window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:8001'}/api/simulation/${currentSimId}/presentation`, '_blank')}
               >
                 Download Presentation
               </button>

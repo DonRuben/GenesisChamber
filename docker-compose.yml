@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  backend:
+    build: .
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    environment:
+      - PORT=8001
+      - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost:8080
+    volumes:
+      - ./output:/app/output
+      - ./data:/app/data
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        VITE_API_URL: http://localhost:8001
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
