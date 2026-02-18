@@ -9,6 +9,8 @@
   flex-shrink: 0;
   scrollbar-width: thin;
   scrollbar-color: var(--surface-3) transparent;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
 }
 
 .round-timeline-track {
@@ -24,6 +26,7 @@
   align-items: center;
   position: relative;
   min-width: 80px;
+  scroll-snap-align: center;
 }
 
 /* ── Connector ── */

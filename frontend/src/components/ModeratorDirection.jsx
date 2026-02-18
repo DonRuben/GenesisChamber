@@ -1,3 +1,4 @@
+import { IconCheck, IconError } from './Icons';
 import './ModeratorDirection.css';
 
 export default function ModeratorDirection({ direction }) {
@@ -15,7 +16,7 @@ export default function ModeratorDirection({ direction }) {
           <div className="md-section-label md-label-surviving">Surviving</div>
           {direction.surviving_concepts.map((c, i) => (
             <div key={i} className="md-concept-row">
-              <span className="md-concept-check">{'\u2713'}</span>
+              <span className="md-concept-check"><IconCheck size={14} /></span>
               <span className="md-concept-name">{c.name || c.id}</span>
               {c.reason && <span className="md-concept-reason"> — {c.reason}</span>}
             </div>
@@ -28,7 +29,7 @@ export default function ModeratorDirection({ direction }) {
           <div className="md-section-label md-label-eliminated">Eliminated</div>
           {direction.eliminated_concepts.map((c, i) => (
             <div key={i} className="md-concept-row">
-              <span className="md-concept-x">{'\u2717'}</span>
+              <span className="md-concept-x"><IconError size={14} /></span>
               <span className="md-concept-name md-concept-struck">{c.name || c.id}</span>
               {c.reason && <span className="md-concept-reason"> — {c.reason}</span>}
             </div>

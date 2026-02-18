@@ -216,6 +216,7 @@
 .gc-badge {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   padding: 3px 10px;
   border-radius: var(--radius-full);
   font-family: var(--font-data);
@@ -236,6 +237,9 @@
 
 /* Status badges */
 .gc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 4px 12px;
   border-radius: var(--radius-full);
   font-family: var(--font-data);
@@ -310,7 +314,9 @@
   letter-spacing: 0.5px;
   color: var(--text-muted);
   margin-bottom: var(--space-xs);
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* ── Scrollbar ── */
@@ -330,6 +336,13 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(233, 231, 228, 0.15);
+}
+
+/* ── Icons ── */
+.gc-icon {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
 }
 
 /* ── Spinner ── */

@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api';
+import { IconLightning, IconMessage, IconCrystalBall, IconFactory, IconSparkle, IconCheck } from './Icons';
+import HelpTooltip from './HelpTooltip';
+import { helpContent } from './helpContent';
 import './SimulationLauncher.css';
 
 const PRESET_ICONS = {
-  quick_test: '\u26A1',
-  message_lab: '\u{1F4AC}',
-  genesis_chamber: '\u{1F52E}',
-  assembly_line: '\u{1F3ED}',
+  quick_test: <IconLightning size={24} />,
+  message_lab: <IconMessage size={24} />,
+  genesis_chamber: <IconCrystalBall size={24} />,
+  assembly_line: <IconFactory size={24} />,
 };
 
 const PRESET_COLORS = {
@@ -128,7 +131,7 @@ export default function SimulationLauncher({ onStart }) {
 
       {/* Preset Selection */}
       <section className="launcher-section">
-        <label className="gc-label">Simulation Type</label>
+        <label className="gc-label">Simulation Type <HelpTooltip text={helpContent.launcher.type} position="right" /></label>
         <div className="preset-grid">
           {Object.entries(presets).map(([key, preset]) => (
             <div
@@ -137,7 +140,7 @@ export default function SimulationLauncher({ onStart }) {
               onClick={() => setSelectedPreset(key)}
               style={{ '--preset-color': PRESET_COLORS[key] || 'var(--gc-cyan)' }}
             >
-              <div className="preset-icon">{PRESET_ICONS[key] || '\u2728'}</div>
+              <div className="preset-icon">{PRESET_ICONS[key] || <IconSparkle size={24} />}</div>
               <div className="preset-name">{preset.name}</div>
               <div className="preset-desc">
                 {preset.rounds} rounds, {preset.stages_per_round} stages
@@ -153,7 +156,7 @@ export default function SimulationLauncher({ onStart }) {
       {/* Participants */}
       <section className="launcher-section">
         <label className="gc-label">
-          Participants ({selectedParticipants.length} selected)
+          Participants ({selectedParticipants.length} selected) <HelpTooltip text={helpContent.launcher.participants} position="right" />
         </label>
         <div className="participant-grid">
           {souls.filter(s => s.id !== 'steve-jobs').map(soul => {
@@ -173,7 +176,7 @@ export default function SimulationLauncher({ onStart }) {
                   </span>
                 </div>
                 <span className="participant-name">{soul.name}</span>
-                {isSelected && <span className="participant-check">\u2713</span>}
+                {isSelected && <span className="participant-check"><IconCheck size={14} /></span>}
               </div>
             );
           })}
@@ -182,7 +185,7 @@ export default function SimulationLauncher({ onStart }) {
 
       {/* Brief */}
       <section className="launcher-section">
-        <label className="gc-label">Project Brief</label>
+        <label className="gc-label">Project Brief <HelpTooltip text={helpContent.launcher.brief} position="right" /></label>
         <textarea
           className="gc-textarea launcher-brief"
           value={brief}

@@ -75,6 +75,8 @@
 .preset-card:hover {
   border-color: var(--border-strong);
   background: var(--surface-2);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 .preset-card.selected {
@@ -83,9 +85,11 @@
 }
 
 .preset-icon {
-  font-size: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-bottom: var(--space-xs);
-  line-height: 1;
+  color: var(--preset-color, var(--gc-cyan));
 }
 
 .preset-name {
@@ -235,5 +239,23 @@
 
   .participant-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .launcher-heading {
+    font-size: 26px;
+  }
+
+  .launcher-tagline {
+    font-size: 15px;
+  }
+
+  .preset-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .participant-grid {
+    grid-template-columns: 1fr;
   }
 }

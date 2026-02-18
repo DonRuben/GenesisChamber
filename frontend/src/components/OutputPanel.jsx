@@ -1,0 +1,237 @@
+import { useState, useEffect } from 'react';
+import { api } from '../api';
+import { IconImage, IconVideo, IconPresentation, IconScroll, IconCheck, IconDownload } from './Icons';
+import './OutputPanel.css';
+
+export default function OutputPanel({ simId }) {
+  const [imageStatus, setImageStatus] = useState(null); // null | 'generating' | 'complete' | 'error'
+  const [videoStatus, setVideoStatus] = useState(null);
+  const [images, setImages] = useState([]);
+  const [videos, setVideos] = useState([]);
+  const [videoTiers, setVideoTiers] = useState(null);
+  const [selectedTier, setSelectedTier] = useState('standard');
+
+  useEffect(() => {
+    // Try to load existing images/videos
+    loadExistingMedia();
+    loadVideoTiers();
+  }, [simId]);
+
+  const loadExistingMedia = async () => {
+    try {
+      const imgResult = await api.getImages(simId);
+      if (imgResult?.images?.length > 0) {
+        setImages(imgResult.images);
+        setImageStatus('complete');
+      }
+    } catch (e) { /* no existing images */ }
+
+    try {
+      const vidResult = await api.getVideos(simId);
+      if (vidResult?.videos?.length > 0) {
+        setVideos(vidResult.videos);
+        setVideoStatus('complete');
+      }
+    } catch (e) { /* no existing videos */ }
+  };
+
+  const loadVideoTiers = async () => {
+    try {
+      const tiers = await api.getVideoTiers(simId);
+      setVideoTiers(tiers);
+    } catch (e) { /* video tiers not available */ }
+  };
+
+  const handleGenerateImages = async () => {
+    setImageStatus('generating');
+    try {
+      await api.generateImages(simId);
+      // Poll for completion
+      const poll = setInterval(async () => {
+        try {
+          const result = await api.getImages(simId);
+          if (result?.status === 'complete' || result?.images?.length > 0) {
+            setImages(result.images || []);
+            setImageStatus('complete');
+            clearInterval(poll);
+          }
+        } catch (e) { /* keep polling */ }
+      }, 5000);
+      // Timeout after 5 minutes
+      setTimeout(() => {
+        clearInterval(poll);
+        if (imageStatus === 'generating') setImageStatus('error');
+      }, 300000);
+    } catch (e) {
+      console.error('Image generation failed:', e);
+      setImageStatus('error');
+    }
+  };
+
+  const handleGenerateVideos = async () => {
+    setVideoStatus('generating');
+    try {
+      await api.generateVideos(simId, selectedTier);
+      const poll = setInterval(async () => {
+        try {
+          const result = await api.getVideos(simId);
+          if (result?.status === 'complete' || result?.videos?.length > 0) {
+            setVideos(result.videos || []);
+            setVideoStatus('complete');
+            clearInterval(poll);
+          }
+        } catch (e) { /* keep polling */ }
+      }, 10000);
+      setTimeout(() => {
+        clearInterval(poll);
+        if (videoStatus === 'generating') setVideoStatus('error');
+      }, 600000);
+    } catch (e) {
+      console.error('Video generation failed:', e);
+      setVideoStatus('error');
+    }
+  };
+
+  const handleDownloadPresentation = () => {
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+    window.open(`${baseUrl}/api/simulation/${simId}/presentation`, '_blank');
+  };
+
+  const handleDownloadTranscript = () => {
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+    window.open(`${baseUrl}/api/simulation/${simId}/transcript`, '_blank');
+  };
+
+  const renderStatusBadge = (status) => {
+    if (!status) return null;
+    if (status === 'generating') return <span className="gc-badge gc-badge-cyan">Generating...</span>;
+    if (status === 'complete') return <span className="gc-badge gc-badge-green"><IconCheck size={12} /> Complete</span>;
+    if (status === 'error') return <span className="gc-badge gc-badge-red">Failed</span>;
+    return null;
+  };
+
+  return (
+    <div className="op-container">
+      <div className="op-header">
+        <h3 className="op-title">Deliverables</h3>
+        <p className="op-subtitle">Generate and download simulation outputs</p>
+      </div>
+
+      <div className="op-grid">
+        {/* Images Card */}
+        <div className="op-card">
+          <div className="op-card-icon"><IconImage size={24} /></div>
+          <div className="op-card-info">
+            <div className="op-card-title">Concept Images</div>
+            <div className="op-card-desc">Generate AI visualizations for each concept</div>
+            {renderStatusBadge(imageStatus)}
+          </div>
+          <button
+            className="gc-btn gc-btn-cyan op-card-action"
+            onClick={handleGenerateImages}
+            disabled={imageStatus === 'generating'}
+          >
+            {imageStatus === 'generating' ? (
+              <><span className="gc-spinner" /> Generating...</>
+            ) : imageStatus === 'complete' ? (
+              <><IconCheck size={16} /> Regenerate</>
+            ) : (
+              <><IconImage size={16} /> Generate</>
+            )}
+          </button>
+        </div>
+
+        {/* Videos Card */}
+        <div className="op-card">
+          <div className="op-card-icon"><IconVideo size={24} /></div>
+          <div className="op-card-info">
+            <div className="op-card-title">Video Presentations</div>
+            <div className="op-card-desc">Create video walkthroughs of concepts</div>
+            {videoTiers && (
+              <div className="op-tier-select">
+                {Object.entries(videoTiers).map(([key, tier]) => (
+                  <button
+                    key={key}
+                    className={`gc-btn gc-btn-ghost op-tier-btn ${selectedTier === key ? 'active' : ''}`}
+                    onClick={() => setSelectedTier(key)}
+                  >
+                    {tier.name || key}
+                  </button>
+                ))}
+              </div>
+            )}
+            {renderStatusBadge(videoStatus)}
+          </div>
+          <button
+            className="gc-btn gc-btn-cyan op-card-action"
+            onClick={handleGenerateVideos}
+            disabled={videoStatus === 'generating'}
+          >
+            {videoStatus === 'generating' ? (
+              <><span className="gc-spinner" /> Generating...</>
+            ) : videoStatus === 'complete' ? (
+              <><IconCheck size={16} /> Regenerate</>
+            ) : (
+              <><IconVideo size={16} /> Generate</>
+            )}
+          </button>
+        </div>
+
+        {/* Presentation Card */}
+        <div className="op-card">
+          <div className="op-card-icon"><IconPresentation size={24} /></div>
+          <div className="op-card-info">
+            <div className="op-card-title">Presentation Deck</div>
+            <div className="op-card-desc">Download reveal.js presentation package</div>
+          </div>
+          <button className="gc-btn gc-btn-secondary op-card-action" onClick={handleDownloadPresentation}>
+            <IconDownload size={16} /> Download
+          </button>
+        </div>
+
+        {/* Transcript Card */}
+        <div className="op-card">
+          <div className="op-card-icon"><IconScroll size={24} /></div>
+          <div className="op-card-info">
+            <div className="op-card-title">Full Transcript</div>
+            <div className="op-card-desc">Download the complete simulation record</div>
+          </div>
+          <button className="gc-btn gc-btn-secondary op-card-action" onClick={handleDownloadTranscript}>
+            <IconDownload size={16} /> Download
+          </button>
+        </div>
+      </div>
+
+      {/* Image Gallery */}
+      {images.length > 0 && (
+        <div className="op-gallery">
+          <h4 className="op-gallery-title">Generated Images</h4>
+          <div className="op-gallery-grid">
+            {images.map((img, i) => (
+              <div key={i} className="op-gallery-item">
+                <img src={img.url} alt={img.caption || `Concept ${i + 1}`} className="op-gallery-img" />
+                {img.caption && <div className="op-gallery-caption">{img.caption}</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Video Results */}
+      {videos.length > 0 && (
+        <div className="op-video-results">
+          <h4 className="op-gallery-title">Generated Videos</h4>
+          {videos.map((vid, i) => (
+            <div key={i} className="op-video-item">
+              <IconVideo size={16} />
+              <span className="op-video-name">{vid.name || `Video ${i + 1}`}</span>
+              <a href={vid.url} target="_blank" rel="noopener noreferrer" className="gc-btn gc-btn-ghost">
+                <IconDownload size={14} /> Download
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

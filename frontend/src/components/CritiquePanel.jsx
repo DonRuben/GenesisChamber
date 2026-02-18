@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import HelpTooltip from './HelpTooltip';
+import { IconEye } from './Icons';
 import './CritiquePanel.css';
 
 function scoreColor(score) {
@@ -22,7 +24,10 @@ export default function CritiquePanel({ critiques, concepts }) {
   return (
     <div className="cp-container">
       <div className="cp-header">
-        <h3 className="cp-title">Critiques</h3>
+        <h3 className="cp-title">
+          Critiques
+          <HelpTooltip text="All concepts are anonymized as A, B, C during critique. Scores are 1-10. Toggle 'Reveal Names' to see identities." position="right" />
+        </h3>
         {hasData && (
           <button className="gc-btn gc-btn-ghost cp-toggle" onClick={() => setShowAnonymous(!showAnonymous)}>
             {showAnonymous ? 'Reveal Names' : 'Re-anonymize'}
@@ -32,7 +37,9 @@ export default function CritiquePanel({ critiques, concepts }) {
 
       {!hasData ? (
         <div className="cp-empty">
-          No critiques available for this round yet.
+          <IconEye size={28} className="cp-empty-icon" />
+          <div>No critiques available for this round yet.</div>
+          <div className="cp-empty-hint">Critiques appear after Stage 2 of each round.</div>
         </div>
       ) : (
         Object.entries(conceptCritiques).map(([conceptKey, crits]) => {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatInterface from './components/ChatInterface';
 import SimulationDashboard from './components/SimulationDashboard';
+import { IconClose, IconMenu } from './components/Icons';
 import { api } from './api';
 import './App.css';
 
@@ -266,7 +267,7 @@ function App() {
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="Toggle menu"
           >
-            {sidebarOpen ? '\u2715' : '\u2630'}
+            {sidebarOpen ? <IconClose size={18} /> : <IconMenu size={18} />}
           </button>
           <div
             className={`sidebar-overlay ${sidebarOpen ? 'visible' : ''}`}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../api';
 import SimulationLauncher from './SimulationLauncher';
 import RoundProgress from './RoundProgress';
@@ -8,21 +8,28 @@ import ModeratorDirection from './ModeratorDirection';
 import QualityGate from './QualityGate';
 import TranscriptViewer from './TranscriptViewer';
 import PresentationGallery from './PresentationGallery';
+import StatusHeader from './StatusHeader';
+import OutputPanel from './OutputPanel';
+import HelpTooltip from './HelpTooltip';
+import { helpContent } from './helpContent';
+import { SkeletonGrid } from './Skeleton';
+import { IconDiamond, IconGrid, IconEye, IconCompass, IconScroll, IconPackage, IconSpark } from './Icons';
 import './SimulationDashboard.css';
 
 const VIEW_TABS = [
-  { key: 'concepts', label: 'Concepts', icon: '\u25C6' },
-  { key: 'gallery', label: 'Gallery', icon: '\u25A6' },
-  { key: 'critiques', label: 'Critiques', icon: '\u{1F441}' },
-  { key: 'direction', label: 'Direction', icon: '\u{1F9ED}' },
-  { key: 'transcript', label: 'Transcript', icon: '\u{1F4DC}' },
+  { key: 'concepts', label: 'Concepts', icon: <IconDiamond size={14} /> },
+  { key: 'gallery', label: 'Gallery', icon: <IconGrid size={14} /> },
+  { key: 'critiques', label: 'Critiques', icon: <IconEye size={14} /> },
+  { key: 'direction', label: 'Direction', icon: <IconCompass size={14} /> },
+  { key: 'transcript', label: 'Transcript', icon: <IconScroll size={14} /> },
 ];
 
 export default function SimulationDashboard({ simulations, currentSimId, onSelectSim, onRefreshList }) {
   const [simState, setSimState] = useState(null);
   const [activeView, setActiveView] = useState('concepts');
   const [selectedRound, setSelectedRound] = useState(null);
-  const [videoStatus, setVideoStatus] = useState(null);
+  const tabsRef = useRef(null);
+  const [tabsOverflow, setTabsOverflow] = useState(false);
 
   useEffect(() => {
     if (currentSimId) {
@@ -39,6 +46,16 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
     }, 5000);
     return () => clearInterval(interval);
   }, [simState?.status, currentSimId]);
+
+  // Detect tab overflow for fade indicator
+  useEffect(() => {
+    const el = tabsRef.current;
+    if (!el) return;
+    const check = () => setTabsOverflow(el.scrollWidth > el.clientWidth);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, [simState]);
 
   const loadSimState = async (simId) => {
     try {
@@ -83,8 +100,7 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
     return (
       <div className="dashboard">
         <div className="dashboard-loading">
-          <div className="gc-spinner" />
-          <span>Loading simulation...</span>
+          <SkeletonGrid count={3} />
         </div>
       </div>
     );
@@ -95,6 +111,11 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
   const allConcepts = [...activeConcepts, ...eliminatedConcepts];
   const roundData = simState.rounds?.find(r => r.round_num === selectedRound);
   const pendingGate = simState.quality_gates?.find(g => g.status === 'pending');
+
+  // Build tabs — add Output tab only for completed sims
+  const tabs = simState.status === 'completed'
+    ? [...VIEW_TABS, { key: 'output', label: 'Output', icon: <IconPackage size={14} /> }]
+    : VIEW_TABS;
 
   // Extract critiques from round data
   const extractCritiques = () => {
@@ -108,70 +129,10 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
       ?.flatMap(e => e.critiques || []) || [];
   };
 
-  const statusClass = simState.status === 'running' ? 'running'
-    : simState.status === 'completed' ? 'completed'
-    : simState.status === 'paused_at_gate' ? 'paused'
-    : 'failed';
-
   return (
     <div className="dashboard">
-      {/* Command Center Header */}
-      <header className="dashboard-header">
-        <div className="dashboard-header-left">
-          <h2 className="dashboard-title">{simState.config?.name || 'Simulation'}</h2>
-          <div className="dashboard-meta">
-            <span className={`gc-status gc-status-${statusClass}`}>
-              {simState.status === 'paused_at_gate' ? 'Quality Gate' : simState.status}
-            </span>
-            <span className="dashboard-breadcrumb">
-              Round {simState.current_round}/{simState.config?.rounds}
-              {simState.current_stage_name && (
-                <> &rsaquo; {simState.current_stage_name}</>
-              )}
-            </span>
-          </div>
-        </div>
-        <div className="dashboard-header-right">
-          <span className="dashboard-concept-count">
-            {activeConcepts.length} active / {eliminatedConcepts.length} eliminated
-          </span>
-          {simState.status === 'completed' && (
-            <div className="dashboard-actions">
-              <button
-                className="gc-btn gc-btn-secondary"
-                onClick={() => window.open(
-                  `${import.meta.env.VITE_API_URL || 'http://localhost:8001'}/api/simulation/${currentSimId}/presentation`,
-                  '_blank'
-                )}
-              >
-                Presentation
-              </button>
-              <button
-                className="gc-btn gc-btn-secondary"
-                disabled={videoStatus === 'generating'}
-                onClick={async () => {
-                  setVideoStatus('generating');
-                  try {
-                    await api.generateVideos(currentSimId, 'standard');
-                    const poll = setInterval(async () => {
-                      const result = await api.getVideos(currentSimId);
-                      if (result.status === 'complete') {
-                        setVideoStatus('complete');
-                        clearInterval(poll);
-                      }
-                    }, 10000);
-                  } catch (e) {
-                    console.error('Video generation failed:', e);
-                    setVideoStatus(null);
-                  }
-                }}
-              >
-                {videoStatus === 'generating' ? 'Generating...' : videoStatus === 'complete' ? 'Videos Ready' : 'Videos'}
-              </button>
-            </div>
-          )}
-        </div>
-      </header>
+      {/* Enhanced Status Header */}
+      <StatusHeader simState={simState} />
 
       {/* Round Timeline */}
       <RoundProgress
@@ -185,8 +146,8 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
       />
 
       {/* View Tabs */}
-      <nav className="dashboard-tabs">
-        {VIEW_TABS.map(tab => (
+      <nav className={`dashboard-tabs ${tabsOverflow ? 'dashboard-tabs-overflow' : ''}`} ref={tabsRef}>
+        {tabs.map(tab => (
           <button
             key={tab.key}
             className={`dashboard-tab ${activeView === tab.key ? 'active' : ''}`}
@@ -194,6 +155,9 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
           >
             <span className="dashboard-tab-icon">{tab.icon}</span>
             {tab.label}
+            {helpContent.dashboard[tab.key] && (
+              <HelpTooltip text={helpContent.dashboard[tab.key]} position="bottom" />
+            )}
           </button>
         ))}
       </nav>
@@ -201,13 +165,19 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
       {/* Content */}
       <div className="dashboard-content">
         {activeView === 'concepts' && (
-          <div className="dashboard-concepts">
+          <div className="dashboard-concepts dashboard-view-animate">
             <h3 className="dashboard-section-title">
               Active Concepts <span className="dashboard-section-count">{activeConcepts.length}</span>
             </h3>
             {activeConcepts.length === 0 ? (
               <div className="dashboard-empty">
-                {simState.status === 'running' ? 'Waiting for concepts...' : 'No active concepts'}
+                <IconSpark size={32} className="dashboard-empty-icon" />
+                <div className="dashboard-empty-text">
+                  {simState.status === 'running' ? 'Concepts are being generated...' : 'No active concepts'}
+                </div>
+                <div className="dashboard-empty-hint">
+                  {simState.status === 'running' ? 'Each participant is crafting their vision' : 'Start a new simulation to begin'}
+                </div>
               </div>
             ) : (
               activeConcepts.map(concept => (
@@ -229,15 +199,19 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
         )}
 
         {activeView === 'gallery' && (
-          <PresentationGallery concepts={simState.concepts} rounds={simState.rounds} />
+          <div className="dashboard-view-animate">
+            <PresentationGallery concepts={simState.concepts} rounds={simState.rounds} />
+          </div>
         )}
 
         {activeView === 'critiques' && (
-          <CritiquePanel critiques={extractCritiques()} concepts={allConcepts} />
+          <div className="dashboard-view-animate">
+            <CritiquePanel critiques={extractCritiques()} concepts={allConcepts} />
+          </div>
         )}
 
         {activeView === 'direction' && (
-          <div className="dashboard-direction">
+          <div className="dashboard-direction dashboard-view-animate">
             {simState.rounds?.map(r => {
               const synthStage = r.stages?.[3];
               if (!synthStage?.outputs) return null;
@@ -254,7 +228,15 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
         )}
 
         {activeView === 'transcript' && (
-          <TranscriptViewer entries={simState.transcript_entries} eventLog={simState.event_log} />
+          <div className="dashboard-view-animate">
+            <TranscriptViewer entries={simState.transcript_entries} eventLog={simState.event_log} />
+          </div>
+        )}
+
+        {activeView === 'output' && simState.status === 'completed' && (
+          <div className="dashboard-view-animate">
+            <OutputPanel simId={currentSimId} />
+          </div>
         )}
       </div>
 

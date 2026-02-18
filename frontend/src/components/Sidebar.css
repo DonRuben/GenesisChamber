@@ -100,6 +100,10 @@
   font-size: 14px;
   font-weight: 600;
   transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .sidebar-new-btn:hover {
@@ -122,6 +126,14 @@
   color: var(--text-muted);
   font-family: var(--font-data);
   font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.sidebar-empty-icon {
+  opacity: 0.3;
 }
 
 .sidebar-item {
@@ -135,6 +147,7 @@
 
 .sidebar-item:hover {
   background: var(--surface-2);
+  border-left: 3px solid var(--border-strong);
 }
 
 .sidebar-item.active {
