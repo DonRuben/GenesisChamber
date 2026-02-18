@@ -6,7 +6,34 @@ import { helpContent } from './helpContent';
 import ModelSelector from './ModelSelector';
 import ConfigSummary from './ConfigSummary';
 import StepIndicator from './StepIndicator';
+import { getDisplayName } from '../utils/modelDisplayNames';
 import './SimulationLauncher.css';
+
+const BRIEF_TEMPLATE = `# Project Brief
+
+## Client / Brand
+[Company or brand name — who is this for?]
+
+## Challenge
+[What problem needs solving? What's the creative challenge?]
+
+## Target Audience
+[Who are we trying to reach? Demographics, psychographics, behaviors]
+
+## Key Requirements
+[What must the output include or achieve?]
+
+## Constraints
+[Budget, timeline, brand guidelines, things to avoid]
+
+## What Success Looks Like
+[How will you know this worked? Measurable outcomes if possible]
+
+## Tone & Feel
+[Premium? Playful? Authoritative? Warm? What's the vibe?]
+
+## Reference / Inspiration
+[Brands, campaigns, or styles you admire — or want to avoid]`;
 
 const PRESET_ICONS = {
   quick_test: <IconLightning size={24} />,
@@ -266,7 +293,7 @@ export default function SimulationLauncher({ onStart }) {
                   <div className="participant-info">
                     <span className="participant-name">{soul.name}</span>
                     <span className="participant-model-label">
-                      {(modelAssignments[soul.id] || 'claude-sonnet-4.5').split('/').pop()}
+                      {getDisplayName(modelAssignments[soul.id] || 'anthropic/claude-sonnet-4.5')}
                     </span>
                   </div>
                   {isSelected && <span className="participant-check"><IconCheck size={14} /></span>}
@@ -304,22 +331,22 @@ export default function SimulationLauncher({ onStart }) {
               Model Assignment
               <HelpTooltip text="Assign different AI models to each persona for cognitive diversity. Premium models cost more but provide deeper reasoning." position="right" />
             </label>
-            <div className="participant-grid">
+            <div className="model-assign-grid">
               {selectedParticipants.map(pid => {
                 const soul = souls.find(s => s.id === pid);
                 if (!soul) return null;
                 return (
-                  <div key={pid} className="participant-card selected" style={{ cursor: 'default' }}>
-                    <div
-                      className="participant-avatar"
-                      style={{ borderColor: soul.color, background: soul.color }}
-                    >
-                      <span className="participant-initial" style={{ color: 'var(--surface-0)' }}>
-                        {(soul.name || '?')[0]}
-                      </span>
-                    </div>
-                    <div className="participant-info">
-                      <span className="participant-name">{soul.name}</span>
+                  <div key={pid} className="model-assign-card">
+                    <div className="model-assign-header">
+                      <div
+                        className="participant-avatar"
+                        style={{ borderColor: soul.color, background: soul.color }}
+                      >
+                        <span className="participant-initial" style={{ color: 'var(--surface-0)' }}>
+                          {(soul.name || '?')[0]}
+                        </span>
+                      </div>
+                      <span className="model-assign-name">{soul.name}</span>
                     </div>
                     <ModelSelector
                       value={modelAssignments[pid] || DEFAULT_MODELS[pid] || 'anthropic/claude-sonnet-4-5-20250929'}
@@ -339,15 +366,43 @@ export default function SimulationLauncher({ onStart }) {
           <label className="gc-label">
             Project Brief <HelpTooltip text={helpContent.launcher.brief} position="right" />
           </label>
-          <textarea
-            className="gc-textarea launcher-brief"
-            value={brief}
-            onChange={(e) => setBrief(e.target.value)}
-            placeholder="Describe the creative challenge. What do you want the council to create?"
-            rows={5}
-          />
-          <div className="launcher-brief-count">
-            {brief.length > 0 ? `${brief.length} characters` : 'Optional — a default brief will be used'}
+          <div className="brief-editor">
+            <div className="brief-toolbar">
+              <button
+                className="brief-template-btn"
+                type="button"
+                onClick={() => {
+                  if (!brief || brief.length === 0) {
+                    setBrief(BRIEF_TEMPLATE);
+                  } else if (window.confirm('Replace current brief with template? Your text will be lost.')) {
+                    setBrief(BRIEF_TEMPLATE);
+                  }
+                }}
+              >
+                Load Template
+              </button>
+              {brief.length > 0 && (
+                <button
+                  className="brief-clear-btn"
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm('Clear the entire brief?')) setBrief('');
+                  }}
+                >
+                  Clear
+                </button>
+              )}
+              <span className="brief-char-count">
+                {brief.length > 0 ? `${brief.length} chars` : 'Optional'}
+              </span>
+            </div>
+            <textarea
+              className="gc-textarea launcher-brief"
+              value={brief}
+              onChange={(e) => setBrief(e.target.value)}
+              placeholder={`Describe your creative challenge here...\n\nTip: Click "Load Template" above to get a structured briefing guide with all the fields that help the council produce their best work — client, audience, requirements, constraints, tone, and inspiration.\n\nOr just write freely. The council will work with whatever you give them.`}
+              rows={10}
+            />
           </div>
         </section>
       </div>

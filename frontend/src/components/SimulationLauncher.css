@@ -320,20 +320,125 @@
   letter-spacing: 0.5px;
 }
 
-/* ── Brief ── */
-.launcher-brief {
-  font-family: var(--font-body) !important;
-  font-size: 16px !important;
-  line-height: 1.7 !important;
-  min-height: 140px;
+/* ── Model Assignment Grid ── */
+.model-assign-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-sm);
 }
 
-.launcher-brief-count {
+.model-assign-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast);
+  animation: fadeIn var(--transition-fast) both;
+}
+
+.model-assign-card:nth-child(1) { animation-delay: 0ms; }
+.model-assign-card:nth-child(2) { animation-delay: 30ms; }
+.model-assign-card:nth-child(3) { animation-delay: 60ms; }
+.model-assign-card:nth-child(4) { animation-delay: 90ms; }
+.model-assign-card:nth-child(5) { animation-delay: 120ms; }
+
+.model-assign-card:hover {
+  border-color: var(--border-default);
+}
+
+.model-assign-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.model-assign-name {
   font-family: var(--font-data);
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ── Brief Editor ── */
+.brief-editor {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface-1);
+  transition: border-color var(--transition-fast);
+}
+
+.brief-editor:focus-within {
+  border-color: rgba(0, 217, 255, 0.3);
+}
+
+.brief-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.brief-template-btn,
+.brief-clear-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.brief-template-btn:hover {
+  background: rgba(0, 217, 255, 0.08);
+  border-color: var(--gc-cyan);
+  color: var(--gc-cyan);
+}
+
+.brief-clear-btn:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: var(--status-error);
+  color: var(--status-error);
+}
+
+.brief-char-count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
   color: var(--text-muted);
-  margin-top: 6px;
-  text-align: right;
+}
+
+.brief-editor .launcher-brief {
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  font-family: var(--font-data) !important;
+  font-size: 14px !important;
+  line-height: 1.7 !important;
+  min-height: 240px;
+  padding: 16px !important;
+  resize: vertical;
+}
+
+.brief-editor .launcher-brief:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.brief-editor .launcher-brief::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+  font-style: italic;
 }
 
 /* ── Launch Button ── */
@@ -430,6 +535,10 @@
   }
 
   .participant-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .model-assign-grid {
     grid-template-columns: 1fr;
   }
 

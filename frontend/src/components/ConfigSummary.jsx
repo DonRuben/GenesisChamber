@@ -1,3 +1,4 @@
+import { getDisplayName } from '../utils/modelDisplayNames';
 import './ConfigSummary.css';
 
 export default function ConfigSummary({ preset, participants, souls, brief, modelAssignments, onModelChange, models }) {
@@ -35,7 +36,7 @@ export default function ConfigSummary({ preset, participants, souls, brief, mode
                 <div className="config-summary-participant-info">
                   <span className="config-summary-name">{soul.name}</span>
                   <span className="config-summary-model">
-                    {(modelAssignments[soul.id] || 'anthropic/claude-sonnet-4-5-20250929').split('/').pop()}
+                    {getDisplayName(modelAssignments[soul.id] || 'anthropic/claude-sonnet-4-5-20250929')}
                   </span>
                 </div>
               </div>
@@ -52,7 +53,7 @@ export default function ConfigSummary({ preset, participants, souls, brief, mode
           <div className="config-summary-participant-info">
             <span className="config-summary-name">Steve Jobs</span>
             <span className="config-summary-model">
-              {(modelAssignments['moderator'] || 'anthropic/claude-opus-4-6').split('/').pop()}
+              {getDisplayName(modelAssignments['moderator'] || 'anthropic/claude-opus-4-6')}
             </span>
           </div>
         </div>
