@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import HelpTooltip from './HelpTooltip';
+import { helpContent } from './helpContent';
 import './QualityGate.css';
 
 export default function QualityGate({ gate, onApprove, onRedirect }) {
@@ -10,7 +12,10 @@ export default function QualityGate({ gate, onApprove, onRedirect }) {
     <div className="qg-overlay">
       <div className="qg-modal">
         <div className="qg-header">
-          <h3 className="qg-title">Quality Gate</h3>
+          <h3 className="qg-title">
+            Quality Gate
+            <HelpTooltip text={helpContent.qualityGate.text} position="bottom" />
+          </h3>
           <span className="qg-round">Round {gate.after_round}</span>
         </div>
 

@@ -25,11 +25,30 @@
   padding: 4px 12px !important;
 }
 
+.cp-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
 .cp-empty {
   text-align: center;
   padding: var(--space-xl);
   color: var(--text-muted);
   font-family: var(--font-data);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.cp-empty-icon {
+  opacity: 0.3;
+}
+
+.cp-empty-hint {
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 /* ── Panel ── */

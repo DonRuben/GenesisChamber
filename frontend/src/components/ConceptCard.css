@@ -10,12 +10,14 @@
   position: relative;
   overflow: hidden;
   cursor: pointer;
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
   animation: slideUp var(--transition-medium);
 }
 
 .cc-card:hover {
   border-color: var(--border-default);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .cc-indicator {
@@ -142,4 +144,18 @@
   font-style: italic;
   color: var(--text-muted);
   margin-top: var(--space-xs);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .cc-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-xs);
+  }
+
+  .cc-header-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
 }

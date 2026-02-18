@@ -1,0 +1,169 @@
+/* =============================================
+   STATUS HEADER
+   ============================================= */
+
+.sh-header {
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  background: var(--surface-0);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+}
+
+.sh-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.sh-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.sh-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--op-flame);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sh-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+/* ── Stats ── */
+.sh-stats {
+  display: flex;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+.sh-stat {
+  text-align: center;
+  min-width: 48px;
+}
+
+.sh-stat-num {
+  display: block;
+  font-family: var(--font-data);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.sh-stat-eliminated .sh-stat-num {
+  color: var(--status-error);
+}
+
+.sh-stat-label {
+  display: block;
+  font-family: var(--font-data);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ── Progress Bar ── */
+.sh-progress-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
+}
+
+.sh-progress {
+  flex: 1;
+  height: 4px;
+  background: var(--surface-2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.sh-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 600ms ease-out;
+}
+
+.sh-progress-running {
+  background: linear-gradient(90deg, var(--stage-create), var(--gc-cyan));
+  box-shadow: 0 0 8px rgba(0, 217, 255, 0.3);
+}
+
+.sh-progress-completed {
+  background: var(--status-success);
+}
+
+.sh-progress-paused {
+  background: var(--gc-gold);
+}
+
+.sh-progress-failed {
+  background: var(--status-error);
+}
+
+.sh-progress-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  min-width: 32px;
+  text-align: right;
+}
+
+/* ── Breadcrumb ── */
+.sh-breadcrumb {
+  font-family: var(--font-data);
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.sh-breadcrumb-mode {
+  color: var(--gc-gold);
+  font-weight: 600;
+}
+
+.sh-breadcrumb-stage {
+  color: var(--text-secondary);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .sh-header {
+    padding: var(--space-sm);
+    padding-top: var(--space-xl);
+  }
+
+  .sh-row {
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .sh-stats {
+    width: 100%;
+    justify-content: space-around;
+    padding-top: var(--space-xs);
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .sh-title {
+    font-size: 18px;
+  }
+}

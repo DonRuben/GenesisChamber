@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import Stage1 from './Stage1';
 import Stage2 from './Stage2';
 import Stage3 from './Stage3';
+import { IconSoul } from './Icons';
 import './ChatInterface.css';
 
 export default function ChatInterface({
@@ -41,8 +42,9 @@ export default function ChatInterface({
     return (
       <div className="chat-interface">
         <div className="empty-state">
-          <h2>Welcome to LLM Council</h2>
-          <p>Create a new conversation to get started</p>
+          <IconSoul size={36} className="empty-state-icon" />
+          <h2>LLM Council</h2>
+          <p>Ask a question and receive responses from multiple AI models, anonymized rankings, and a synthesized answer.</p>
         </div>
       </div>
     );
@@ -53,6 +55,7 @@ export default function ChatInterface({
       <div className="messages-container">
         {conversation.messages.length === 0 ? (
           <div className="empty-state">
+            <IconSoul size={36} className="empty-state-icon" />
             <h2>Start a conversation</h2>
             <p>Ask a question to consult the LLM Council</p>
           </div>

@@ -1,3 +1,4 @@
+import { IconPlus, IconMessage, IconSpark } from './Icons';
 import './Sidebar.css';
 
 const STATUS_COLORS = {
@@ -55,11 +56,11 @@ export default function Sidebar({
       <div className="sidebar-action">
         {mode === 'council' ? (
           <button className="sidebar-new-btn" onClick={onNewConversation}>
-            + New Conversation
+            <IconPlus size={14} /> New Conversation
           </button>
         ) : (
           <button className="sidebar-new-btn" onClick={onNewSimulation}>
-            + New Simulation
+            <IconPlus size={14} /> New Simulation
           </button>
         )}
       </div>
@@ -68,7 +69,10 @@ export default function Sidebar({
       <div className="sidebar-list">
         {mode === 'council' ? (
           conversations.length === 0 ? (
-            <div className="sidebar-empty">No conversations yet</div>
+            <div className="sidebar-empty">
+              <IconMessage size={20} className="sidebar-empty-icon" />
+              <span>No conversations yet</span>
+            </div>
           ) : (
             conversations.map((conv) => (
               <div
@@ -83,7 +87,10 @@ export default function Sidebar({
           )
         ) : (
           (!simulations || simulations.length === 0) ? (
-            <div className="sidebar-empty">No simulations yet</div>
+            <div className="sidebar-empty">
+              <IconSpark size={20} className="sidebar-empty-icon" />
+              <span>No simulations yet</span>
+            </div>
           ) : (
             simulations.map((sim) => (
               <div
