@@ -11,7 +11,8 @@
   height: 100vh;
   z-index: var(--z-sidebar);
   flex-shrink: 0;
-  transition: transform var(--transition-medium);
+  transition: width var(--transition-medium), transform var(--transition-medium);
+  overflow: hidden;
 }
 
 .sidebar-hidden {
@@ -20,6 +21,62 @@
   top: 0;
   left: 0;
   bottom: 0;
+}
+
+/* ── Collapsed State ── */
+.sidebar.collapsed {
+  width: var(--sidebar-collapsed);
+}
+
+.sidebar.collapsed .sidebar-brand {
+  padding: var(--space-sm);
+  text-align: center;
+}
+
+.sidebar.collapsed .sidebar-title {
+  font-size: 14px;
+}
+
+.sidebar.collapsed .sidebar-title span,
+.sidebar.collapsed .sidebar-subtitle {
+  display: none;
+}
+
+.sidebar.collapsed .mode-toggle {
+  flex-direction: column;
+  margin: var(--space-xs) 4px;
+}
+
+.sidebar.collapsed .mode-toggle-label,
+.sidebar.collapsed .mode-toggle-desc {
+  display: none;
+}
+
+.sidebar.collapsed .mode-toggle-btn {
+  padding: 8px;
+  justify-content: center;
+}
+
+.sidebar.collapsed .sidebar-new-label {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-new-btn {
+  padding: 10px;
+  justify-content: center;
+}
+
+.sidebar.collapsed .sidebar-item-title,
+.sidebar.collapsed .sidebar-item-meta {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-empty span {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-footer-text {
+  display: none;
 }
 
 /* ── Brand ── */
@@ -35,6 +92,7 @@
   color: var(--op-flame);
   letter-spacing: 0.02em;
   margin: 0;
+  white-space: nowrap;
 }
 
 .sidebar-title span {
@@ -62,7 +120,7 @@
 
 .mode-toggle-btn {
   flex: 1;
-  padding: 7px 12px;
+  padding: 8px 10px;
   border: none;
   border-radius: 5px;
   font-family: var(--font-data);
@@ -72,6 +130,9 @@
   transition: all var(--transition-fast);
   background: transparent;
   color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .mode-toggle-btn.active {
@@ -81,6 +142,21 @@
 
 .mode-toggle-btn:hover:not(.active) {
   color: var(--text-secondary);
+}
+
+.mode-toggle-label {
+  font-weight: 700;
+}
+
+.mode-toggle-desc {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.mode-toggle-btn.active .mode-toggle-desc {
+  color: rgba(0, 217, 255, 0.6);
 }
 
 /* ── Action Button ── */
@@ -197,7 +273,9 @@
 .sidebar-footer {
   padding: var(--space-sm);
   border-top: 1px solid var(--border-subtle);
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .sidebar-footer-text {
@@ -206,6 +284,24 @@
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+.sidebar-collapse-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.sidebar-collapse-btn:hover {
+  background: var(--surface-2);
+  color: var(--text-primary);
 }
 
 /* ── Responsive ── */
@@ -220,5 +316,9 @@
 
   .sidebar-hidden {
     transform: translateX(-100%);
+  }
+
+  .sidebar-collapse-btn {
+    display: none;
   }
 }

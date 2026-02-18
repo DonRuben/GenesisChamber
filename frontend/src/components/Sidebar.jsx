@@ -1,4 +1,4 @@
-import { IconPlus, IconMessage, IconSpark } from './Icons';
+import { IconPlus, IconMessage, IconSpark, IconCrystalBall, IconCollapse, IconExpand } from './Icons';
 import './Sidebar.css';
 
 const STATUS_COLORS = {
@@ -27,9 +27,11 @@ export default function Sidebar({
   onSelectSimulation,
   onNewSimulation,
   isOpen,
+  collapsed,
+  onToggleCollapse,
 }) {
   return (
-    <aside className={`sidebar ${isOpen ? '' : 'sidebar-hidden'}`}>
+    <aside className={`sidebar ${isOpen ? '' : 'sidebar-hidden'} ${collapsed ? 'collapsed' : ''}`}>
       {/* Brand */}
       <div className="sidebar-brand">
         <h1 className="sidebar-title">Genesis<span>Chamber</span></h1>
@@ -41,14 +43,20 @@ export default function Sidebar({
         <button
           className={`mode-toggle-btn ${mode === 'council' ? 'active' : ''}`}
           onClick={() => onModeChange('council')}
+          title="Council — Q&A Mode"
         >
-          Council
+          <IconMessage size={14} />
+          <span className="mode-toggle-label">Council</span>
+          <span className="mode-toggle-desc">Q&A Mode</span>
         </button>
         <button
           className={`mode-toggle-btn ${mode === 'genesis' ? 'active' : ''}`}
           onClick={() => onModeChange('genesis')}
+          title="Genesis — Simulation"
         >
-          Genesis
+          <IconCrystalBall size={14} />
+          <span className="mode-toggle-label">Genesis</span>
+          <span className="mode-toggle-desc">Simulation</span>
         </button>
       </div>
 
@@ -56,11 +64,11 @@ export default function Sidebar({
       <div className="sidebar-action">
         {mode === 'council' ? (
           <button className="sidebar-new-btn" onClick={onNewConversation}>
-            <IconPlus size={14} /> New Conversation
+            <IconPlus size={14} /> <span className="sidebar-new-label">New Conversation</span>
           </button>
         ) : (
           <button className="sidebar-new-btn" onClick={onNewSimulation}>
-            <IconPlus size={14} /> New Simulation
+            <IconPlus size={14} /> <span className="sidebar-new-label">New Simulation</span>
           </button>
         )}
       </div>
@@ -116,9 +124,18 @@ export default function Sidebar({
         )}
       </div>
 
-      {/* Footer */}
+      {/* Footer with collapse toggle */}
       <div className="sidebar-footer">
         <span className="sidebar-footer-text">OmniPresent Group</span>
+        {onToggleCollapse && (
+          <button
+            className="sidebar-collapse-btn"
+            onClick={onToggleCollapse}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {collapsed ? <IconExpand size={16} /> : <IconCollapse size={16} />}
+          </button>
+        )}
       </div>
     </aside>
   );

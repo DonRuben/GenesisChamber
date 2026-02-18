@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatInterface from './components/ChatInterface';
 import SimulationDashboard from './components/SimulationDashboard';
@@ -26,6 +26,7 @@ function App() {
 
   // Responsive sidebar
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -37,6 +38,30 @@ function App() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Keyboard shortcuts
+  const handleKeyboardShortcuts = useCallback((e) => {
+    const mod = e.metaKey || e.ctrlKey;
+    if (!mod) return;
+
+    if (e.key === 'n') {
+      e.preventDefault();
+      if (mode === 'council') handleNewConversation();
+      else handleNewSimulation();
+    } else if (e.key === '[') {
+      e.preventDefault();
+      setSidebarCollapsed(prev => !prev);
+    } else if (e.key === 'k') {
+      e.preventDefault();
+      const input = document.querySelector('.message-input');
+      if (input) input.focus();
+    }
+  }, [mode]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyboardShortcuts);
+    return () => document.removeEventListener('keydown', handleKeyboardShortcuts);
+  }, [handleKeyboardShortcuts]);
 
   // Health check with retry (Render free tier cold starts take 30-60s)
   useEffect(() => {
@@ -288,6 +313,8 @@ function App() {
         onSelectSimulation={handleSelectSimulation}
         onNewSimulation={handleNewSimulation}
         isOpen={!isMobile || sidebarOpen}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(prev => !prev)}
       />
 
       <main className="app-content">

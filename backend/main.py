@@ -516,6 +516,59 @@ async def quick_start_simulation(
     }
 
 
+# === CONFIG ENDPOINTS ===
+
+
+@app.get("/api/config/models")
+async def get_available_models():
+    """Return available models grouped by tier."""
+    import json
+    roster_path = Path("genesis-chamber-builder/config/model-roster.json")
+    if roster_path.exists():
+        with open(roster_path) as f:
+            return json.load(f)
+    # Fallback minimal roster
+    return {
+        "recommended_models": {
+            "tier_1_premium": {
+                "description": "Best quality, highest cost",
+                "models": [
+                    {"id": "anthropic/claude-opus-4-6", "cost_per_1m_tokens": 15.0, "context": "200K", "best_for": "Deepest reasoning, synthesis"},
+                    {"id": "openai/gpt-5.2", "cost_per_1m_tokens": 15.0, "context": "128K", "best_for": "Creative reasoning"},
+                    {"id": "google/gemini-3-pro", "cost_per_1m_tokens": 7.0, "context": "2M", "best_for": "Long context"}
+                ]
+            },
+            "tier_2_balanced": {
+                "description": "Great quality, reasonable cost",
+                "models": [
+                    {"id": "anthropic/claude-sonnet-4.5", "cost_per_1m_tokens": 3.0, "context": "200K", "best_for": "Detail, precision"},
+                    {"id": "google/gemini-2.5-pro", "cost_per_1m_tokens": 2.5, "context": "1M", "best_for": "Research-heavy"},
+                    {"id": "x-ai/grok-4", "cost_per_1m_tokens": 3.0, "context": "128K", "best_for": "Bold, provocative"}
+                ]
+            },
+            "tier_3_efficient": {
+                "description": "Good quality, low cost",
+                "models": [
+                    {"id": "meta-llama/llama-4-maverick", "cost_per_1m_tokens": 0.5, "context": "128K", "best_for": "Direct, efficient"},
+                    {"id": "anthropic/claude-haiku-4.5", "cost_per_1m_tokens": 0.25, "context": "200K", "best_for": "Quick, testing"},
+                    {"id": "google/gemini-2.5-flash", "cost_per_1m_tokens": 0.15, "context": "1M", "best_for": "Bulk operations"}
+                ]
+            }
+        }
+    }
+
+
+@app.get("/api/config/participants")
+async def get_default_participants():
+    """Return default participant, moderator, and evaluator configurations."""
+    from .config import DEFAULT_PARTICIPANTS, DEFAULT_MODERATOR, DEFAULT_EVALUATOR
+    return {
+        "participants": DEFAULT_PARTICIPANTS,
+        "moderator": DEFAULT_MODERATOR,
+        "evaluator": DEFAULT_EVALUATOR,
+    }
+
+
 # === OUTPUT & MEDIA ENDPOINTS ===
 
 
