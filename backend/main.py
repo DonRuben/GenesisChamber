@@ -28,18 +28,11 @@ from .video_generator import VideoGenerator, VIDEO_QUALITY_TIERS
 app = FastAPI(title="LLM Council + Genesis Chamber API")
 simulation_store = SimulationStore()
 
-# CORS — required origins always allowed; ALLOWED_ORIGINS env var is additive (not a replacement)
-_required_origins = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "https://genesis-chamber-two.vercel.app",
-]
-_extra_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
-_allowed_origins = _required_origins + _extra_origins
+# CORS — allow all origins so frontend can reach backend from any deployment
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_allowed_origins,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
