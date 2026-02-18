@@ -385,6 +385,30 @@ export const IconExpand = (props) => (
   </Icon>
 );
 
+// ─── Upload & Clipboard ──────────────────────────────────────────────────────
+
+export const IconUpload = (props) => (
+  <Icon {...props}>
+    <line x1="10" y1="14" x2="10" y2="4" />
+    <polyline points="6 8 10 4 14 8" />
+    <path d="M4 14v2a1 1 0 001 1h10a1 1 0 001-1v-2" />
+  </Icon>
+);
+
+export const IconCopy = (props) => (
+  <Icon {...props}>
+    <rect x="7" y="7" width="9" height="10" rx="1" />
+    <path d="M4 13V5a1 1 0 011-1h8" />
+  </Icon>
+);
+
+export const IconColumns = (props) => (
+  <Icon {...props}>
+    <rect x="3" y="3" width="6" height="14" rx="1" />
+    <rect x="11" y="3" width="6" height="14" rx="1" />
+  </Icon>
+);
+
 // ─── Convenience lookup object ──────────────────────────────────────────────
 
 export const Icons = {
@@ -440,4 +464,7 @@ export const Icons = {
   IconArrowRight,
   IconCollapse,
   IconExpand,
+  IconUpload,
+  IconCopy,
+  IconColumns,
 };
