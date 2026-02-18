@@ -1,0 +1,137 @@
+/* =============================================
+   CONFIG SUMMARY — Launch sidebar panel
+   ============================================= */
+
+.config-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  flex: 1;
+}
+
+.config-summary-heading {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-xs) 0;
+  letter-spacing: 0.02em;
+}
+
+.config-summary-section {
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.config-summary-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.config-summary-label {
+  font-family: var(--font-data);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.config-summary-count {
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--surface-2);
+  color: var(--gc-cyan);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+}
+
+.config-summary-value {
+  font-family: var(--font-data);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.config-summary-detail {
+  font-family: var(--font-data);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.config-summary-empty {
+  font-family: var(--font-data);
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: var(--space-xs) 0;
+}
+
+/* Participant list */
+.config-summary-participants {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.config-summary-participant {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.config-summary-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: transparent;
+}
+
+.config-summary-participant-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.config-summary-name {
+  font-family: var(--font-data);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.config-summary-model {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Brief preview */
+.config-summary-brief {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* Cost */
+.config-summary-cost {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gc-gold);
+}

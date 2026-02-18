@@ -139,6 +139,18 @@ export const api = {
     return response.json();
   },
 
+  async getAvailableModels() {
+    const response = await fetch(`${API_BASE}/api/config/models`);
+    if (!response.ok) throw new Error('Failed to get available models');
+    return response.json();
+  },
+
+  async getDefaultParticipants() {
+    const response = await fetch(`${API_BASE}/api/config/participants`);
+    if (!response.ok) throw new Error('Failed to get default participants');
+    return response.json();
+  },
+
   async listSimulations() {
     const response = await fetch(`${API_BASE}/api/simulations`);
     if (!response.ok) throw new Error('Failed to list simulations');

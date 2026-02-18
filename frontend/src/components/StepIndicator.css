@@ -1,0 +1,106 @@
+/* =============================================
+   STEP INDICATOR — Launcher workflow steps
+   ============================================= */
+
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: var(--space-sm) 0;
+  margin-bottom: var(--space-md);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--surface-0);
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-family: var(--font-data);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 150ms ease;
+  position: relative;
+  white-space: nowrap;
+}
+
+.step-item:hover {
+  color: var(--text-secondary);
+}
+
+.step-item.active {
+  color: var(--gc-cyan);
+}
+
+.step-item.completed {
+  color: var(--status-success);
+}
+
+.step-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  border: 2px solid var(--border-default);
+  transition: all 150ms ease;
+  flex-shrink: 0;
+}
+
+.step-item.active .step-num {
+  border-color: var(--gc-cyan);
+  background: rgba(0, 217, 255, 0.1);
+  color: var(--gc-cyan);
+}
+
+.step-item.completed .step-num {
+  border-color: var(--status-success);
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--status-success);
+}
+
+.step-label {
+  font-weight: 600;
+}
+
+.step-connector {
+  display: block;
+  width: 32px;
+  height: 2px;
+  background: var(--border-subtle);
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.step-item.completed .step-connector {
+  background: var(--status-success);
+}
+
+.step-item.active .step-connector {
+  background: var(--gc-cyan);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .step-label {
+    display: none;
+  }
+
+  .step-item {
+    padding: 8px 8px;
+  }
+
+  .step-connector {
+    width: 20px;
+  }
+}

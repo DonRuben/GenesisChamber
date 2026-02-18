@@ -335,6 +335,56 @@ export const IconSparkle = ({ size, className, ...props }) => (
   </Icon>
 );
 
+// ─── Additional Navigation & UI (6) ────────────────────────────────────────
+
+export const IconChevronLeft = (props) => (
+  <Icon {...props}><polyline points="12 15 7 10 12 5" /></Icon>
+);
+
+export const IconChip = (props) => (
+  <Icon {...props}>
+    <rect x="5" y="5" width="10" height="10" rx="1.5" />
+    <line x1="5" y1="8" x2="3" y2="8" />
+    <line x1="5" y1="12" x2="3" y2="12" />
+    <line x1="15" y1="8" x2="17" y2="8" />
+    <line x1="15" y1="12" x2="17" y2="12" />
+    <line x1="8" y1="5" x2="8" y2="3" />
+    <line x1="12" y1="5" x2="12" y2="3" />
+    <line x1="8" y1="15" x2="8" y2="17" />
+    <line x1="12" y1="15" x2="12" y2="17" />
+  </Icon>
+);
+
+export const IconSend = (props) => (
+  <Icon {...props}>
+    <line x1="4" y1="10" x2="16" y2="4" />
+    <line x1="16" y1="4" x2="10" y2="16" />
+    <line x1="10" y1="16" x2="8" y2="11" />
+    <line x1="8" y1="11" x2="4" y2="10" />
+  </Icon>
+);
+
+export const IconArrowRight = (props) => (
+  <Icon {...props}>
+    <line x1="4" y1="10" x2="16" y2="10" />
+    <polyline points="11 5 16 10 11 15" />
+  </Icon>
+);
+
+export const IconCollapse = (props) => (
+  <Icon {...props}>
+    <polyline points="11 5 6 10 11 15" />
+    <polyline points="15 5 10 10 15 15" />
+  </Icon>
+);
+
+export const IconExpand = (props) => (
+  <Icon {...props}>
+    <polyline points="5 5 10 10 5 15" />
+    <polyline points="9 5 14 10 9 15" />
+  </Icon>
+);
+
 // ─── Convenience lookup object ──────────────────────────────────────────────
 
 export const Icons = {
@@ -383,4 +433,11 @@ export const Icons = {
   IconCrystalBall,
   IconFactory,
   IconSparkle,
+  // Additional Navigation & UI
+  IconChevronLeft,
+  IconChip,
+  IconSend,
+  IconArrowRight,
+  IconCollapse,
+  IconExpand,
 };

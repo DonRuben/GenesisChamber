@@ -13,9 +13,10 @@
 .messages-container {
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
 }
 
+/* ── Empty State ── */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -24,21 +25,73 @@
   height: 100%;
   color: var(--text-muted);
   text-align: center;
+  padding: var(--space-xl);
+}
+
+.empty-state-icon {
+  opacity: 0.5;
+  margin-bottom: var(--space-sm);
 }
 
 .empty-state h2 {
   margin: 0 0 var(--space-xs) 0;
   font-family: var(--font-display);
-  font-size: 24px;
+  font-size: 28px;
   color: var(--gc-cyan);
 }
 
 .empty-state p {
-  margin: 0;
+  margin: 0 0 var(--space-lg) 0;
   font-family: var(--font-body);
   font-size: 16px;
+  max-width: 500px;
+  line-height: 1.5;
 }
 
+/* ── Quick Start Cards ── */
+.quick-start-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-sm);
+  max-width: 520px;
+  width: 100%;
+}
+
+.quick-start-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.quick-start-card:hover {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.quick-start-label {
+  font-family: var(--font-data);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gc-cyan);
+}
+
+.quick-start-desc {
+  font-family: var(--font-data);
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* ── Messages ── */
 .message-group {
   margin-bottom: var(--space-lg);
 }
@@ -109,18 +162,20 @@
   }
 }
 
+/* ── Input Form — Always visible at bottom ── */
 .input-form {
   display: flex;
   align-items: flex-end;
   gap: 12px;
-  padding: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
   border-top: 1px solid var(--border-subtle);
   background: var(--surface-1);
+  flex-shrink: 0;
 }
 
 .message-input {
   flex: 1;
-  padding: 14px;
+  padding: 14px 16px;
   background: var(--surface-2);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
@@ -130,8 +185,8 @@
   line-height: 1.5;
   outline: none;
   resize: vertical;
-  min-height: 80px;
-  max-height: 300px;
+  min-height: 52px;
+  max-height: 200px;
   transition: border-color var(--transition-fast);
 }
 
@@ -151,7 +206,7 @@
 }
 
 .send-button {
-  padding: 14px 28px;
+  padding: 14px 20px;
   background: var(--gc-cyan);
   border: 1px solid var(--gc-cyan);
   border-radius: var(--radius-md);
@@ -162,12 +217,15 @@
   cursor: pointer;
   transition: all var(--transition-fast);
   white-space: nowrap;
-  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .send-button:hover:not(:disabled) {
   background: #33e1ff;
   border-color: #33e1ff;
+  transform: translateY(-1px);
 }
 
 .send-button:disabled {
@@ -176,4 +234,23 @@
   background: var(--surface-2);
   border-color: var(--border-subtle);
   color: var(--text-muted);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .messages-container {
+    padding: var(--space-md);
+  }
+
+  .input-form {
+    padding: var(--space-sm);
+  }
+
+  .quick-start-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .empty-state h2 {
+    font-size: 22px;
+  }
 }
