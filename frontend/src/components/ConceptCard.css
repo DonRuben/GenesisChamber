@@ -1,0 +1,145 @@
+/* =============================================
+   CONCEPT CARD
+   ============================================= */
+
+.cc-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-sm);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+  animation: slideUp var(--transition-medium);
+}
+
+.cc-card:hover {
+  border-color: var(--border-default);
+}
+
+.cc-indicator {
+  width: 4px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.cc-body {
+  padding: var(--space-md);
+  padding-left: calc(var(--space-md) + 8px);
+}
+
+/* ── Header ── */
+.cc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xs);
+}
+
+.cc-header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.cc-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.cc-name {
+  font-family: var(--font-data);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.cc-persona {
+  font-family: var(--font-data);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.cc-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+.cc-score {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+/* ── Content ── */
+.cc-tagline {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-bottom: var(--space-xs);
+}
+
+.cc-idea {
+  font-family: var(--font-data);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+}
+
+/* ── Details ── */
+.cc-details {
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--border-subtle);
+  animation: fadeIn var(--transition-fast);
+}
+
+.cc-detail-row {
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs) var(--space-sm);
+  margin-bottom: var(--space-xs);
+}
+
+.cc-detail-label {
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gc-cyan);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.cc-detail-text {
+  font-family: var(--font-data);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.cc-evolution {
+  font-family: var(--font-caption);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--text-muted);
+  margin-top: var(--space-xs);
+}

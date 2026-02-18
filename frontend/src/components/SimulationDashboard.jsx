@@ -8,15 +8,22 @@ import ModeratorDirection from './ModeratorDirection';
 import QualityGate from './QualityGate';
 import TranscriptViewer from './TranscriptViewer';
 import PresentationGallery from './PresentationGallery';
+import './SimulationDashboard.css';
+
+const VIEW_TABS = [
+  { key: 'concepts', label: 'Concepts', icon: '\u25C6' },
+  { key: 'gallery', label: 'Gallery', icon: '\u25A6' },
+  { key: 'critiques', label: 'Critiques', icon: '\u{1F441}' },
+  { key: 'direction', label: 'Direction', icon: '\u{1F9ED}' },
+  { key: 'transcript', label: 'Transcript', icon: '\u{1F4DC}' },
+];
 
 export default function SimulationDashboard({ simulations, currentSimId, onSelectSim, onRefreshList }) {
   const [simState, setSimState] = useState(null);
-  const [activeView, setActiveView] = useState('concepts'); // concepts | critiques | direction | transcript
+  const [activeView, setActiveView] = useState('concepts');
   const [selectedRound, setSelectedRound] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [videoStatus, setVideoStatus] = useState(null); // null | 'generating' | 'complete'
+  const [videoStatus, setVideoStatus] = useState(null);
 
-  // Load simulation state when selected
   useEffect(() => {
     if (currentSimId) {
       loadSimState(currentSimId);
@@ -25,14 +32,11 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
     }
   }, [currentSimId]);
 
-  // Poll for updates if simulation is running
   useEffect(() => {
     if (!simState || simState.status === 'completed' || simState.status === 'failed') return;
-
     const interval = setInterval(() => {
       if (currentSimId) loadSimState(currentSimId);
     }, 5000);
-
     return () => clearInterval(interval);
   }, [simState?.status, currentSimId]);
 
@@ -71,68 +75,84 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
     }
   };
 
-  // Show launcher if no simulation selected
   if (!currentSimId) {
     return <SimulationLauncher onStart={handleStart} />;
   }
 
   if (!simState) {
     return (
-      <div className="genesis-dashboard">
-        <div className="genesis-empty">
-          <h3>Loading simulation...</h3>
+      <div className="dashboard">
+        <div className="dashboard-loading">
+          <div className="gc-spinner" />
+          <span>Loading simulation...</span>
         </div>
       </div>
     );
   }
 
-  // Get data for selected round
-  const roundData = simState.rounds?.find(r => r.round_num === selectedRound);
   const activeConcepts = simState.concepts?.active || [];
   const eliminatedConcepts = simState.concepts?.eliminated || [];
   const allConcepts = [...activeConcepts, ...eliminatedConcepts];
-
-  // Get critiques and direction from transcript
-  const roundEntries = simState.transcript_entries?.filter(e => e.round === selectedRound) || [];
+  const roundData = simState.rounds?.find(r => r.round_num === selectedRound);
   const pendingGate = simState.quality_gates?.find(g => g.status === 'pending');
 
+  // Extract critiques from round data
+  const extractCritiques = () => {
+    if (!roundData?.stages) return [];
+    const critiqueStage = roundData.stages[2];
+    if (critiqueStage?.outputs) {
+      return Array.isArray(critiqueStage.outputs) ? critiqueStage.outputs : [];
+    }
+    return simState.transcript_entries
+      ?.filter(e => e.round === selectedRound && e.stage_name === 'critique')
+      ?.flatMap(e => e.critiques || []) || [];
+  };
+
+  const statusClass = simState.status === 'running' ? 'running'
+    : simState.status === 'completed' ? 'completed'
+    : simState.status === 'paused_at_gate' ? 'paused'
+    : 'failed';
+
   return (
-    <div className="genesis-dashboard">
-      {/* Header */}
-      <div className="genesis-dashboard-header">
-        <div>
-          <h2>{simState.config?.name || 'Simulation'}</h2>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-            <span className={`status-badge ${simState.status === 'running' ? 'running' : simState.status === 'completed' ? 'completed' : simState.status === 'paused_at_gate' ? 'paused' : 'failed'}`}>
-              {simState.status}
+    <div className="dashboard">
+      {/* Command Center Header */}
+      <header className="dashboard-header">
+        <div className="dashboard-header-left">
+          <h2 className="dashboard-title">{simState.config?.name || 'Simulation'}</h2>
+          <div className="dashboard-meta">
+            <span className={`gc-status gc-status-${statusClass}`}>
+              {simState.status === 'paused_at_gate' ? 'Quality Gate' : simState.status}
             </span>
-            <span style={{ fontSize: 13, color: 'var(--text-dim)' }}>
-              Round {simState.current_round}/{simState.config?.rounds} | Stage {simState.current_stage_name || '—'}
+            <span className="dashboard-breadcrumb">
+              Round {simState.current_round}/{simState.config?.rounds}
+              {simState.current_stage_name && (
+                <> &rsaquo; {simState.current_stage_name}</>
+              )}
             </span>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <span style={{ fontSize: 13, color: 'var(--text-dim)' }}>
+        <div className="dashboard-header-right">
+          <span className="dashboard-concept-count">
             {activeConcepts.length} active / {eliminatedConcepts.length} eliminated
           </span>
           {simState.status === 'completed' && (
-            <>
+            <div className="dashboard-actions">
               <button
-                className="genesis-btn genesis-btn-secondary"
-                style={{ padding: '6px 14px', fontSize: 12 }}
-                onClick={() => window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:8001'}/api/simulation/${currentSimId}/presentation`, '_blank')}
+                className="gc-btn gc-btn-secondary"
+                onClick={() => window.open(
+                  `${import.meta.env.VITE_API_URL || 'http://localhost:8001'}/api/simulation/${currentSimId}/presentation`,
+                  '_blank'
+                )}
               >
-                Download Presentation
+                Presentation
               </button>
               <button
-                className="genesis-btn genesis-btn-secondary"
-                style={{ padding: '6px 14px', fontSize: 12 }}
+                className="gc-btn gc-btn-secondary"
                 disabled={videoStatus === 'generating'}
                 onClick={async () => {
                   setVideoStatus('generating');
                   try {
                     await api.generateVideos(currentSimId, 'standard');
-                    // Poll for completion
                     const poll = setInterval(async () => {
                       const result = await api.getVideos(currentSimId);
                       if (result.status === 'complete') {
@@ -146,52 +166,47 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
                   }
                 }}
               >
-                {videoStatus === 'generating' ? 'Generating Videos...' : videoStatus === 'complete' ? 'Videos Ready' : 'Generate Videos'}
+                {videoStatus === 'generating' ? 'Generating...' : videoStatus === 'complete' ? 'Videos Ready' : 'Videos'}
               </button>
-            </>
+            </div>
           )}
         </div>
-      </div>
+      </header>
 
-      {/* Round Progress */}
+      {/* Round Timeline */}
       <RoundProgress
         rounds={simState.rounds}
         currentRound={simState.current_round}
         currentStage={simState.current_stage}
         totalRounds={simState.config?.rounds || 3}
         stagesPerRound={simState.config?.stages_per_round || 3}
+        selectedRound={selectedRound}
         onSelectRound={setSelectedRound}
       />
 
-      {/* View tabs */}
-      <div style={{ display: 'flex', gap: 4, padding: '8px 24px', borderBottom: '1px solid var(--border)' }}>
-        {[
-          { key: 'concepts', label: 'Concepts' },
-          { key: 'gallery', label: 'Gallery' },
-          { key: 'critiques', label: 'Critiques' },
-          { key: 'direction', label: 'Direction' },
-          { key: 'transcript', label: 'Transcript' },
-        ].map(tab => (
+      {/* View Tabs */}
+      <nav className="dashboard-tabs">
+        {VIEW_TABS.map(tab => (
           <button
             key={tab.key}
-            className={`genesis-btn ${activeView === tab.key ? 'genesis-btn-primary' : 'genesis-btn-secondary'}`}
-            style={{ padding: '6px 16px', fontSize: 12 }}
+            className={`dashboard-tab ${activeView === tab.key ? 'active' : ''}`}
             onClick={() => setActiveView(tab.key)}
           >
+            <span className="dashboard-tab-icon">{tab.icon}</span>
             {tab.label}
           </button>
         ))}
-      </div>
+      </nav>
 
       {/* Content */}
-      <div className="genesis-dashboard-content">
+      <div className="dashboard-content">
         {activeView === 'concepts' && (
-          <div>
-            <h3 style={{ color: 'var(--gold)', fontSize: 17, fontWeight: 600, marginBottom: 16 }}>
-              Active Concepts ({activeConcepts.length})
+          <div className="dashboard-concepts">
+            <h3 className="dashboard-section-title">
+              Active Concepts <span className="dashboard-section-count">{activeConcepts.length}</span>
             </h3>
             {activeConcepts.length === 0 ? (
-              <div style={{ color: 'var(--text-dim)', textAlign: 'center', padding: 24 }}>
+              <div className="dashboard-empty">
                 {simState.status === 'running' ? 'Waiting for concepts...' : 'No active concepts'}
               </div>
             ) : (
@@ -202,8 +217,8 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
 
             {eliminatedConcepts.length > 0 && (
               <>
-                <h3 style={{ color: 'var(--red)', fontSize: 17, fontWeight: 600, marginTop: 24, marginBottom: 16 }}>
-                  Eliminated ({eliminatedConcepts.length})
+                <h3 className="dashboard-section-title dashboard-section-eliminated">
+                  Eliminated <span className="dashboard-section-count">{eliminatedConcepts.length}</span>
                 </h3>
                 {eliminatedConcepts.map(concept => (
                   <ConceptCard key={concept.id} concept={concept} />
@@ -214,26 +229,23 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
         )}
 
         {activeView === 'gallery' && (
-          <PresentationGallery
-            concepts={simState.concepts}
-            rounds={simState.rounds}
-          />
+          <PresentationGallery concepts={simState.concepts} rounds={simState.rounds} />
         )}
 
         {activeView === 'critiques' && (
-          <CritiquePanel critiques={[]} concepts={allConcepts} />
+          <CritiquePanel critiques={extractCritiques()} concepts={allConcepts} />
         )}
 
         {activeView === 'direction' && (
-          <div>
+          <div className="dashboard-direction">
             {simState.rounds?.map(r => {
               const synthStage = r.stages?.[3];
               if (!synthStage?.outputs) return null;
               return (
-                <div key={r.round_num} style={{ marginBottom: 24 }}>
-                  <h4 style={{ color: 'var(--text-dim)', fontSize: 12, textTransform: 'uppercase', marginBottom: 8 }}>
+                <div key={r.round_num} className="dashboard-direction-round">
+                  <div className="dashboard-direction-label">
                     Round {r.round_num} — {r.mode}
-                  </h4>
+                  </div>
                   <ModeratorDirection direction={synthStage.outputs} />
                 </div>
               );
@@ -246,7 +258,7 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
         )}
       </div>
 
-      {/* Quality Gate Modal */}
+      {/* Quality Gate */}
       {pendingGate && (
         <QualityGate
           gate={pendingGate}

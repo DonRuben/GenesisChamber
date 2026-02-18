@@ -1,0 +1,147 @@
+/* =============================================
+   MODERATOR DIRECTION
+   ============================================= */
+
+.md-panel {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-left: 4px solid var(--gc-gold);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  animation: fadeIn var(--transition-medium);
+}
+
+.md-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+}
+
+.md-moderator {
+  font-family: var(--font-data);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ── Sections ── */
+.md-section {
+  margin-bottom: var(--space-md);
+}
+
+.md-section-label {
+  font-family: var(--font-data);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--space-xs);
+}
+
+.md-label-surviving {
+  color: var(--status-success);
+}
+
+.md-label-eliminated {
+  color: var(--status-error);
+}
+
+.md-label-constraints {
+  color: var(--gc-cyan);
+}
+
+.md-label-direction {
+  color: var(--gc-gold);
+}
+
+/* ── Concept rows ── */
+.md-concept-row {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-family: var(--font-data);
+  font-size: 14px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+}
+
+.md-concept-row:last-child {
+  border-bottom: none;
+}
+
+.md-concept-check {
+  color: var(--status-success);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.md-concept-x {
+  color: var(--status-error);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.md-concept-name {
+  font-weight: 600;
+}
+
+.md-concept-struck {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.md-concept-reason {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ── Constraints ── */
+.md-constraints-list {
+  padding-left: var(--space-md);
+  margin: 0;
+}
+
+.md-constraints-list li {
+  font-family: var(--font-data);
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  line-height: 1.5;
+}
+
+/* ── Direction box ── */
+.md-direction-box {
+  margin-top: var(--space-md);
+  padding: var(--space-md);
+  background: rgba(255, 184, 0, 0.06);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 184, 0, 0.15);
+}
+
+.md-direction-text {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* ── One More Thing ── */
+.md-omt-box {
+  margin-top: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: rgba(0, 217, 255, 0.06);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(0, 217, 255, 0.2);
+  font-family: var(--font-caption);
+  font-style: italic;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.md-omt-label {
+  color: var(--gc-cyan);
+  font-style: normal;
+}

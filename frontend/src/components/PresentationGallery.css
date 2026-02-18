@@ -1,0 +1,77 @@
+/* =============================================
+   PRESENTATION GALLERY
+   ============================================= */
+
+.pg-container {
+  animation: fadeIn var(--transition-medium);
+}
+
+/* ── Filters ── */
+.pg-filters {
+  display: flex;
+  gap: var(--space-md);
+  margin-bottom: var(--space-sm);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.pg-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pg-filter-label {
+  font-family: var(--font-data);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-right: var(--space-xs);
+}
+
+.pg-filter-btn {
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+  text-transform: capitalize;
+}
+
+.pg-filter-active {
+  background: rgba(0, 217, 255, 0.1) !important;
+  border-color: var(--gc-cyan) !important;
+  color: var(--gc-cyan) !important;
+}
+
+/* ── Count ── */
+.pg-count {
+  font-family: var(--font-data);
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-md);
+}
+
+/* ── Grid ── */
+.pg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-sm);
+}
+
+.pg-empty {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--text-muted);
+  font-family: var(--font-data);
+}
+
+@media (max-width: 768px) {
+  .pg-filters {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pg-grid {
+    grid-template-columns: 1fr;
+  }
+}

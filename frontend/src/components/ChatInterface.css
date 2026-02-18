@@ -1,17 +1,19 @@
-/* === ChatInterface — supports both light and genesis dark mode === */
+/* =============================================
+   CHAT INTERFACE — Dark theme only
+   ============================================= */
 
 .chat-interface {
   flex: 1;
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #ffffff;
+  background: var(--surface-0);
 }
 
 .messages-container {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
+  padding: var(--space-md);
 }
 
 .empty-state {
@@ -20,45 +22,48 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #666;
+  color: var(--text-muted);
   text-align: center;
 }
 
 .empty-state h2 {
-  margin: 0 0 8px 0;
+  margin: 0 0 var(--space-xs) 0;
+  font-family: var(--font-display);
   font-size: 24px;
-  color: #333;
+  color: var(--gc-cyan);
 }
 
 .empty-state p {
   margin: 0;
+  font-family: var(--font-body);
   font-size: 16px;
 }
 
 .message-group {
-  margin-bottom: 32px;
+  margin-bottom: var(--space-lg);
 }
 
 .user-message,
 .assistant-message {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-md);
 }
 
 .message-label {
+  font-family: var(--font-data);
   font-size: 12px;
   font-weight: 600;
-  color: #666;
-  margin-bottom: 8px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-xs);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .user-message .message-content {
-  background: #f0f7ff;
-  padding: 16px;
-  border-radius: 8px;
-  border: 1px solid #d0e7ff;
-  color: #333;
+  background: rgba(0, 217, 255, 0.08);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(0, 217, 255, 0.2);
+  color: var(--text-primary);
   line-height: 1.6;
   max-width: 80%;
   white-space: pre-wrap;
@@ -68,8 +73,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px;
-  color: #666;
+  padding: var(--space-md);
+  color: var(--text-muted);
+  font-family: var(--font-data);
   font-size: 14px;
 }
 
@@ -77,12 +83,13 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px;
-  margin: 12px 0;
-  background: #f9fafb;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-  color: #666;
+  padding: var(--space-md);
+  margin: var(--space-sm) 0;
+  background: var(--surface-1);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-family: var(--font-data);
   font-size: 14px;
   font-style: italic;
 }
@@ -90,8 +97,8 @@
 .spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid #e0e0e0;
-  border-top-color: #4a90e2;
+  border: 2px solid var(--border-subtle);
+  border-top-color: var(--gc-cyan);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -106,142 +113,67 @@
   display: flex;
   align-items: flex-end;
   gap: 12px;
-  padding: 24px;
-  border-top: 1px solid #e0e0e0;
-  background: #fafafa;
+  padding: var(--space-md);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--surface-1);
 }
 
 .message-input {
   flex: 1;
   padding: 14px;
-  background: #ffffff;
-  border: 1px solid #d0d0d0;
-  border-radius: 8px;
-  color: #333;
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
   font-size: 15px;
-  font-family: inherit;
+  font-family: var(--font-body);
   line-height: 1.5;
   outline: none;
   resize: vertical;
   min-height: 80px;
   max-height: 300px;
+  transition: border-color var(--transition-fast);
 }
 
 .message-input:focus {
-  border-color: #4a90e2;
-  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+  border-color: rgba(0, 217, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
 }
 
 .message-input:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background: #f5f5f5;
+  background: var(--surface-1);
+}
+
+.message-input::placeholder {
+  color: var(--text-muted);
 }
 
 .send-button {
   padding: 14px 28px;
-  background: #4a90e2;
-  border: 1px solid #4a90e2;
-  border-radius: 8px;
-  color: #fff;
+  background: var(--gc-cyan);
+  border: 1px solid var(--gc-cyan);
+  border-radius: var(--radius-md);
+  color: var(--surface-0);
+  font-family: var(--font-data);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all var(--transition-fast);
   white-space: nowrap;
   align-self: flex-end;
 }
 
 .send-button:hover:not(:disabled) {
-  background: #357abd;
-  border-color: #357abd;
+  background: #33e1ff;
+  border-color: #33e1ff;
 }
 
 .send-button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
-  background: #ccc;
-  border-color: #ccc;
-}
-
-/* ============================================
-   GENESIS DARK MODE OVERRIDES
-   ============================================ */
-
-.genesis-mode .chat-interface {
-  background: #0A0E17;
-}
-
-.genesis-mode .empty-state {
-  color: #9CA3AF;
-}
-
-.genesis-mode .empty-state h2 {
-  color: #00D9C4;
-}
-
-.genesis-mode .message-label {
-  color: #9CA3AF;
-}
-
-.genesis-mode .user-message .message-content {
-  background: rgba(0,217,196,0.08);
-  border-color: rgba(0,217,196,0.2);
-  color: #E5E7EB;
-}
-
-.genesis-mode .loading-indicator {
-  color: #9CA3AF;
-}
-
-.genesis-mode .stage-loading {
-  background: #1a2332;
-  border-color: rgba(255,255,255,0.08);
-  color: #9CA3AF;
-}
-
-.genesis-mode .spinner {
-  border-color: rgba(255,255,255,0.1);
-  border-top-color: #00D9C4;
-}
-
-.genesis-mode .input-form {
-  background: #111827;
-  border-top-color: rgba(255,255,255,0.08);
-}
-
-.genesis-mode .message-input {
-  background: #1a2332;
-  border-color: rgba(255,255,255,0.08);
-  color: #E5E7EB;
-}
-
-.genesis-mode .message-input:focus {
-  border-color: rgba(0,217,196,0.5);
-  box-shadow: 0 0 0 3px rgba(0,217,196,0.1);
-}
-
-.genesis-mode .message-input:disabled {
-  background: #111827;
-}
-
-.genesis-mode .message-input::placeholder {
-  color: #6B7280;
-}
-
-.genesis-mode .send-button {
-  background: #00D9C4;
-  border-color: #00D9C4;
-  color: #0A0E17;
-}
-
-.genesis-mode .send-button:hover:not(:disabled) {
-  background: #00f0d6;
-  border-color: #00f0d6;
-}
-
-.genesis-mode .send-button:disabled {
-  background: #1a2332;
-  border-color: rgba(255,255,255,0.08);
-  color: #6B7280;
+  background: var(--surface-2);
+  border-color: var(--border-subtle);
+  color: var(--text-muted);
 }

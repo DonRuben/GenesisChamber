@@ -1,0 +1,139 @@
+/* =============================================
+   CRITIQUE PANEL
+   ============================================= */
+
+.cp-container {
+  animation: fadeIn var(--transition-medium);
+}
+
+.cp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.cp-title {
+  font-family: var(--font-data);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--gc-gold);
+}
+
+.cp-toggle {
+  font-size: 12px !important;
+  padding: 4px 12px !important;
+}
+
+.cp-empty {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--text-muted);
+  font-family: var(--font-data);
+}
+
+/* ── Panel ── */
+.cp-panel {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-sm);
+}
+
+.cp-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-sm);
+}
+
+.cp-concept-name {
+  font-family: var(--font-data);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.cp-concept-creator {
+  font-family: var(--font-data);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.cp-avg-score {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+}
+
+/* ── Score Bar ── */
+.cp-score-bar {
+  height: 6px;
+  background: var(--surface-2);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: var(--space-sm);
+}
+
+.cp-score-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width var(--transition-medium);
+}
+
+/* ── Individual Critique ── */
+.cp-critique {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.cp-critique-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-xs);
+}
+
+.cp-critic-name {
+  font-family: var(--font-data);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.cp-critic-score {
+  font-family: var(--font-data);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* ── Lists ── */
+.cp-list {
+  padding-left: var(--space-md);
+  margin-bottom: var(--space-xs);
+}
+
+.cp-list li {
+  font-family: var(--font-data);
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 2px;
+}
+
+.cp-strengths li {
+  color: var(--status-success);
+}
+
+.cp-weaknesses li {
+  color: var(--status-error);
+}
+
+.cp-fatal {
+  font-family: var(--font-data);
+  font-size: 13px;
+  color: var(--status-error);
+  font-weight: 600;
+  margin-top: var(--space-xs);
+}

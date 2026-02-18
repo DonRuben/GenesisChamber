@@ -1,44 +1,29 @@
+/* =============================================
+   STAGE 3 — Dark theme only
+   ============================================= */
+
 .stage3 {
-  background: #f0fff0;
-  border-color: #c8e6c8;
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.2);
 }
 
 .final-response {
-  background: #ffffff;
-  padding: 20px;
-  border-radius: 6px;
-  border: 1px solid #c8e6c8;
+  background: var(--surface-2);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .chairman-label {
-  color: #2d8a2d;
+  color: var(--stage-create);
   font-size: 12px;
-  font-family: monospace;
+  font-family: var(--font-mono);
   margin-bottom: 12px;
   font-weight: 600;
 }
 
 .final-text {
-  color: #333;
+  color: var(--text-primary);
   line-height: 1.7;
   font-size: 15px;
-}
-
-/* Genesis dark mode */
-.genesis-mode .stage3 {
-  background: rgba(16,185,129,0.08);
-  border-color: rgba(16,185,129,0.2);
-}
-
-.genesis-mode .final-response {
-  background: #1a2332;
-  border-color: rgba(16,185,129,0.2);
-}
-
-.genesis-mode .chairman-label {
-  color: #10B981;
-}
-
-.genesis-mode .final-text {
-  color: #E5E7EB;
 }

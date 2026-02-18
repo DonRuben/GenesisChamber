@@ -1,209 +1,211 @@
-/* === Sidebar — supports both light and genesis dark mode === */
+/* =============================================
+   SIDEBAR — OmniPresent Dark Theme
+   ============================================= */
 
 .sidebar {
-  width: 280px;
-  background: #f8f8f8;
-  border-right: 1px solid #e0e0e0;
+  width: var(--sidebar-width);
+  background: var(--surface-1);
+  border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   height: 100vh;
+  z-index: var(--z-sidebar);
+  flex-shrink: 0;
+  transition: transform var(--transition-medium);
 }
 
-.sidebar-header {
-  padding: 20px 16px 16px;
-  border-bottom: 1px solid #e0e0e0;
+.sidebar-hidden {
+  transform: translateX(-100%);
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
 }
 
-.sidebar-header h1 {
+/* ── Brand ── */
+.sidebar-brand {
+  padding: var(--space-md) var(--space-sm);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sidebar-title {
+  font-family: var(--font-display);
   font-size: 20px;
-  font-weight: 800;
-  margin: 0 0 4px 0;
-  color: #333;
-  letter-spacing: -0.3px;
+  font-weight: 700;
+  color: var(--op-flame);
+  letter-spacing: 0.02em;
+  margin: 0;
 }
 
-.new-conversation-btn {
+.sidebar-title span {
+  color: var(--text-primary);
+}
+
+.sidebar-subtitle {
+  font-family: var(--font-data);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+/* ── Mode Toggle ── */
+.mode-toggle {
+  display: flex;
+  gap: 3px;
+  padding: var(--space-xs);
+  margin: var(--space-xs) var(--space-sm);
+  background: var(--surface-0);
+  border-radius: var(--radius-sm);
+}
+
+.mode-toggle-btn {
+  flex: 1;
+  padding: 7px 12px;
+  border: none;
+  border-radius: 5px;
+  font-family: var(--font-data);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.mode-toggle-btn.active {
+  background: rgba(0, 217, 255, 0.12);
+  color: var(--gc-cyan);
+}
+
+.mode-toggle-btn:hover:not(.active) {
+  color: var(--text-secondary);
+}
+
+/* ── Action Button ── */
+.sidebar-action {
+  padding: var(--space-xs) var(--space-sm);
+}
+
+.sidebar-new-btn {
   width: 100%;
   padding: 10px;
-  background: #4a90e2;
-  border: 1px solid #4a90e2;
-  border-radius: 8px;
-  color: #fff;
+  background: rgba(242, 113, 35, 0.1);
+  border: 1px solid rgba(242, 113, 35, 0.25);
+  border-radius: var(--radius-sm);
+  color: var(--op-flame);
   cursor: pointer;
+  font-family: var(--font-data);
   font-size: 14px;
   font-weight: 600;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
 }
 
-.new-conversation-btn:hover {
-  background: #357abd;
-  border-color: #357abd;
+.sidebar-new-btn:hover {
+  background: rgba(242, 113, 35, 0.18);
+  border-color: rgba(242, 113, 35, 0.4);
 }
 
-.conversation-list {
+/* ── List ── */
+.sidebar-list {
   flex: 1;
   overflow-y: auto;
-  padding: 8px;
+  padding: var(--space-xs);
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-3) transparent;
 }
 
-.no-conversations {
-  padding: 24px 16px;
+.sidebar-empty {
+  padding: var(--space-lg) var(--space-sm);
   text-align: center;
-  color: #999;
+  color: var(--text-muted);
+  font-family: var(--font-data);
   font-size: 13px;
 }
 
-.conversation-item,
-.simulation-item {
-  padding: 12px;
+.sidebar-item {
+  padding: var(--space-sm);
   margin-bottom: 2px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all var(--transition-fast);
   border: 1px solid transparent;
 }
 
-.conversation-item:hover,
-.simulation-item:hover {
-  background: #f0f0f0;
+.sidebar-item:hover {
+  background: var(--surface-2);
 }
 
-.conversation-item.active,
-.simulation-item.active {
-  background: #e8f0fe;
-  border-color: #4a90e2;
+.sidebar-item.active {
+  background: rgba(0, 217, 255, 0.06);
+  border-color: rgba(0, 217, 255, 0.2);
+  border-left: 3px solid var(--gc-cyan);
 }
 
-.conversation-title,
-.simulation-title {
-  color: #333;
+.sidebar-item-title {
+  color: var(--text-primary);
+  font-family: var(--font-data);
   font-size: 14px;
   font-weight: 500;
   margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.conversation-meta,
-.simulation-meta {
-  color: #999;
-  font-size: 12px;
-}
-
-/* Mode toggle — light theme */
-.mode-toggle {
+.sidebar-item-meta {
   display: flex;
-  gap: 4px;
-  padding: 8px 12px;
-  background: #f0f0f0;
-  border-radius: 8px;
-  margin: 8px 12px;
-}
-
-.mode-toggle button {
-  flex: 1;
-  padding: 6px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-family: var(--font-data);
   font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: transparent;
-  color: #666;
 }
 
-.mode-toggle button.active {
-  background: #e8f0fe;
-  color: #4a90e2;
-  border-color: #4a90e2;
+.sidebar-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
-.subtitle {
-  font-size: 11px;
-  color: #999;
+.sidebar-status-label {
+  font-weight: 500;
+}
+
+.sidebar-item-sep {
+  width: 1px;
+  height: 12px;
+  background: var(--border-default);
+}
+
+/* ── Footer ── */
+.sidebar-footer {
+  padding: var(--space-sm);
+  border-top: 1px solid var(--border-subtle);
+  text-align: center;
+}
+
+.sidebar-footer-text {
+  font-family: var(--font-data);
+  font-size: 10px;
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
-/* ============================================
-   GENESIS DARK MODE OVERRIDES
-   ============================================ */
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    box-shadow: var(--shadow-lg);
+  }
 
-.genesis-mode .sidebar {
-  background: #111827;
-  border-right-color: rgba(255,255,255,0.08);
-}
-
-.genesis-mode .sidebar-header {
-  border-bottom-color: rgba(255,255,255,0.08);
-}
-
-.genesis-mode .sidebar-header h1 {
-  color: #00D9C4;
-}
-
-.genesis-mode .subtitle {
-  color: #9CA3AF;
-}
-
-.genesis-mode .mode-toggle {
-  background: #1a2332;
-}
-
-.genesis-mode .mode-toggle button {
-  border-color: rgba(255,255,255,0.08);
-  color: #9CA3AF;
-}
-
-.genesis-mode .mode-toggle button.active {
-  background: rgba(0,217,196,0.15);
-  color: #00D9C4;
-  border-color: rgba(0,217,196,0.3);
-}
-
-.genesis-mode .new-conversation-btn {
-  background: rgba(0,217,196,0.15);
-  color: #00D9C4;
-  border-color: rgba(0,217,196,0.3);
-}
-
-.genesis-mode .new-conversation-btn:hover {
-  background: rgba(0,217,196,0.25);
-  border-color: rgba(0,217,196,0.4);
-}
-
-.genesis-mode .conversation-list {
-  scrollbar-width: thin;
-  scrollbar-color: #1a2332 #111827;
-}
-
-.genesis-mode .no-conversations {
-  color: #9CA3AF;
-}
-
-.genesis-mode .conversation-item,
-.genesis-mode .simulation-item {
-  color: #E5E7EB;
-  border-color: transparent;
-}
-
-.genesis-mode .conversation-item:hover,
-.genesis-mode .simulation-item:hover {
-  background: #1a2332;
-}
-
-.genesis-mode .conversation-item.active,
-.genesis-mode .simulation-item.active {
-  background: rgba(0,217,196,0.1);
-  border-color: rgba(0,217,196,0.3);
-  border-left: 3px solid #00D9C4;
-}
-
-.genesis-mode .conversation-title,
-.genesis-mode .simulation-title {
-  color: #E5E7EB;
-}
-
-.genesis-mode .conversation-meta,
-.genesis-mode .simulation-meta {
-  color: #9CA3AF;
+  .sidebar-hidden {
+    transform: translateX(-100%);
+  }
 }

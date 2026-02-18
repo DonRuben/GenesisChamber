@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import ConceptCard from './ConceptCard';
+import './PresentationGallery.css';
 
 export default function PresentationGallery({ concepts, rounds }) {
   const [filterRound, setFilterRound] = useState('all');
@@ -19,50 +20,58 @@ export default function PresentationGallery({ concepts, rounds }) {
 
   const uniqueRounds = [...new Set(allConcepts.map(c => c.round_created))].sort((a, b) => a - b);
 
-  return (
-    <div>
-      {/* Filter bar */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
-        <span className="genesis-label" style={{ marginBottom: 0 }}>Round:</span>
-        {['all', ...uniqueRounds].map(r => (
-          <button
-            key={r}
-            className={`genesis-btn ${filterRound === String(r) ? 'genesis-btn-primary' : 'genesis-btn-secondary'}`}
-            style={{ padding: '4px 10px', fontSize: 11 }}
-            onClick={() => setFilterRound(String(r))}
-          >
-            {r === 'all' ? 'All' : `R${r}`}
-          </button>
-        ))}
+  const STATUS_FILTERS = [
+    { key: 'all', label: 'All' },
+    { key: 'active', label: 'Active' },
+    { key: 'winner', label: 'Winner' },
+    { key: 'runner_up', label: 'Runner-up' },
+    { key: 'eliminated', label: 'Eliminated' },
+  ];
 
-        <span className="genesis-label" style={{ marginBottom: 0, marginLeft: 16 }}>Status:</span>
-        {['all', 'active', 'winner', 'runner_up', 'eliminated'].map(s => (
-          <button
-            key={s}
-            className={`genesis-btn ${filterStatus === s ? 'genesis-btn-primary' : 'genesis-btn-secondary'}`}
-            style={{ padding: '4px 10px', fontSize: 11, textTransform: 'capitalize' }}
-            onClick={() => setFilterStatus(s)}
-          >
-            {s === 'all' ? 'All' : s.replace('_', ' ')}
-          </button>
-        ))}
+  return (
+    <div className="pg-container">
+      {/* Filter bar */}
+      <div className="pg-filters">
+        <div className="pg-filter-group">
+          <span className="pg-filter-label">Round</span>
+          {['all', ...uniqueRounds].map(r => (
+            <button
+              key={r}
+              className={`gc-btn gc-btn-ghost pg-filter-btn ${filterRound === String(r) ? 'pg-filter-active' : ''}`}
+              onClick={() => setFilterRound(String(r))}
+            >
+              {r === 'all' ? 'All' : `R${r}`}
+            </button>
+          ))}
+        </div>
+
+        <div className="pg-filter-group">
+          <span className="pg-filter-label">Status</span>
+          {STATUS_FILTERS.map(s => (
+            <button
+              key={s.key}
+              className={`gc-btn gc-btn-ghost pg-filter-btn ${filterStatus === s.key ? 'pg-filter-active' : ''}`}
+              onClick={() => setFilterStatus(s.key)}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Count */}
-      <div style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 16 }}>
+      <div className="pg-count">
         Showing {filtered.length} of {allConcepts.length} concepts
       </div>
 
       {/* Grid */}
-      <div className="presentation-grid">
-        {filtered.map(concept => (
-          <ConceptCard key={concept.id} concept={concept} showDetails />
-        ))}
-      </div>
-
-      {filtered.length === 0 && (
-        <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-dim)' }}>
-          No concepts match filters
+      {filtered.length === 0 ? (
+        <div className="pg-empty">No concepts match filters</div>
+      ) : (
+        <div className="pg-grid">
+          {filtered.map(concept => (
+            <ConceptCard key={concept.id} concept={concept} showDetails />
+          ))}
         </div>
       )}
     </div>
