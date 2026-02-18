@@ -4,14 +4,13 @@ import ChatInterface from './components/ChatInterface';
 import SimulationDashboard from './components/SimulationDashboard';
 import { api } from './api';
 import './App.css';
-import './genesis-theme.css';
 
 function App() {
   // Mode: "council" (original llm-council) or "genesis" (Genesis Chamber)
   const [mode, setMode] = useState('genesis');
 
   // Backend connection status
-  const [backendStatus, setBackendStatus] = useState('connecting'); // 'connecting' | 'connected' | 'error'
+  const [backendStatus, setBackendStatus] = useState('connecting');
   const [backendError, setBackendError] = useState(null);
 
   // Council mode state
@@ -23,6 +22,20 @@ function App() {
   // Genesis mode state
   const [simulations, setSimulations] = useState([]);
   const [currentSimId, setCurrentSimId] = useState(null);
+
+  // Responsive sidebar
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile) setSidebarOpen(false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Health check with retry (Render free tier cold starts take 30-60s)
   useEffect(() => {
@@ -105,6 +118,7 @@ function App() {
 
   const handleSelectConversation = (id) => {
     setCurrentConversationId(id);
+    if (isMobile) setSidebarOpen(false);
   };
 
   const handleSendMessage = async (content) => {
@@ -219,16 +233,18 @@ function App() {
 
   const handleNewSimulation = () => {
     setCurrentSimId(null);
+    if (isMobile) setSidebarOpen(false);
   };
 
   const handleSelectSimulation = (id) => {
     setCurrentSimId(id);
+    if (isMobile) setSidebarOpen(false);
   };
 
   // === Render ===
 
   return (
-    <div className={`app ${mode === 'genesis' ? 'genesis-mode' : ''}`}>
+    <div className="app">
       {backendStatus === 'connecting' && (
         <div className="backend-banner backend-connecting">
           Connecting to backend... (Render free tier may take 30-60 seconds to wake up)
@@ -242,6 +258,23 @@ function App() {
           </button>
         </div>
       )}
+
+      {isMobile && (
+        <>
+          <button
+            className="mobile-menu-btn"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label="Toggle menu"
+          >
+            {sidebarOpen ? '\u2715' : '\u2630'}
+          </button>
+          <div
+            className={`sidebar-overlay ${sidebarOpen ? 'visible' : ''}`}
+            onClick={() => setSidebarOpen(false)}
+          />
+        </>
+      )}
+
       <Sidebar
         mode={mode}
         onModeChange={setMode}
@@ -253,21 +286,25 @@ function App() {
         currentSimId={currentSimId}
         onSelectSimulation={handleSelectSimulation}
         onNewSimulation={handleNewSimulation}
+        isOpen={!isMobile || sidebarOpen}
       />
-      {mode === 'council' ? (
-        <ChatInterface
-          conversation={currentConversation}
-          onSendMessage={handleSendMessage}
-          isLoading={isLoading}
-        />
-      ) : (
-        <SimulationDashboard
-          simulations={simulations}
-          currentSimId={currentSimId}
-          onSelectSim={handleSelectSimulation}
-          onRefreshList={loadSimulations}
-        />
-      )}
+
+      <main className="app-content">
+        {mode === 'council' ? (
+          <ChatInterface
+            conversation={currentConversation}
+            onSendMessage={handleSendMessage}
+            isLoading={isLoading}
+          />
+        ) : (
+          <SimulationDashboard
+            simulations={simulations}
+            currentSimId={currentSimId}
+            onSelectSim={handleSelectSimulation}
+            onRefreshList={loadSimulations}
+          />
+        )}
+      </main>
     </div>
   );
 }

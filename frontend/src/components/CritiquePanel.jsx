@@ -1,9 +1,15 @@
 import { useState } from 'react';
+import './CritiquePanel.css';
+
+function scoreColor(score) {
+  if (score >= 7) return 'var(--status-success)';
+  if (score >= 5) return 'var(--gc-gold)';
+  return 'var(--status-error)';
+}
 
 export default function CritiquePanel({ critiques, concepts }) {
   const [showAnonymous, setShowAnonymous] = useState(true);
 
-  // Group critiques by concept
   const conceptCritiques = {};
   for (const critique of (critiques || [])) {
     const key = critique.concept_id || critique.concept_label;
@@ -11,76 +17,84 @@ export default function CritiquePanel({ critiques, concepts }) {
     conceptCritiques[key].push(critique);
   }
 
+  const hasData = Object.keys(conceptCritiques).length > 0;
+
   return (
-    <div>
-      <div className="critique-header">
-        <h3 style={{ color: 'var(--gold)', fontSize: 17, fontWeight: 600 }}>Critiques</h3>
-        <button
-          className="genesis-btn genesis-btn-secondary"
-          style={{ fontSize: 12, padding: '4px 12px' }}
-          onClick={() => setShowAnonymous(!showAnonymous)}
-        >
-          {showAnonymous ? 'De-anonymize' : 'Re-anonymize'}
-        </button>
+    <div className="cp-container">
+      <div className="cp-header">
+        <h3 className="cp-title">Critiques</h3>
+        {hasData && (
+          <button className="gc-btn gc-btn-ghost cp-toggle" onClick={() => setShowAnonymous(!showAnonymous)}>
+            {showAnonymous ? 'Reveal Names' : 'Re-anonymize'}
+          </button>
+        )}
       </div>
 
-      {Object.entries(conceptCritiques).map(([conceptKey, crits]) => {
-        const concept = concepts?.find(c => c.id === conceptKey);
-        const avgScore = crits.reduce((sum, c) => sum + c.score, 0) / crits.length;
-        const scorePercent = (avgScore / 10) * 100;
-        const scoreColor = avgScore >= 7 ? 'var(--green)' : avgScore >= 5 ? 'var(--gold)' : 'var(--red)';
+      {!hasData ? (
+        <div className="cp-empty">
+          No critiques available for this round yet.
+        </div>
+      ) : (
+        Object.entries(conceptCritiques).map(([conceptKey, crits]) => {
+          const concept = concepts?.find(c => c.id === conceptKey);
+          const avgScore = crits.reduce((sum, c) => sum + (c.score || 0), 0) / crits.length;
+          const scorePercent = (avgScore / 10) * 100;
 
-        return (
-          <div key={conceptKey} className="critique-panel">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <div>
-                <div style={{ fontWeight: 700 }}>
-                  {showAnonymous ? `Concept ${conceptKey}` : (concept?.name || conceptKey)}
-                </div>
-                {!showAnonymous && concept && (
-                  <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>by {concept.persona_name}</div>
-                )}
-              </div>
-              <div style={{ fontSize: 24, fontWeight: 800, color: scoreColor }}>{avgScore.toFixed(1)}</div>
-            </div>
-
-            <div className="critique-score-bar">
-              <div className="critique-score-fill" style={{ width: `${scorePercent}%`, background: scoreColor }} />
-            </div>
-
-            {crits.map((crit, i) => (
-              <div key={i} style={{ borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-dim)' }}>
-                    {showAnonymous ? `Critic ${i + 1}` : crit.critic_name}
-                  </span>
-                  <span style={{ fontWeight: 700, color: crit.score >= 7 ? 'var(--green)' : crit.score >= 5 ? 'var(--gold)' : 'var(--red)' }}>
-                    {crit.score}/10
-                  </span>
-                </div>
-
-                {crit.strengths?.length > 0 && (
-                  <ul style={{ paddingLeft: 16, marginBottom: 6 }}>
-                    {crit.strengths.map((s, j) => <li key={j} className="critique-strengths" style={{ fontSize: 13, color: 'var(--green)' }}>{s}</li>)}
-                  </ul>
-                )}
-
-                {crit.weaknesses?.length > 0 && (
-                  <ul style={{ paddingLeft: 16, marginBottom: 6 }}>
-                    {crit.weaknesses.map((w, j) => <li key={j} className="critique-weaknesses" style={{ fontSize: 13, color: 'var(--red)' }}>{w}</li>)}
-                  </ul>
-                )}
-
-                {crit.fatal_flaw && crit.fatal_flaw.toUpperCase() !== 'NONE' && (
-                  <div style={{ fontSize: 13, color: 'var(--red)', marginTop: 4 }}>
-                    Fatal flaw: {crit.fatal_flaw}
+          return (
+            <div key={conceptKey} className="cp-panel">
+              <div className="cp-panel-header">
+                <div>
+                  <div className="cp-concept-name">
+                    {showAnonymous ? `Concept ${conceptKey}` : (concept?.name || conceptKey)}
                   </div>
-                )}
+                  {!showAnonymous && concept && (
+                    <div className="cp-concept-creator">by {concept.persona_name}</div>
+                  )}
+                </div>
+                <div className="cp-avg-score" style={{ color: scoreColor(avgScore) }}>
+                  {avgScore.toFixed(1)}
+                </div>
               </div>
-            ))}
-          </div>
-        );
-      })}
+
+              <div className="cp-score-bar">
+                <div
+                  className="cp-score-fill"
+                  style={{ width: `${scorePercent}%`, background: scoreColor(avgScore) }}
+                />
+              </div>
+
+              {crits.map((crit, i) => (
+                <div key={i} className="cp-critique">
+                  <div className="cp-critique-header">
+                    <span className="cp-critic-name">
+                      {showAnonymous ? `Critic ${i + 1}` : crit.critic_name}
+                    </span>
+                    <span className="cp-critic-score" style={{ color: scoreColor(crit.score) }}>
+                      {crit.score}/10
+                    </span>
+                  </div>
+
+                  {crit.strengths?.length > 0 && (
+                    <ul className="cp-list cp-strengths">
+                      {crit.strengths.map((s, j) => <li key={j}>{s}</li>)}
+                    </ul>
+                  )}
+
+                  {crit.weaknesses?.length > 0 && (
+                    <ul className="cp-list cp-weaknesses">
+                      {crit.weaknesses.map((w, j) => <li key={j}>{w}</li>)}
+                    </ul>
+                  )}
+
+                  {crit.fatal_flaw && crit.fatal_flaw.toUpperCase() !== 'NONE' && (
+                    <div className="cp-fatal">Fatal flaw: {crit.fatal_flaw}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          );
+        })
+      )}
     </div>
   );
 }

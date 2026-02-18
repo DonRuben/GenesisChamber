@@ -1,95 +1,132 @@
 import { useState } from 'react';
+import './TranscriptViewer.css';
+
+const STAGE_FILTERS = [
+  { key: 'all', label: 'All' },
+  { key: 'creation', label: 'Create', color: 'var(--stage-create)' },
+  { key: 'critique', label: 'Critique', color: 'var(--stage-critique)' },
+  { key: 'synthesis', label: 'Synthesize', color: 'var(--stage-synthesize)' },
+  { key: 'refinement', label: 'Refine', color: 'var(--stage-refine)' },
+  { key: 'presentation', label: 'Present', color: 'var(--stage-present)' },
+];
 
 const STAGE_COLORS = {
-  creation: 'var(--green)',
-  critique: 'var(--gold)',
-  synthesis: 'var(--teal)',
-  refinement: 'var(--blue)',
-  presentation: 'var(--purple)',
+  creation: 'var(--stage-create)',
+  critique: 'var(--stage-critique)',
+  synthesis: 'var(--stage-synthesize)',
+  refinement: 'var(--stage-refine)',
+  presentation: 'var(--stage-present)',
 };
 
 export default function TranscriptViewer({ entries, eventLog }) {
   const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const [showLog, setShowLog] = useState(false);
 
-  const filtered = filter === 'all'
-    ? (entries || [])
-    : (entries || []).filter(e => e.stage_name === filter);
+  const filtered = (entries || []).filter(e => {
+    if (filter !== 'all' && e.stage_name !== filter) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      const text = JSON.stringify(e).toLowerCase();
+      if (!text.includes(q)) return false;
+    }
+    return true;
+  });
 
   return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-        <span className="genesis-label" style={{ marginBottom: 0 }}>Filter:</span>
-        {['all', 'creation', 'critique', 'synthesis', 'refinement', 'presentation'].map(f => (
-          <button
-            key={f}
-            className={`genesis-btn ${filter === f ? 'genesis-btn-primary' : 'genesis-btn-secondary'}`}
-            style={{ padding: '4px 10px', fontSize: 11, textTransform: 'uppercase' }}
-            onClick={() => setFilter(f)}
-          >
-            {f}
-          </button>
-        ))}
+    <div className="tv-container">
+      {/* Filter bar */}
+      <div className="tv-controls">
+        <div className="tv-filters">
+          {STAGE_FILTERS.map(f => (
+            <button
+              key={f.key}
+              className={`gc-btn gc-btn-ghost tv-filter-btn ${filter === f.key ? 'tv-filter-active' : ''}`}
+              style={filter === f.key && f.color ? { borderColor: f.color, color: f.color } : undefined}
+              onClick={() => setFilter(f.key)}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <input
+          type="text"
+          className="gc-input tv-search"
+          placeholder="Search transcript..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </div>
 
+      {/* Timeline */}
       {filtered.length === 0 ? (
-        <div style={{ color: 'var(--text-dim)', textAlign: 'center', padding: 24 }}>
-          No transcript entries yet
-        </div>
+        <div className="tv-empty">No transcript entries yet</div>
       ) : (
-        filtered.map((entry, i) => (
-          <div
-            key={i}
-            className="transcript-entry"
-            style={{ borderLeftColor: STAGE_COLORS[entry.stage_name] || 'var(--border)' }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-              <div>
-                <span className="entry-label" style={{ color: STAGE_COLORS[entry.stage_name] }}>
-                  Round {entry.round} — {entry.stage_name}
-                </span>
-              </div>
-              <span className="timestamp">
-                {entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString() : ''}
-              </span>
-            </div>
-
-            {entry.concepts && (
-              <div style={{ fontSize: 13 }}>
-                {entry.concepts.map((c, j) => (
-                  <div key={j} style={{ marginBottom: 4 }}>
-                    <strong>{c.persona}:</strong> {c.name} — {c.idea}
+        <div className="tv-timeline">
+          {filtered.map((entry, i) => {
+            const stageColor = STAGE_COLORS[entry.stage_name] || 'var(--border-default)';
+            return (
+              <div key={i} className="tv-entry" style={{ '--entry-color': stageColor }}>
+                <div className="tv-entry-dot" />
+                <div className="tv-entry-content">
+                  <div className="tv-entry-header">
+                    <span className="tv-entry-label">
+                      Round {entry.round} — {entry.stage_name}
+                    </span>
+                    <span className="tv-entry-time">
+                      {entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString() : ''}
+                    </span>
                   </div>
-                ))}
-              </div>
-            )}
 
-            {entry.critiques_count != null && (
-              <div style={{ fontSize: 13, color: 'var(--text-dim)' }}>
-                {entry.critiques_count} critiques submitted
-              </div>
-            )}
+                  {entry.concepts && (
+                    <div className="tv-entry-concepts">
+                      {entry.concepts.map((c, j) => (
+                        <div key={j} className="tv-concept-line">
+                          <strong>{c.persona}:</strong> {c.name} — {c.idea}
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
-            {entry.direction && (
-              <div style={{ fontSize: 13 }}>{entry.direction}</div>
-            )}
-          </div>
-        ))
+                  {entry.critiques_count != null && (
+                    <div className="tv-entry-meta">
+                      {entry.critiques_count} critiques submitted
+                    </div>
+                  )}
+
+                  {entry.direction && (
+                    <div className="tv-entry-direction">{entry.direction}</div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       )}
 
+      {/* Event Log */}
       {eventLog?.length > 0 && (
-        <div style={{ marginTop: 24 }}>
-          <h4 style={{ color: 'var(--text-dim)', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>
-            Event Log
-          </h4>
-          {eventLog.map((event, i) => (
-            <div key={i} style={{ fontSize: 12, color: 'var(--text-dim)', padding: '4px 0', fontFamily: "'JetBrains Mono', monospace" }}>
-              <span style={{ color: 'var(--teal)' }}>{event.type}</span>
-              {' '}
-              {event.timestamp ? new Date(event.timestamp).toLocaleTimeString() : ''}
-              {event.round ? ` R${event.round}` : ''}
-              {event.message ? ` — ${event.message}` : ''}
+        <div className="tv-event-log">
+          <button
+            className="gc-btn gc-btn-ghost tv-log-toggle"
+            onClick={() => setShowLog(!showLog)}
+          >
+            {showLog ? 'Hide' : 'Show'} Event Log ({eventLog.length})
+          </button>
+          {showLog && (
+            <div className="tv-log-entries">
+              {eventLog.map((event, i) => (
+                <div key={i} className="tv-log-entry">
+                  <span className="tv-log-type">{event.type}</span>
+                  <span className="tv-log-time">
+                    {event.timestamp ? new Date(event.timestamp).toLocaleTimeString() : ''}
+                  </span>
+                  {event.round && <span className="tv-log-round">R{event.round}</span>}
+                  {event.message && <span className="tv-log-msg"> — {event.message}</span>}
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       )}
     </div>

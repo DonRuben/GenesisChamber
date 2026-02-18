@@ -1,0 +1,343 @@
+/* =============================================
+   GENESIS CHAMBER — Design Tokens
+   OmniPresent Brand System
+   ============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@font-face {
+  font-family: 'OmniPresent';
+  src: url('https://cdn.jsdelivr.net/gh/DonRuben/Hosting-Assets-Externally@main/Fonts/Font-%20OmniPresent%20Main/OmniPresent.ttf') format('truetype');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  /* ── OmniPresent Foundation ── */
+  --op-void: #1B1D22;
+  --op-light: #E9E7E4;
+  --op-flame: #F27123;
+  --op-grey: #69676C;
+  --op-agate: #CBCDCE;
+
+  /* ── Genesis Chamber Extensions ── */
+  --gc-cyan: #00D9FF;
+  --gc-magenta: #FF006E;
+  --gc-gold: #FFB800;
+  --gc-purple: #8B00FF;
+
+  /* ── Stage Colors ── */
+  --stage-create: #10B981;
+  --stage-critique: #F59E0B;
+  --stage-synthesize: #EF4444;
+  --stage-refine: #3B82F6;
+  --stage-present: #8B5CF6;
+
+  /* ── Surfaces ── */
+  --surface-0: #1B1D22;
+  --surface-1: #22252B;
+  --surface-2: #2A2D34;
+  --surface-3: #33363E;
+
+  /* ── Borders ── */
+  --border-subtle: rgba(233, 231, 228, 0.06);
+  --border-default: rgba(233, 231, 228, 0.10);
+  --border-strong: rgba(233, 231, 228, 0.18);
+
+  /* ── Text ── */
+  --text-primary: #E9E7E4;
+  --text-secondary: #CBCDCE;
+  --text-muted: #7A7880;
+
+  /* ── Status Colors ── */
+  --status-success: #10B981;
+  --status-warning: #F59E0B;
+  --status-error: #EF4444;
+  --status-info: #00D9FF;
+
+  /* ── Typography Families ── */
+  --font-display: 'OmniPresent', 'Inter', system-ui, sans-serif;
+  --font-body: 'Playfair Display', Georgia, serif;
+  --font-body-alt: 'Cormorant Garamond', Georgia, serif;
+  --font-caption: 'Crimson Text', Georgia, serif;
+  --font-data: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* ── Fibonacci Spacing ── */
+  --space-xs: 8px;
+  --space-sm: 13px;
+  --space-md: 21px;
+  --space-lg: 34px;
+  --space-xl: 55px;
+  --space-2xl: 89px;
+
+  /* ── Border Radius ── */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* ── Transitions ── */
+  --transition-fast: 200ms ease-out;
+  --transition-medium: 400ms ease-in-out;
+  --transition-slow: 600ms ease-in-out;
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-glow-cyan: 0 0 20px rgba(0, 217, 255, 0.15);
+  --shadow-glow-flame: 0 0 20px rgba(242, 113, 35, 0.15);
+  --shadow-glow-gold: 0 0 20px rgba(255, 184, 0, 0.15);
+
+  /* ── Z-Index Scale ── */
+  --z-sidebar: 100;
+  --z-header: 200;
+  --z-dropdown: 500;
+  --z-modal: 1000;
+  --z-toast: 1100;
+  --z-banner: 9999;
+
+  /* ── Layout ── */
+  --sidebar-width: 280px;
+  --sidebar-collapsed: 64px;
+  --header-height: 72px;
+}
+
+
+/* =============================================
+   ANIMATIONS
+   ============================================= */
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(0, 217, 255, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(0, 217, 255, 0.4); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+
+/* =============================================
+   UTILITY CLASSES
+   ============================================= */
+
+/* ── Buttons ── */
+.gc-btn {
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-data);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.gc-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.gc-btn-primary {
+  background: var(--op-flame);
+  color: #fff;
+}
+
+.gc-btn-primary:hover:not(:disabled) {
+  background: #ff8340;
+  box-shadow: var(--shadow-glow-flame);
+}
+
+.gc-btn-secondary {
+  background: var(--surface-2);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+}
+
+.gc-btn-secondary:hover:not(:disabled) {
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+}
+
+.gc-btn-cyan {
+  background: rgba(0, 217, 255, 0.12);
+  color: var(--gc-cyan);
+  border: 1px solid rgba(0, 217, 255, 0.25);
+}
+
+.gc-btn-cyan:hover:not(:disabled) {
+  background: rgba(0, 217, 255, 0.2);
+  box-shadow: var(--shadow-glow-cyan);
+}
+
+.gc-btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+}
+
+.gc-btn-ghost:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--text-primary);
+}
+
+/* ── Badges ── */
+.gc-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gc-badge-cyan { background: rgba(0, 217, 255, 0.12); color: var(--gc-cyan); }
+.gc-badge-gold { background: rgba(255, 184, 0, 0.12); color: var(--gc-gold); }
+.gc-badge-red { background: rgba(239, 68, 68, 0.12); color: var(--status-error); }
+.gc-badge-green { background: rgba(16, 185, 129, 0.12); color: var(--status-success); }
+.gc-badge-purple { background: rgba(139, 92, 246, 0.12); color: var(--stage-present); }
+.gc-badge-blue { background: rgba(59, 130, 246, 0.12); color: var(--stage-refine); }
+.gc-badge-pink { background: rgba(255, 0, 110, 0.12); color: var(--gc-magenta); }
+.gc-badge-flame { background: rgba(242, 113, 35, 0.12); color: var(--op-flame); }
+
+/* Status badges */
+.gc-status {
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gc-status-running { background: rgba(0, 217, 255, 0.12); color: var(--gc-cyan); }
+.gc-status-completed { background: rgba(16, 185, 129, 0.12); color: var(--status-success); }
+.gc-status-paused { background: rgba(255, 184, 0, 0.12); color: var(--gc-gold); }
+.gc-status-failed { background: rgba(239, 68, 68, 0.12); color: var(--status-error); }
+
+/* ── Cards ── */
+.gc-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  transition: border-color var(--transition-fast);
+}
+
+.gc-card:hover {
+  border-color: var(--border-default);
+}
+
+.gc-card-header {
+  font-family: var(--font-data);
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: var(--space-xs);
+  color: var(--text-primary);
+}
+
+/* ── Form Elements ── */
+.gc-input,
+.gc-select,
+.gc-textarea {
+  background: var(--surface-2);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: 14px;
+  width: 100%;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.gc-input:focus,
+.gc-select:focus,
+.gc-textarea:focus {
+  outline: none;
+  border-color: rgba(0, 217, 255, 0.4);
+  box-shadow: 0 0 0 2px rgba(0, 217, 255, 0.1);
+}
+
+.gc-textarea {
+  resize: vertical;
+  min-height: 120px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.gc-label {
+  font-family: var(--font-data);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-xs);
+  display: block;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface-3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(233, 231, 228, 0.15);
+}
+
+/* ── Spinner ── */
+.gc-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--surface-3);
+  border-top-color: var(--gc-cyan);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}

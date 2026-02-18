@@ -1,11 +1,19 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api';
+import './SimulationLauncher.css';
 
-const PRESET_INFO = {
-  quick_test: { label: 'Quick Test', desc: '3 rounds, 3 stages', cost: '$5-10', time: '15-30 min' },
-  message_lab: { label: 'Message Lab', desc: '6 rounds, 5 stages', cost: '$15-40', time: '1-2 hrs' },
-  genesis_chamber: { label: 'Genesis Chamber', desc: '8 rounds, 5 stages', cost: '$25-60', time: '2-4 hrs' },
-  assembly_line: { label: 'Assembly Line', desc: '5 rounds, 5 stages', cost: '$10-30', time: '1-2 hrs' },
+const PRESET_ICONS = {
+  quick_test: '\u26A1',
+  message_lab: '\u{1F4AC}',
+  genesis_chamber: '\u{1F52E}',
+  assembly_line: '\u{1F3ED}',
+};
+
+const PRESET_COLORS = {
+  quick_test: 'var(--gc-cyan)',
+  message_lab: 'var(--gc-gold)',
+  genesis_chamber: 'var(--op-flame)',
+  assembly_line: 'var(--stage-present)',
 };
 
 export default function SimulationLauncher({ onStart }) {
@@ -15,6 +23,7 @@ export default function SimulationLauncher({ onStart }) {
   const [selectedParticipants, setSelectedParticipants] = useState([]);
   const [brief, setBrief] = useState('');
   const [isStarting, setIsStarting] = useState(false);
+  const [loadError, setLoadError] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -28,10 +37,12 @@ export default function SimulationLauncher({ onStart }) {
       ]);
       setSouls(soulsData);
       setPresets(presetsData);
-      // Select first 3 participants by default
-      setSelectedParticipants(soulsData.filter(s => s.id !== 'steve-jobs').slice(0, 3).map(s => s.id));
+      setSelectedParticipants(
+        soulsData.filter(s => s.id !== 'steve-jobs').slice(0, 3).map(s => s.id)
+      );
     } catch (e) {
       console.error('Failed to load launcher data:', e);
+      setLoadError('Failed to load configuration. Is the backend running?');
     }
   };
 
@@ -94,62 +105,110 @@ export default function SimulationLauncher({ onStart }) {
     }
   };
 
+  const currentPreset = presets[selectedPreset];
+
   return (
     <div className="launcher">
-      <h1>Genesis <span>Chamber</span></h1>
-      <p className="subtitle">Multi-AI Creative Simulation Engine</p>
+      {/* Hero */}
+      <div className="launcher-hero">
+        <h1 className="launcher-heading">
+          Genesis<span className="launcher-heading-accent">Chamber</span>
+        </h1>
+        <p className="launcher-tagline">
+          Where legendary minds converge to create the extraordinary
+        </p>
+      </div>
 
-      <div style={{ marginBottom: 24 }}>
-        <label className="genesis-label">Simulation Preset</label>
+      {loadError && (
+        <div className="launcher-error">
+          {loadError}
+          <button className="gc-btn gc-btn-secondary" onClick={loadData}>Retry</button>
+        </div>
+      )}
+
+      {/* Preset Selection */}
+      <section className="launcher-section">
+        <label className="gc-label">Simulation Type</label>
         <div className="preset-grid">
-          {Object.entries(PRESET_INFO).map(([key, info]) => (
+          {Object.entries(presets).map(([key, preset]) => (
             <div
               key={key}
               className={`preset-card ${selectedPreset === key ? 'selected' : ''}`}
               onClick={() => setSelectedPreset(key)}
+              style={{ '--preset-color': PRESET_COLORS[key] || 'var(--gc-cyan)' }}
             >
-              <div className="preset-name">{info.label}</div>
-              <div className="preset-info">{info.desc}</div>
-              <div className="preset-info">{info.cost} | {info.time}</div>
+              <div className="preset-icon">{PRESET_ICONS[key] || '\u2728'}</div>
+              <div className="preset-name">{preset.name}</div>
+              <div className="preset-desc">
+                {preset.rounds} rounds, {preset.stages_per_round} stages
+              </div>
+              {preset.cost_estimate && (
+                <div className="preset-cost">{preset.cost_estimate}</div>
+              )}
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
-      <div style={{ marginBottom: 24 }}>
-        <label className="genesis-label">Participants ({selectedParticipants.length} selected)</label>
+      {/* Participants */}
+      <section className="launcher-section">
+        <label className="gc-label">
+          Participants ({selectedParticipants.length} selected)
+        </label>
         <div className="participant-grid">
-          {souls.filter(s => s.id !== 'steve-jobs').map(soul => (
-            <div
-              key={soul.id}
-              className={`participant-chip ${selectedParticipants.includes(soul.id) ? 'selected' : ''}`}
-              onClick={() => toggleParticipant(soul.id)}
-            >
-              <div className="color-dot" style={{ background: soul.color }} />
-              <span className="participant-name">{soul.name}</span>
-            </div>
-          ))}
+          {souls.filter(s => s.id !== 'steve-jobs').map(soul => {
+            const isSelected = selectedParticipants.includes(soul.id);
+            return (
+              <div
+                key={soul.id}
+                className={`participant-card ${isSelected ? 'selected' : ''}`}
+                onClick={() => toggleParticipant(soul.id)}
+              >
+                <div
+                  className="participant-avatar"
+                  style={{ borderColor: soul.color, background: isSelected ? soul.color : 'transparent' }}
+                >
+                  <span className="participant-initial" style={{ color: isSelected ? 'var(--surface-0)' : soul.color }}>
+                    {(soul.name || '?')[0]}
+                  </span>
+                </div>
+                <span className="participant-name">{soul.name}</span>
+                {isSelected && <span className="participant-check">\u2713</span>}
+              </div>
+            );
+          })}
         </div>
-      </div>
+      </section>
 
-      <div style={{ marginBottom: 24 }}>
-        <label className="genesis-label">Project Brief</label>
+      {/* Brief */}
+      <section className="launcher-section">
+        <label className="gc-label">Project Brief</label>
         <textarea
-          className="genesis-textarea"
+          className="gc-textarea launcher-brief"
           value={brief}
           onChange={(e) => setBrief(e.target.value)}
           placeholder="Describe the creative challenge. What do you want the council to create?"
-          rows={6}
+          rows={5}
         />
-      </div>
+        <div className="launcher-brief-count">
+          {brief.length > 0 ? `${brief.length} characters` : 'Optional — a default brief will be used'}
+        </div>
+      </section>
 
+      {/* Launch */}
       <button
-        className="genesis-btn genesis-btn-primary"
+        className="launcher-start-btn"
         onClick={handleStart}
         disabled={isStarting || selectedParticipants.length === 0}
-        style={{ width: '100%', padding: '14px', fontSize: '16px' }}
       >
-        {isStarting ? 'Starting Simulation...' : `Launch ${PRESET_INFO[selectedPreset]?.label || 'Simulation'}`}
+        {isStarting ? (
+          <>
+            <span className="gc-spinner" />
+            Starting Simulation...
+          </>
+        ) : (
+          `Launch ${currentPreset?.name || 'Simulation'}`
+        )}
       </button>
     </div>
   );
