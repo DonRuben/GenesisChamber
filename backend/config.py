@@ -37,6 +37,7 @@ SOULS_DIR = "souls/"
 BRIEFS_DIR = "briefs/"
 CONTEXT_DIR = "context/"
 SIMULATION_OUTPUT_DIR = "output/"
+UPLOADS_DIR = "output/uploads/"
 
 # External API keys (for future media integration)
 FAL_KEY = os.getenv("FAL_KEY", "")

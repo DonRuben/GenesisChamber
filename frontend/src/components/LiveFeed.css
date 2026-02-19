@@ -1,0 +1,84 @@
+/* =============================================
+   LIVE FEED — Real-time activity stream
+   ============================================= */
+
+.lf-container {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  max-height: 280px;
+  overflow-y: auto;
+  animation: fadeIn var(--transition-medium);
+}
+
+.lf-header {
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gc-cyan);
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky;
+  top: 0;
+  background: var(--surface-1);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.lf-header::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gc-cyan);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.lf-events {
+  padding: var(--space-xs) var(--space-md);
+}
+
+.lf-event {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  padding: 4px 0;
+  animation: fadeIn var(--transition-fast);
+}
+
+.lf-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.lf-text {
+  font-family: var(--font-data);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.lf-event-stage .lf-text {
+  color: var(--gc-cyan);
+  font-weight: 600;
+}
+
+.lf-event-round .lf-text {
+  color: var(--gc-gold);
+  font-weight: 600;
+}
+
+.lf-empty {
+  font-family: var(--font-data);
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: var(--space-md);
+  text-align: center;
+}

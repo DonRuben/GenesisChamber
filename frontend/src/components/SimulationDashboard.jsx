@@ -10,10 +10,12 @@ import TranscriptViewer from './TranscriptViewer';
 import PresentationGallery from './PresentationGallery';
 import StatusHeader from './StatusHeader';
 import OutputPanel from './OutputPanel';
+import LiveFeed from './LiveFeed';
+import ChamberAnimation from './ChamberAnimation';
 import HelpTooltip from './HelpTooltip';
 import { helpContent } from './helpContent';
 import { SkeletonGrid } from './Skeleton';
-import { IconDiamond, IconGrid, IconEye, IconCompass, IconScroll, IconPackage, IconSpark } from './Icons';
+import { IconDiamond, IconGrid, IconEye, IconCompass, IconScroll, IconPackage, IconSpark, IconError } from './Icons';
 import './SimulationDashboard.css';
 
 const VIEW_TABS = [
@@ -31,11 +33,19 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
   const tabsRef = useRef(null);
   const [tabsOverflow, setTabsOverflow] = useState(false);
 
+  // Live SSE event feed
+  const [liveEvents, setLiveEvents] = useState([]);
+  const liveEventsRef = useRef([]);
+
   useEffect(() => {
     if (currentSimId) {
       loadSimState(currentSimId);
+      setLiveEvents([]);
+      liveEventsRef.current = [];
     } else {
       setSimState(null);
+      setLiveEvents([]);
+      liveEventsRef.current = [];
     }
   }, [currentSimId]);
 
@@ -69,7 +79,18 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
     }
   };
 
-  const handleStart = useCallback((simId) => {
+  // Receive live SSE events from the launcher's streaming connection
+  const addLiveEvent = useCallback((event) => {
+    liveEventsRef.current = [...liveEventsRef.current.slice(-99), event];
+    setLiveEvents([...liveEventsRef.current]);
+  }, []);
+
+  const handleStart = useCallback((simId, sseEvents) => {
+    // If SSE events were provided from the streaming launch, add them
+    if (sseEvents && sseEvents.length > 0) {
+      liveEventsRef.current = sseEvents;
+      setLiveEvents([...sseEvents]);
+    }
     onSelectSim(simId);
     onRefreshList?.();
   }, [onSelectSim, onRefreshList]);
@@ -93,7 +114,7 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
   };
 
   if (!currentSimId) {
-    return <SimulationLauncher onStart={handleStart} />;
+    return <SimulationLauncher onStart={handleStart} onLiveEvent={addLiveEvent} />;
   }
 
   if (!simState) {
@@ -111,6 +132,15 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
   const allConcepts = [...activeConcepts, ...eliminatedConcepts];
   const roundData = simState.rounds?.find(r => r.round_num === selectedRound);
   const pendingGate = simState.quality_gates?.find(g => g.status === 'pending');
+  const errorMessage = simState.event_log?.find(e => e.type === 'error')?.message;
+
+  // Build participant color map for LiveFeed
+  const participantColors = {};
+  if (simState.config?.participants) {
+    for (const [pid, p] of Object.entries(simState.config.participants)) {
+      participantColors[pid] = p.color || '#666';
+    }
+  }
 
   // Build tabs — add Output tab only for completed sims
   const tabs = simState.status === 'completed'
@@ -169,20 +199,42 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
             <h3 className="dashboard-section-title">
               Active Concepts <span className="dashboard-section-count">{activeConcepts.length}</span>
             </h3>
-            {activeConcepts.length === 0 ? (
+            {simState.status === 'failed' && errorMessage ? (
+              <div className="dashboard-error-block">
+                <IconError size={32} />
+                <div className="dashboard-error-title">Simulation Failed</div>
+                <div className="dashboard-error-message">{errorMessage}</div>
+              </div>
+            ) : activeConcepts.length === 0 && simState.status === 'running' ? (
+              <ChamberAnimation
+                participants={simState.config?.participants || {}}
+                currentStage={simState.current_stage_name || 'creation'}
+                currentRound={simState.current_round || 1}
+                activeParticipants={
+                  liveEvents
+                    .filter(e => e.type === 'participant_thinking')
+                    .map(e => e.persona_id)
+                }
+                recentEvents={liveEvents}
+                participantColors={participantColors}
+              />
+            ) : activeConcepts.length === 0 ? (
               <div className="dashboard-empty">
                 <IconSpark size={32} className="dashboard-empty-icon" />
-                <div className="dashboard-empty-text">
-                  {simState.status === 'running' ? 'Concepts are being generated...' : 'No active concepts'}
-                </div>
-                <div className="dashboard-empty-hint">
-                  {simState.status === 'running' ? 'Each participant is crafting their vision' : 'Start a new simulation to begin'}
-                </div>
+                <div className="dashboard-empty-text">No active concepts</div>
+                <div className="dashboard-empty-hint">Start a new simulation to begin</div>
               </div>
             ) : (
               activeConcepts.map(concept => (
                 <ConceptCard key={concept.id} concept={concept} showDetails />
               ))
+            )}
+
+            {/* Live Feed — shown when simulation is running */}
+            {simState.status === 'running' && liveEvents.length > 0 && (
+              <div style={{ marginTop: 'var(--space-md)' }}>
+                <LiveFeed events={liveEvents} participantColors={participantColors} />
+              </div>
             )}
 
             {eliminatedConcepts.length > 0 && (

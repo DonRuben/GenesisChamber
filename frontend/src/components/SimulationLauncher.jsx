@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../api';
-import { IconLightning, IconMessage, IconCrystalBall, IconFactory, IconSparkle, IconCheck, IconUpload } from './Icons';
+import { IconLightning, IconMessage, IconCrystalBall, IconFactory, IconSparkle, IconCheck, IconUpload, IconInfo } from './Icons';
 import HelpTooltip from './HelpTooltip';
 import { helpContent } from './helpContent';
 import ModelSelector from './ModelSelector';
 import ConfigSummary from './ConfigSummary';
 import StepIndicator from './StepIndicator';
+import SoulInfoCard from './SoulInfoCard';
 import { getDisplayName } from '../utils/modelDisplayNames';
 import './SimulationLauncher.css';
 
@@ -97,7 +98,7 @@ const UPLOAD_COLORS = [
   '#8B5CF6', '#F97316', '#DC2626', '#06B6D4', '#A3E635', '#D946EF',
 ];
 
-export default function SimulationLauncher({ onStart }) {
+export default function SimulationLauncher({ onStart, onLiveEvent }) {
   const [souls, setSouls] = useState([]);
   const [presets, setPresets] = useState({});
   const [availableModels, setAvailableModels] = useState(null);
@@ -112,6 +113,11 @@ export default function SimulationLauncher({ onStart }) {
   const fileInputRef = useRef(null);
   // Dual-role: leadership personas added as active participants
   const [dualRoleActive, setDualRoleActive] = useState({ 'jony-ive': false });
+  // Soul info card
+  const [infoSoul, setInfoSoul] = useState(null);
+  // Reference file uploads (HTML/ZIP)
+  const [referenceFiles, setReferenceFiles] = useState([]);
+  const refFileInputRef = useRef(null);
   // Soul upload
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadTeam, setUploadTeam] = useState('custom');
@@ -362,10 +368,38 @@ export default function SimulationLauncher({ onStart }) {
         elimination_schedule: preset.elimination_schedule || {},
         quality_gates: preset.quality_gates || [],
         brief: brief || 'Create a compelling brand concept for a modern AI platform.',
+        brand_context: referenceFiles.length > 0
+          ? referenceFiles.map(rf => ({
+              id: rf.id,
+              filename: rf.filename,
+              type: rf.type,
+              url: api.getUploadUrl(rf.id, 'index.html'),
+            }))
+          : undefined,
       };
 
-      const result = await api.startSimulation(config);
-      if (onStart) onStart(result.sim_id);
+      // Try SSE streaming first for live events, fall back to non-streaming
+      let simId = null;
+      const collectedEvents = [];
+      try {
+        await api.startSimulationStream(config, (type, event) => {
+          if (type === 'simulation_started' && event.sim_id) {
+            simId = event.sim_id;
+            // Navigate to dashboard immediately once we have the sim_id
+            if (onStart) onStart(simId, collectedEvents);
+          }
+          // Forward live events to dashboard
+          collectedEvents.push(event);
+          if (onLiveEvent) onLiveEvent(event);
+        });
+      } catch (streamErr) {
+        console.warn('SSE streaming failed, falling back to non-streaming:', streamErr);
+        if (!simId) {
+          const result = await api.startSimulation(config);
+          simId = result.sim_id;
+          if (onStart) onStart(simId);
+        }
+      }
     } catch (e) {
       console.error('Failed to start simulation:', e);
     } finally {
@@ -498,6 +532,14 @@ export default function SimulationLauncher({ onStart }) {
                             {getDisplayName(modelAssignments[soul.id] || 'anthropic/claude-sonnet-4.6')}
                           </span>
                         </div>
+                        <button
+                          className="participant-info-btn"
+                          onClick={(e) => { e.stopPropagation(); setInfoSoul(soul); }}
+                          type="button"
+                          aria-label={`Info about ${soul.name}`}
+                        >
+                          <IconInfo size={14} />
+                        </button>
                         {isSelected && <span className="participant-check"><IconCheck size={14} /></span>}
                       </div>
                     );
@@ -625,6 +667,67 @@ export default function SimulationLauncher({ onStart }) {
               </div>
             </div>
           )}
+        </section>
+
+        {/* Reference Files (HTML/ZIP) */}
+        <section className="launcher-section">
+          <label className="gc-label">
+            Reference Files
+            <HelpTooltip text="Upload HTML or ZIP files as reference material. ZIP files containing websites will be automatically extracted and can be previewed." position="right" />
+          </label>
+          <div className="ref-upload-area">
+            <button
+              className="brief-upload-btn"
+              type="button"
+              onClick={() => refFileInputRef.current?.click()}
+            >
+              <IconUpload size={12} />
+              Upload HTML / ZIP
+            </button>
+            <input
+              ref={refFileInputRef}
+              type="file"
+              accept=".html,.htm,.zip"
+              style={{ display: 'none' }}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                try {
+                  const result = await api.uploadReference(file);
+                  setReferenceFiles(prev => [...prev, result]);
+                } catch (err) {
+                  console.error('Failed to upload reference file:', err);
+                }
+                e.target.value = '';
+              }}
+            />
+            {referenceFiles.length > 0 && (
+              <div className="ref-file-list">
+                {referenceFiles.map(rf => (
+                  <div key={rf.id} className="ref-file-badge">
+                    <span className="brief-file-badge">{rf.filename || rf.type}</span>
+                    <button
+                      className="ref-file-remove"
+                      type="button"
+                      onClick={() => setReferenceFiles(prev => prev.filter(f => f.id !== rf.id))}
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {referenceFiles.some(rf => rf.type === 'html' || rf.files?.includes('index.html')) && (
+              <div className="ref-preview">
+                <iframe
+                  src={api.getUploadUrl(referenceFiles.find(rf => rf.type === 'html' || rf.files?.includes('index.html')).id, 'index.html')}
+                  title="Reference preview"
+                  sandbox="allow-scripts allow-same-origin"
+                  className="ref-iframe"
+                />
+              </div>
+            )}
+          </div>
         </section>
 
         {/* Model Configuration (shown when models are available and participants selected) */}
@@ -770,6 +873,11 @@ export default function SimulationLauncher({ onStart }) {
           </button>
         </div>
       </div>
+
+      {/* Soul Info Card Modal */}
+      {infoSoul && (
+        <SoulInfoCard soul={infoSoul} onClose={() => setInfoSoul(null)} />
+      )}
     </div>
   );
 }

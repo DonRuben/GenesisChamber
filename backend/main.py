@@ -1,6 +1,6 @@
 """FastAPI backend for LLM Council + Genesis Chamber."""
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, FileResponse
 from pydantic import BaseModel
@@ -8,6 +8,7 @@ from typing import List, Dict, Any, Optional
 import uuid
 import json
 import asyncio
+import zipfile
 from pathlib import Path
 
 import os
@@ -20,7 +21,7 @@ from .simulation_store import SimulationStore
 from .config import (
     SIMULATION_PRESETS, DEFAULT_PARTICIPANTS, DEFAULT_MODERATOR,
     DEFAULT_EVALUATOR, SOULS_DIR, PERSONA_COLORS, SIMULATION_OUTPUT_DIR,
-    TEAMS, PERSONA_TEAMS,
+    TEAMS, PERSONA_TEAMS, OPENROUTER_API_KEY, UPLOADS_DIR,
 )
 from .output_engine import OutputEngine
 from .image_generator import ImageGenerator
@@ -215,6 +216,33 @@ async def send_message_stream(conversation_id: str, request: SendMessageRequest)
 _running_simulations: Dict[str, GenesisSimulation] = {}
 
 
+# Canonical name lookup from config — source of truth for known personas
+import re
+_CANONICAL_NAMES = {pid: p["name"] for pid, p in DEFAULT_PARTICIPANTS.items()}
+_CANONICAL_NAMES[DEFAULT_MODERATOR["soul_document"].split("/")[-1].replace(".md", "")] = DEFAULT_MODERATOR["name"]
+_CANONICAL_NAMES[DEFAULT_EVALUATOR["soul_document"].split("/")[-1].replace(".md", "")] = DEFAULT_EVALUATOR["name"]
+
+
+def clean_soul_name(raw_name: str, persona_id: str) -> str:
+    """Extract a clean display name from a soul document heading."""
+    # Try canonical lookup first (known personas)
+    if persona_id in _CANONICAL_NAMES:
+        return _CANONICAL_NAMES[persona_id]
+
+    # Regex cleanup for custom/uploaded souls
+    name = raw_name
+    # Strip prefix: "SOUL DOCUMENT: "
+    name = re.sub(r'^SOUL\s+DOCUMENT\s*[:]\s*', '', name, flags=re.IGNORECASE)
+    # Strip suffixes: ": SOUL DOCUMENT", "— SOUL DOCUMENT", ": DEFINITIVE SOUL DOCUMENT", etc.
+    name = re.sub(r'\s*[:\u2014\u2013—-]+\s*(?:COMPLETE\s+|DEFINITIVE\s+|GENESIS\s+CHAMBER\s+)?SOUL\s+DOCUMENT.*$', '', name, flags=re.IGNORECASE)
+    # Title-case if ALL CAPS
+    if name == name.upper() and len(name) > 1:
+        name = name.title()
+        # Fix "Van" → "van" for names like "Tobias van Schneider"
+        name = re.sub(r'\bVan\b', 'van', name)
+    return name.strip()
+
+
 @app.get("/api/souls")
 async def list_souls():
     """List available soul documents with team metadata."""
@@ -222,16 +250,16 @@ async def list_souls():
     if not souls_path.exists():
         return []
 
-    import re
     souls = []
     for f in sorted(souls_path.glob("*.md")):
         persona_id = f.stem
         # Read first few lines to get name
         with open(f, "r") as fh:
             first_lines = fh.read(500)
-        # Extract name from # SOUL DOCUMENT: NAME or # NAME
-        name_match = re.search(r'^#\s+(?:SOUL DOCUMENT:\s*)?(.+)', first_lines, re.MULTILINE)
-        name = name_match.group(1).strip() if name_match else persona_id.replace("-", " ").title()
+        # Extract name from heading
+        name_match = re.search(r'^#\s+(.+)', first_lines, re.MULTILINE)
+        raw_name = name_match.group(1).strip() if name_match else persona_id.replace("-", " ").title()
+        name = clean_soul_name(raw_name, persona_id)
 
         # Team membership
         team_info = PERSONA_TEAMS.get(persona_id, {"team": "custom"})
@@ -263,6 +291,9 @@ async def list_simulations():
 @app.post("/api/simulation/start")
 async def start_simulation(request: StartSimulationRequest, background_tasks: BackgroundTasks):
     """Start a new simulation. Returns sim_id immediately, runs in background."""
+    if not OPENROUTER_API_KEY:
+        raise HTTPException(status_code=500, detail="OPENROUTER_API_KEY not configured. Set it in your .env file.")
+
     config = request.config
     sim = GenesisSimulation(config)
     _running_simulations[sim.sim_id] = sim
@@ -271,16 +302,18 @@ async def start_simulation(request: StartSimulationRequest, background_tasks: Ba
         try:
             await sim.run()
         except Exception as e:
+            import traceback
             sim.state.status = "failed"
             sim.state.event_log.append({
                 "type": "error",
                 "message": str(e),
+                "traceback": traceback.format_exc(),
             })
             simulation_store.save_state(sim.state)
         finally:
             _running_simulations.pop(sim.sim_id, None)
 
-    background_tasks.add_task(asyncio.ensure_future, run_sim())
+    asyncio.create_task(run_sim())
 
     return {"sim_id": sim.sim_id, "status": "started"}
 
@@ -288,6 +321,9 @@ async def start_simulation(request: StartSimulationRequest, background_tasks: Ba
 @app.post("/api/simulation/start/stream")
 async def start_simulation_stream(request: StartSimulationRequest):
     """Start a new simulation with SSE streaming."""
+    if not OPENROUTER_API_KEY:
+        raise HTTPException(status_code=500, detail="OPENROUTER_API_KEY not configured. Set it in your .env file.")
+
     config = request.config
     sim = GenesisSimulation(config)
     _running_simulations[sim.sim_id] = sim
@@ -320,6 +356,25 @@ async def start_simulation_stream(request: StartSimulationRequest):
                 "gate": gate,
             })
 
+        async def on_stage_start(round_num, stage_num, stage_name, participants):
+            await event_queue.put({
+                "type": "stage_start",
+                "round": round_num,
+                "stage": stage_num,
+                "stage_name": stage_name,
+                "participants": participants,
+            })
+
+        async def on_participant_event(round_num, event_type, pid, display_name, stage_name, extra=None):
+            await event_queue.put({
+                "type": f"participant_{event_type}",
+                "round": round_num,
+                "persona_id": pid,
+                "persona_name": display_name,
+                "stage_name": stage_name,
+                "extra": extra,
+            })
+
         async def run_and_signal():
             try:
                 yield_data = {"type": "simulation_started", "sim_id": sim.sim_id}
@@ -329,6 +384,8 @@ async def start_simulation_stream(request: StartSimulationRequest):
                     on_stage_complete=on_stage,
                     on_round_complete=on_round,
                     on_gate_reached=on_gate,
+                    on_stage_start=on_stage_start,
+                    on_participant_event=on_participant_event,
                 )
 
                 await event_queue.put({
@@ -370,6 +427,7 @@ async def get_simulation_status(sim_id: str):
     # Check running simulations first
     if sim_id in _running_simulations:
         sim = _running_simulations[sim_id]
+        error_msg = next((e.get("message") for e in sim.state.event_log if e.get("type") == "error"), None)
         return {
             "id": sim_id,
             "status": sim.state.status,
@@ -377,6 +435,7 @@ async def get_simulation_status(sim_id: str):
             "current_stage": sim.state.current_stage,
             "current_stage_name": sim.state.current_stage_name,
             "total_rounds": sim.config.rounds,
+            "error": error_msg,
         }
 
     # Check stored state
@@ -384,6 +443,7 @@ async def get_simulation_status(sim_id: str):
     if not state:
         raise HTTPException(status_code=404, detail="Simulation not found")
 
+    error_msg = next((e.get("message") for e in state.event_log if e.get("type") == "error"), None)
     return {
         "id": sim_id,
         "status": state.status,
@@ -391,6 +451,7 @@ async def get_simulation_status(sim_id: str):
         "current_stage": state.current_stage,
         "current_stage_name": state.current_stage_name,
         "total_rounds": state.config.rounds,
+        "error": error_msg,
     }
 
 
@@ -586,8 +647,6 @@ async def get_teams():
     }
 
 
-from fastapi import UploadFile, File, Form
-
 @app.post("/api/souls/upload")
 async def upload_soul_file(
     file: UploadFile = File(...),
@@ -595,8 +654,6 @@ async def upload_soul_file(
     color: str = Form("#666666"),
 ):
     """Upload a new soul document (.md file). The system extracts the persona name and registers it."""
-    import re
-
     # Validate file type
     if not file.filename.endswith(".md"):
         raise HTTPException(status_code=400, detail="Only .md files are supported")
@@ -608,9 +665,10 @@ async def upload_soul_file(
     # Derive persona ID from filename
     persona_id = file.filename.replace(".md", "").lower().replace(" ", "-")
 
-    # Extract name from soul document header
-    name_match = re.search(r'^#\s+(?:SOUL DOCUMENT:\s*)?(.+)', text, re.MULTILINE)
-    name = name_match.group(1).strip() if name_match else persona_id.replace("-", " ").title()
+    # Extract and clean name from soul document header
+    name_match = re.search(r'^#\s+(.+)', text, re.MULTILINE)
+    raw_name = name_match.group(1).strip() if name_match else persona_id.replace("-", " ").title()
+    name = clean_soul_name(raw_name, persona_id)
 
     # Save to souls directory
     souls_path = Path(SOULS_DIR)
@@ -800,6 +858,105 @@ async def get_generated_videos(sim_id: str):
         videos = json.load(f)
 
     return {"videos": videos, "status": "complete"}
+
+
+# === REFERENCE FILE UPLOAD ENDPOINTS ===
+
+MAX_UPLOAD_SIZE = 50 * 1024 * 1024  # 50MB
+
+
+@app.post("/api/upload/reference")
+async def upload_reference_file(file: UploadFile = File(...)):
+    """Upload an HTML or ZIP file as reference material."""
+    filename = file.filename or ""
+    ext = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
+
+    if ext not in ("html", "htm", "zip"):
+        raise HTTPException(status_code=400, detail="Only .html, .htm, and .zip files are supported")
+
+    content = await file.read()
+    if len(content) > MAX_UPLOAD_SIZE:
+        raise HTTPException(status_code=400, detail="File too large (max 50MB)")
+
+    upload_id = str(uuid.uuid4())[:8]
+    upload_path = Path(UPLOADS_DIR) / upload_id
+    upload_path.mkdir(parents=True, exist_ok=True)
+
+    file_list = []
+
+    if ext == "zip":
+        # Extract ZIP file with path traversal protection
+        import io
+        try:
+            with zipfile.ZipFile(io.BytesIO(content)) as zf:
+                for member in zf.namelist():
+                    # Security: prevent path traversal
+                    member_path = Path(member)
+                    if member_path.is_absolute() or ".." in member_path.parts:
+                        continue
+                    dest = upload_path / member
+                    if member.endswith("/"):
+                        dest.mkdir(parents=True, exist_ok=True)
+                    else:
+                        dest.parent.mkdir(parents=True, exist_ok=True)
+                        dest.write_bytes(zf.read(member))
+                        file_list.append(member)
+        except zipfile.BadZipFile:
+            raise HTTPException(status_code=400, detail="Invalid ZIP file")
+    else:
+        # Save HTML file directly
+        dest = upload_path / "index.html"
+        dest.write_bytes(content)
+        file_list.append("index.html")
+
+    return {
+        "id": upload_id,
+        "url": f"/api/uploads/{upload_id}/",
+        "type": "zip" if ext == "zip" else "html",
+        "files": file_list,
+        "filename": filename,
+    }
+
+
+@app.get("/api/uploads/{upload_id}/{path:path}")
+async def serve_upload(upload_id: str, path: str = "index.html"):
+    """Serve uploaded/extracted static files."""
+    # Security: validate upload_id and path
+    if ".." in upload_id or "/" in upload_id:
+        raise HTTPException(status_code=400, detail="Invalid upload ID")
+
+    file_path = Path(UPLOADS_DIR) / upload_id / path
+    resolved = file_path.resolve()
+    base = Path(UPLOADS_DIR).resolve() / upload_id
+
+    # Prevent path traversal
+    if not str(resolved).startswith(str(base)):
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    if not resolved.is_file():
+        raise HTTPException(status_code=404, detail="File not found")
+
+    # Guess content type
+    suffix = resolved.suffix.lower()
+    content_types = {
+        ".html": "text/html",
+        ".htm": "text/html",
+        ".css": "text/css",
+        ".js": "application/javascript",
+        ".json": "application/json",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".gif": "image/gif",
+        ".svg": "image/svg+xml",
+        ".ico": "image/x-icon",
+        ".woff": "font/woff",
+        ".woff2": "font/woff2",
+        ".ttf": "font/ttf",
+    }
+    media_type = content_types.get(suffix, "application/octet-stream")
+
+    return FileResponse(str(resolved), media_type=media_type)
 
 
 if __name__ == "__main__":

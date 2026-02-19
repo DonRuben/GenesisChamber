@@ -296,6 +296,21 @@ export const api = {
     return response.json();
   },
 
+  async uploadReference(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await fetch(`${API_BASE}/api/upload/reference`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!response.ok) throw new Error('Failed to upload reference file');
+    return response.json();
+  },
+
+  getUploadUrl(uploadId, path = '') {
+    return `${API_BASE}/api/uploads/${uploadId}/${path}`;
+  },
+
   async quickStart(preset = 'quick_test', brief = null, participants = null) {
     const params = new URLSearchParams({ preset });
     if (brief) params.set('brief', brief);

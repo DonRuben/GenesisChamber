@@ -78,10 +78,16 @@ export default function StatusHeader({ simState }) {
       </div>
 
       <div className="sh-breadcrumb">
-        Round {currentRound}/{totalRounds}
-        {roundMode && <span className="sh-breadcrumb-mode"> — {roundMode}</span>}
-        {simState.current_stage_name && (
-          <span className="sh-breadcrumb-stage"> › {simState.current_stage_name}</span>
+        {simState.status === 'failed' ? (
+          <span className="sh-breadcrumb-error">Simulation failed — check error details below</span>
+        ) : (
+          <>
+            Round {currentRound}/{totalRounds}
+            {roundMode && <span className="sh-breadcrumb-mode"> — {roundMode}</span>}
+            {simState.current_stage_name && (
+              <span className="sh-breadcrumb-stage"> › {simState.current_stage_name}</span>
+            )}
+          </>
         )}
       </div>
     </header>
