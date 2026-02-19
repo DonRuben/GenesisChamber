@@ -9,8 +9,18 @@ function scoreColor(score) {
   return 'var(--status-error)';
 }
 
+function isDA(name) {
+  if (!name) return false;
+  const lower = name.toLowerCase();
+  return lower.includes('devil') || lower.includes('advocate') || lower.includes('advocatus');
+}
+
 export default function CritiquePanel({ critiques, concepts }) {
   const [showAnonymous, setShowAnonymous] = useState(true);
+  const [filterCritic, setFilterCritic] = useState('all');
+
+  // Extract unique critic names for filter chips
+  const uniqueCritics = [...new Set((critiques || []).map(c => c.critic_name).filter(Boolean))].sort();
 
   const conceptCritiques = {};
   for (const critique of (critiques || [])) {
@@ -35,6 +45,28 @@ export default function CritiquePanel({ critiques, concepts }) {
         )}
       </div>
 
+      {/* Critic filter — only visible when names are revealed */}
+      {hasData && !showAnonymous && uniqueCritics.length > 1 && (
+        <div className="cp-filters">
+          <span className="cp-filter-label">Critic</span>
+          <button
+            className={`gc-btn gc-btn-ghost cp-filter-btn ${filterCritic === 'all' ? 'cp-filter-active' : ''}`}
+            onClick={() => setFilterCritic('all')}
+          >
+            All
+          </button>
+          {uniqueCritics.map(name => (
+            <button
+              key={name}
+              className={`gc-btn gc-btn-ghost cp-filter-btn ${filterCritic === name ? 'cp-filter-active' : ''} ${isDA(name) ? 'cp-filter-da' : ''}`}
+              onClick={() => setFilterCritic(name)}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+      )}
+
       {!hasData ? (
         <div className="cp-empty">
           <IconEye size={28} className="cp-empty-icon" />
@@ -44,7 +76,15 @@ export default function CritiquePanel({ critiques, concepts }) {
       ) : (
         Object.entries(conceptCritiques).map(([conceptKey, crits]) => {
           const concept = concepts?.find(c => c.id === conceptKey);
-          const avgScore = crits.reduce((sum, c) => sum + (c.score || 0), 0) / crits.length;
+
+          // Apply critic filter
+          const filteredCrits = filterCritic === 'all' || showAnonymous
+            ? crits
+            : crits.filter(c => c.critic_name === filterCritic);
+
+          if (filteredCrits.length === 0) return null;
+
+          const avgScore = filteredCrits.reduce((sum, c) => sum + (c.score || 0), 0) / filteredCrits.length;
           const scorePercent = (avgScore / 10) * 100;
 
           return (
@@ -73,11 +113,14 @@ export default function CritiquePanel({ critiques, concepts }) {
                 />
               </div>
 
-              {crits.map((crit, i) => (
-                <div key={i} className="cp-critique">
+              {filteredCrits.map((crit, i) => (
+                <div key={i} className={`cp-critique ${!showAnonymous && isDA(crit.critic_name) ? 'cp-critique-da' : ''}`}>
                   <div className="cp-critique-header">
                     <span className="cp-critic-name">
                       {showAnonymous ? `Critic ${i + 1}` : crit.critic_name}
+                      {!showAnonymous && isDA(crit.critic_name) && (
+                        <span className="cp-da-badge">DA</span>
+                      )}
                     </span>
                     <span className="cp-critic-score" style={{ color: scoreColor(crit.score) }}>
                       {crit.score}/10

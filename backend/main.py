@@ -11,7 +11,11 @@ import asyncio
 import zipfile
 from pathlib import Path
 
+import io
 import os
+import re
+
+import httpx
 
 from . import storage
 from .council import run_full_council, generate_conversation_title, stage1_collect_responses, stage2_collect_rankings, stage3_synthesize_final, calculate_aggregate_rankings
@@ -754,8 +758,12 @@ async def get_output_file(sim_id: str, filename: str):
     return FileResponse(path=str(path), media_type=media_type)
 
 
+class GenerateImagesRequest(BaseModel):
+    model: Optional[str] = None  # Override auto-selection with specific model key
+
+
 @app.post("/api/simulation/{sim_id}/generate-images")
-async def generate_images(sim_id: str):
+async def generate_images(sim_id: str, request: Optional[GenerateImagesRequest] = None):
     """Generate images for all concept image prompts via fal.ai."""
     state = simulation_store.load_state(sim_id)
     if not state:
@@ -773,13 +781,14 @@ async def generate_images(sim_id: str):
         return {"status": "no_prompts", "count": 0}
 
     generator = ImageGenerator()
+    model_override = request.model if request else None
 
     async def run_generation():
-        await generator.generate_batch(prompts, sim_id)
+        await generator.generate_batch(prompts, sim_id, model_override=model_override)
 
     asyncio.create_task(run_generation())
 
-    return {"status": "generating", "count": len(prompts)}
+    return {"status": "generating", "count": len(prompts), "model": model_override or "auto"}
 
 
 @app.get("/api/simulation/{sim_id}/images")
@@ -880,6 +889,99 @@ async def get_generated_videos(sim_id: str):
         videos = json.load(f)
 
     return {"videos": videos, "status": "complete"}
+
+
+@app.get("/api/simulation/{sim_id}/generated")
+async def get_all_generated(sim_id: str):
+    """Get all generated content (images + videos) combined."""
+    sim_dir = Path(SIMULATION_OUTPUT_DIR) / sim_id
+
+    images = []
+    images_path = sim_dir / "generated_images.json"
+    if images_path.exists():
+        with open(images_path) as f:
+            images = json.load(f)
+
+    videos = []
+    videos_path = sim_dir / "generated_videos.json"
+    if videos_path.exists():
+        with open(videos_path) as f:
+            videos = json.load(f)
+
+    return {
+        "images": images,
+        "videos": videos,
+        "has_content": len(images) > 0 or len(videos) > 0,
+    }
+
+
+@app.get("/api/simulation/{sim_id}/download/all")
+async def download_all_generated(sim_id: str):
+    """Download all generated content as a ZIP file.
+
+    Fetches images/videos from fal.ai URLs and packages them into a ZIP.
+    Note: fal.ai URLs are temporary (~24h), so this is best-effort.
+    """
+    sim_dir = Path(SIMULATION_OUTPUT_DIR) / sim_id
+
+    images = []
+    images_path = sim_dir / "generated_images.json"
+    if images_path.exists():
+        with open(images_path) as f:
+            images = json.load(f)
+
+    videos = []
+    videos_path = sim_dir / "generated_videos.json"
+    if videos_path.exists():
+        with open(videos_path) as f:
+            videos = json.load(f)
+
+    if not images and not videos:
+        raise HTTPException(status_code=404, detail="No generated content to download")
+
+    def safe_filename(name: str, ext: str) -> str:
+        """Make a safe filename from concept name."""
+        safe = re.sub(r'[^\w\s-]', '', name).strip().replace(' ', '_')[:50]
+        return f"{safe}{ext}" if safe else f"unnamed{ext}"
+
+    zip_buffer = io.BytesIO()
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for i, img in enumerate(images):
+                url = img.get("url")
+                name = img.get("concept_name", f"image_{i+1}")
+                if url:
+                    try:
+                        resp = await client.get(url)
+                        if resp.status_code == 200:
+                            fname = safe_filename(name, ".png")
+                            # Avoid duplicate filenames
+                            if fname in [info.filename for info in zf.filelist]:
+                                fname = f"{i+1}_{fname}"
+                            zf.writestr(f"images/{fname}", resp.content)
+                    except Exception as e:
+                        print(f"Failed to download image {name}: {e}")
+
+            for i, vid in enumerate(videos):
+                url = vid.get("url")
+                name = vid.get("concept_name", f"video_{i+1}")
+                if url:
+                    try:
+                        resp = await client.get(url)
+                        if resp.status_code == 200:
+                            fname = safe_filename(name, ".mp4")
+                            if fname in [info.filename for info in zf.filelist]:
+                                fname = f"{i+1}_{fname}"
+                            zf.writestr(f"videos/{fname}", resp.content)
+                    except Exception as e:
+                        print(f"Failed to download video {name}: {e}")
+
+    zip_buffer.seek(0)
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": f"attachment; filename=genesis-chamber-{sim_id[:8]}-generated.zip"},
+    )
 
 
 # === REFERENCE FILE UPLOAD ENDPOINTS ===

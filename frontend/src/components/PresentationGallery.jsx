@@ -5,6 +5,7 @@ import './PresentationGallery.css';
 export default function PresentationGallery({ concepts, rounds }) {
   const [filterRound, setFilterRound] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [filterPersona, setFilterPersona] = useState('all');
 
   const allConcepts = [
     ...(concepts?.active || []),
@@ -15,10 +16,12 @@ export default function PresentationGallery({ concepts, rounds }) {
   const filtered = allConcepts.filter(c => {
     if (filterRound !== 'all' && c.round_created !== parseInt(filterRound)) return false;
     if (filterStatus !== 'all' && c.status !== filterStatus) return false;
+    if (filterPersona !== 'all' && c.persona_name !== filterPersona) return false;
     return true;
   });
 
   const uniqueRounds = [...new Set(allConcepts.map(c => c.round_created))].sort((a, b) => a - b);
+  const uniquePersonas = [...new Set(allConcepts.map(c => c.persona_name).filter(Boolean))].sort();
 
   const STATUS_FILTERS = [
     { key: 'all', label: 'All' },
@@ -57,6 +60,27 @@ export default function PresentationGallery({ concepts, rounds }) {
             </button>
           ))}
         </div>
+
+        {uniquePersonas.length > 1 && (
+          <div className="pg-filter-group">
+            <span className="pg-filter-label">Persona</span>
+            <button
+              className={`gc-btn gc-btn-ghost pg-filter-btn ${filterPersona === 'all' ? 'pg-filter-active' : ''}`}
+              onClick={() => setFilterPersona('all')}
+            >
+              All
+            </button>
+            {uniquePersonas.map(p => (
+              <button
+                key={p}
+                className={`gc-btn gc-btn-ghost pg-filter-btn ${filterPersona === p ? 'pg-filter-active' : ''}`}
+                onClick={() => setFilterPersona(p)}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Count */}

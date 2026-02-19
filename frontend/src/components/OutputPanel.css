@@ -98,6 +98,82 @@
   color: var(--gc-cyan) !important;
 }
 
+/* ── Model Selector ── */
+.op-model-select {
+  margin-top: 4px;
+}
+
+.op-model-label {
+  font-family: var(--font-data);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 3px;
+}
+
+.op-model-dropdown {
+  width: 100%;
+  font-size: 12px !important;
+  padding: 4px 8px !important;
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.op-model-desc {
+  font-family: var(--font-data);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  font-style: italic;
+}
+
+/* ── Tier Info ── */
+.op-tier-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.op-tier-detail {
+  font-family: var(--font-data);
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.op-tier-cost {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gc-cyan);
+  font-weight: 600;
+}
+
+/* ── Model badges in gallery ── */
+.op-gallery-model {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--gc-cyan);
+  background: rgba(0, 217, 255, 0.08);
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-left: 6px;
+}
+
+.op-video-model {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gc-cyan);
+  background: rgba(0, 217, 255, 0.08);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
 /* ── Image Gallery ── */
 .op-gallery {
   margin-top: var(--space-md);

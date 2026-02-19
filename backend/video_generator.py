@@ -14,49 +14,70 @@ import httpx
 from .config import FAL_KEY, SIMULATION_OUTPUT_DIR
 
 
-# fal.ai video model endpoints (via queue API)
+# fal.ai video model endpoints (via queue API) — Updated Feb 2026
 # Using httpx direct REST calls (same pattern as image_generator.py)
 FAL_VIDEO_MODELS = {
-    # Image-to-video (animate a concept image)
-    "kling_i2v": "fal-ai/kling-video/v2.6/pro/image-to-video",
-    "minimax_i2v": "fal-ai/minimax/hailuo-2.3/standard/image-to-video",
-    "luma_i2v": "fal-ai/luma-dream-machine/ray-2/image-to-video",
-    "luma_flash_i2v": "fal-ai/luma-dream-machine/ray-2-flash/image-to-video",
-    # Text-to-video (generate from prompt alone)
-    "kling_t2v": "fal-ai/kling-video/v2.6/pro/text-to-video",
-    "minimax_t2v": "fal-ai/minimax/hailuo-2.3/pro/text-to-video",
-    "luma_t2v": "fal-ai/luma-dream-machine/ray-2",
-    "luma_flash_t2v": "fal-ai/luma-dream-machine/ray-2-flash",
+    # Image-to-Video (Hero tier: Kling 3.0 Pro / Kling O3 Pro)
+    "kling_3_i2v":      "fal-ai/kling-video/v3/pro/image-to-video",            # Kling 3.0 Pro — cinematic, native audio
+    "kling_o3_i2v":     "fal-ai/kling-video/o3/pro/image-to-video",            # Kling O3 Pro — premium tier
+    # Image-to-Video (Standard tier: MiniMax Hailuo 2.3)
+    "minimax_i2v":      "fal-ai/minimax/hailuo-2.3/pro/image-to-video",        # MiniMax Hailuo 2.3 Pro — 1080p
+    "minimax_fast_i2v": "fal-ai/minimax/hailuo-2.3-fast/pro/image-to-video",   # MiniMax Hailuo 2.3 Fast — cheaper
+    # Image-to-Video (Draft tier: Luma)
+    "luma_i2v":         "fal-ai/luma-dream-machine/ray-2/image-to-video",      # Luma Ray 2 — fast, affordable
+    # Text-to-Video
+    "kling_o3_t2v":     "fal-ai/kling-video/o3/pro/text-to-video",             # Kling O3 Pro — top quality t2v
+    "veo_3_1_t2v":      "fal-ai/veo3.1",                                       # Google Veo 3.1 — cinematic, atmospheric
+    "veo_3_1_extend":   "fal-ai/veo3.1/extend-video",                          # Google Veo 3.1 — extend/continue existing video
+    "minimax_t2v":      "fal-ai/minimax/hailuo-2.3/pro/text-to-video",         # MiniMax Hailuo 2.3 Pro t2v
+    "luma_t2v":         "fal-ai/luma-dream-machine/ray-2",                     # Luma Ray 2 — draft t2v
+}
+
+# Human-readable names for the UI
+FAL_VIDEO_MODEL_NAMES = {
+    "kling_3_i2v": "Kling 3.0 (I2V)",
+    "kling_o3_i2v": "Kling O3 (I2V)",
+    "minimax_i2v": "MiniMax Hailuo 2.3 Pro (I2V)",
+    "minimax_fast_i2v": "MiniMax Hailuo 2.3 Fast (I2V)",
+    "luma_i2v": "Luma Ray 2 (I2V)",
+    "kling_o3_t2v": "Kling O3 Pro (T2V)",
+    "minimax_t2v": "MiniMax Hailuo 2.3 Pro (T2V)",
+    "veo_3_1_t2v": "Google Veo 3.1",
+    "veo_3_1_extend": "Google Veo 3.1 (Extend)",
+    "luma_t2v": "Luma Ray 2 (T2V)",
 }
 
 FAL_API_URL = "https://queue.fal.run"
 
 # Fallback chains
-I2V_FALLBACK_CHAIN = ["kling_i2v", "luma_i2v", "minimax_i2v"]
-T2V_FALLBACK_CHAIN = ["minimax_t2v", "kling_t2v", "luma_t2v"]
+I2V_FALLBACK_CHAIN = ["kling_3_i2v", "minimax_i2v", "luma_i2v"]
+T2V_FALLBACK_CHAIN = ["kling_o3_t2v", "minimax_t2v", "luma_t2v"]
 
 # Quality tiers for user selection
 VIDEO_QUALITY_TIERS = {
     "hero": {
-        "description": "Best quality — cinematic, 10s, 1080p",
-        "i2v": "kling_i2v",
-        "t2v": "kling_t2v",
+        "description": "Best quality — Kling 3.0, cinematic, 10s, 1080p, native audio",
+        "i2v": "kling_3_i2v",
+        "t2v": "kling_o3_t2v",
         "duration": "10",
-        "cost_estimate": "$0.70–$1.40 per clip",
+        "resolution": "1080p",
+        "cost_estimate": "$0.80–$1.50 per clip",
     },
     "standard": {
-        "description": "Production quality — 5s, 768p",
+        "description": "Production quality — MiniMax Hailuo 2.3, 6s, 1080p",
         "i2v": "minimax_i2v",
         "t2v": "minimax_t2v",
         "duration": "6",
-        "cost_estimate": "$0.27–$0.50 per clip",
+        "resolution": "1080p",
+        "cost_estimate": "$0.30–$0.55 per clip",
     },
     "draft": {
-        "description": "Fast iteration — 5s, 540p",
-        "i2v": "luma_flash_i2v",
-        "t2v": "luma_flash_t2v",
+        "description": "Fast iteration — Luma Ray 2, 5s, 540p",
+        "i2v": "luma_i2v",
+        "t2v": "luma_t2v",
         "duration": "5",
-        "cost_estimate": "$0.20–$0.27 per clip",
+        "resolution": "540p",
+        "cost_estimate": "$0.15–$0.25 per clip",
     },
 }
 

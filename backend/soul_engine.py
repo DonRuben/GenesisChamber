@@ -30,8 +30,8 @@ BODY_COPY: [3-5 lines of supporting text]
 VISUAL_DIRECTION: [visual direction description, 50-100 words]
 COLOR_MOOD: [primary colors and emotional tone]
 RATIONALE: [why this works, in your voice, 2-3 sentences]
-IMAGE_PROMPT: [detailed prompt for image generation, 1 paragraph]
-VIDEO_PROMPT: [video scene description, 1 paragraph]
+IMAGE_PROMPT: [Write a detailed, specific image generation prompt (50-100 words). Include: subject/scene description, composition, lighting direction, mood/atmosphere, color palette (specific hex or named colors), and style reference (e.g. "editorial photography", "flat vector illustration", "cinematic still"). Do NOT use vague phrases like "beautiful" or "stunning" — be precise and visual. The best prompts read like a photographer's shot list.]
+VIDEO_PROMPT: [Write a 5-10 second video scene description (30-60 words). Include: specific camera movement (dolly in, slow pan left, static wide), subject action, atmosphere/lighting, and transition. Example: "Slow dolly-in on a glass desk reflecting neon teal light, product rotates 90 degrees revealing the logo, camera racks focus to background city skyline at dusk."]
 EVOLUTION_NOTES: [what changed from last round, if applicable]
 ===CONCEPT_END===""",
 
@@ -111,8 +111,8 @@ SUBHEAD: [supporting line]
 BODY_COPY: [3-5 lines of supporting text]
 VISUAL_DIRECTION: [visual direction description, 50-100 words]
 RATIONALE: [why this works, in your voice]
-IMAGE_PROMPT: [detailed prompt for image generation]
-VIDEO_PROMPT: [video scene description]
+IMAGE_PROMPT: [Write a detailed, specific image generation prompt (50-100 words). Include: subject/scene, composition, lighting, mood, specific colors, style reference. Be precise — avoid "beautiful" or "stunning".]
+VIDEO_PROMPT: [Write a 5-10 second video scene description (30-60 words). Include: camera movement, subject action, atmosphere, transition.]
 EVOLUTION_NOTES: [what changed from last round and why]
 ===CONCEPT_END===""",
 

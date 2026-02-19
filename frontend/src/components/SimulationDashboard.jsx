@@ -10,12 +10,13 @@ import TranscriptViewer from './TranscriptViewer';
 import PresentationGallery from './PresentationGallery';
 import StatusHeader from './StatusHeader';
 import OutputPanel from './OutputPanel';
+import GeneratedGallery from './GeneratedGallery';
 import LiveFeed from './LiveFeed';
 import ChamberAnimation from './ChamberAnimation';
 import HelpTooltip from './HelpTooltip';
 import { helpContent } from './helpContent';
 import { SkeletonGrid } from './Skeleton';
-import { IconDiamond, IconGrid, IconEye, IconCompass, IconScroll, IconPackage, IconSpark, IconError } from './Icons';
+import { IconDiamond, IconGrid, IconEye, IconCompass, IconScroll, IconPackage, IconImage, IconSpark, IconError } from './Icons';
 import './SimulationDashboard.css';
 
 const VIEW_TABS = [
@@ -30,6 +31,7 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
   const [simState, setSimState] = useState(null);
   const [activeView, setActiveView] = useState('concepts');
   const [selectedRound, setSelectedRound] = useState(null);
+  const [directionRound, setDirectionRound] = useState('all');
   const tabsRef = useRef(null);
   const [tabsOverflow, setTabsOverflow] = useState(false);
 
@@ -203,9 +205,13 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
     }
   }
 
-  // Build tabs — add Output tab only for completed sims
+  // Build tabs — add Generated + Output tabs for completed sims
   const tabs = simState.status === 'completed'
-    ? [...VIEW_TABS, { key: 'output', label: 'Output', icon: <IconPackage size={14} /> }]
+    ? [
+        ...VIEW_TABS,
+        { key: 'generated', label: 'Generated', icon: <IconImage size={14} /> },
+        { key: 'output', label: 'Output', icon: <IconPackage size={14} /> },
+      ]
     : VIEW_TABS;
 
   // Extract critiques from round data
@@ -339,7 +345,26 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
 
         {activeView === 'direction' && (
           <div className="dashboard-direction dashboard-view-animate">
-            {simState.rounds?.map(r => {
+            {/* Round filter for direction */}
+            {simState.rounds?.length > 1 && (
+              <div className="dashboard-direction-filters">
+                <span className="dashboard-direction-filter-label">Round</span>
+                {['all', ...(simState.rounds || []).map(r => r.round_num)].map(r => (
+                  <button
+                    key={r}
+                    className={`gc-btn gc-btn-ghost dashboard-direction-filter-btn ${directionRound === String(r) ? 'dashboard-direction-filter-active' : ''}`}
+                    onClick={() => setDirectionRound(String(r))}
+                  >
+                    {r === 'all' ? 'All' : `R${r}`}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {simState.rounds?.filter(r => {
+              if (directionRound !== 'all' && r.round_num !== parseInt(directionRound)) return false;
+              return true;
+            }).map(r => {
               const synthStage = r.stages?.[3];
               if (!synthStage?.outputs) return null;
               return (
@@ -357,6 +382,12 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
         {activeView === 'transcript' && (
           <div className="dashboard-view-animate">
             <TranscriptViewer entries={simState.transcript_entries} eventLog={simState.event_log} />
+          </div>
+        )}
+
+        {activeView === 'generated' && simState.status === 'completed' && (
+          <div className="dashboard-view-animate">
+            <GeneratedGallery simId={currentSimId} />
           </div>
         )}
 

@@ -3,6 +3,17 @@ import { api } from '../api';
 import { IconImage, IconVideo, IconPresentation, IconScroll, IconCheck, IconDownload } from './Icons';
 import './OutputPanel.css';
 
+// Image model options for user selection
+const IMAGE_MODELS = [
+  { key: 'auto', label: 'Auto-select', desc: 'Best model chosen per concept' },
+  { key: 'nano_banana_pro', label: 'Nano Banana Pro', desc: 'Google — fast, high quality, ~$0.15/img' },
+  { key: 'recraft_v4', label: 'Recraft V4', desc: 'Brand/design, ~$0.04/img' },
+  { key: 'flux_2_pro', label: 'Flux 2 Pro', desc: 'Photorealistic, editorial' },
+  { key: 'flux_2_max', label: 'Flux 2 Max', desc: 'Highest quality photorealistic' },
+  { key: 'seedream_4_5', label: 'Seedream 4.5', desc: 'Artistic/creative, ~$0.04/img' },
+  { key: 'ideogram_v3', label: 'Ideogram V3', desc: 'Typography, text in images' },
+];
+
 export default function OutputPanel({ simId }) {
   const [imageStatus, setImageStatus] = useState(null); // null | 'generating' | 'complete' | 'error'
   const [videoStatus, setVideoStatus] = useState(null);
@@ -10,6 +21,7 @@ export default function OutputPanel({ simId }) {
   const [videos, setVideos] = useState([]);
   const [videoTiers, setVideoTiers] = useState(null);
   const [selectedTier, setSelectedTier] = useState('standard');
+  const [selectedImageModel, setSelectedImageModel] = useState('auto');
 
   useEffect(() => {
     // Try to load existing images/videos
@@ -45,7 +57,8 @@ export default function OutputPanel({ simId }) {
   const handleGenerateImages = async () => {
     setImageStatus('generating');
     try {
-      await api.generateImages(simId);
+      const options = selectedImageModel !== 'auto' ? { model: selectedImageModel } : {};
+      await api.generateImages(simId, options);
       // Poll for completion
       const poll = setInterval(async () => {
         try {
@@ -110,6 +123,9 @@ export default function OutputPanel({ simId }) {
     return null;
   };
 
+  // Get tier info for display
+  const selectedTierInfo = videoTiers?.[selectedTier];
+
   return (
     <div className="op-container">
       <div className="op-header">
@@ -124,6 +140,24 @@ export default function OutputPanel({ simId }) {
           <div className="op-card-info">
             <div className="op-card-title">Concept Images</div>
             <div className="op-card-desc">Generate AI visualizations for each concept</div>
+
+            {/* Model selector */}
+            <div className="op-model-select">
+              <label className="op-model-label">Model</label>
+              <select
+                className="gc-input op-model-dropdown"
+                value={selectedImageModel}
+                onChange={(e) => setSelectedImageModel(e.target.value)}
+              >
+                {IMAGE_MODELS.map(m => (
+                  <option key={m.key} value={m.key}>{m.label}</option>
+                ))}
+              </select>
+              <div className="op-model-desc">
+                {IMAGE_MODELS.find(m => m.key === selectedImageModel)?.desc}
+              </div>
+            </div>
+
             {renderStatusBadge(imageStatus)}
           </div>
           <button
@@ -155,9 +189,15 @@ export default function OutputPanel({ simId }) {
                     className={`gc-btn gc-btn-ghost op-tier-btn ${selectedTier === key ? 'active' : ''}`}
                     onClick={() => setSelectedTier(key)}
                   >
-                    {tier.name || key}
+                    {key.charAt(0).toUpperCase() + key.slice(1)}
                   </button>
                 ))}
+              </div>
+            )}
+            {selectedTierInfo && (
+              <div className="op-tier-info">
+                <span className="op-tier-detail">{selectedTierInfo.description}</span>
+                <span className="op-tier-cost">{selectedTierInfo.cost_estimate}</span>
               </div>
             )}
             {renderStatusBadge(videoStatus)}
@@ -202,15 +242,18 @@ export default function OutputPanel({ simId }) {
         </div>
       </div>
 
-      {/* Image Gallery */}
+      {/* Image Gallery Preview */}
       {images.length > 0 && (
         <div className="op-gallery">
-          <h4 className="op-gallery-title">Generated Images</h4>
+          <h4 className="op-gallery-title">Generated Images ({images.length})</h4>
           <div className="op-gallery-grid">
             {images.map((img, i) => (
               <div key={i} className="op-gallery-item">
-                <img src={img.url} alt={img.caption || `Concept ${i + 1}`} className="op-gallery-img" />
-                {img.caption && <div className="op-gallery-caption">{img.caption}</div>}
+                <img src={img.url} alt={img.concept_name || `Concept ${i + 1}`} className="op-gallery-img" />
+                <div className="op-gallery-caption">
+                  {img.concept_name || img.caption || `Concept ${i + 1}`}
+                  {img.model && <span className="op-gallery-model">{img.model}</span>}
+                </div>
               </div>
             ))}
           </div>
@@ -220,11 +263,12 @@ export default function OutputPanel({ simId }) {
       {/* Video Results */}
       {videos.length > 0 && (
         <div className="op-video-results">
-          <h4 className="op-gallery-title">Generated Videos</h4>
+          <h4 className="op-gallery-title">Generated Videos ({videos.length})</h4>
           {videos.map((vid, i) => (
             <div key={i} className="op-video-item">
               <IconVideo size={16} />
-              <span className="op-video-name">{vid.name || `Video ${i + 1}`}</span>
+              <span className="op-video-name">{vid.concept_name || vid.name || `Video ${i + 1}`}</span>
+              {vid.model && <span className="op-video-model">{vid.model}</span>}
               <a href={vid.url} target="_blank" rel="noopener noreferrer" className="gc-btn gc-btn-ghost">
                 <IconDownload size={14} /> Download
               </a>
