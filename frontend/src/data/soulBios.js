@@ -125,4 +125,15 @@ export const SOUL_BIOS = {
     style: "Minimal, tactile, obsessively refined. Every curve, every radius, every material choice is deliberate. Beauty through restraint.",
     whyInChamber: "The evaluator who judges craft quality. His obsessive attention to detail ensures nothing leaves the chamber that isn't meticulously considered.",
   },
+
+  // ── Devil's Advocate ──
+  "devils-advocate": {
+    title: "The Sacred Contrarian",
+    era: "Ancient tradition — formalized 1587 by Pope Sixtus V",
+    biggestSuccess: "The Advocatus Diaboli (Devil's Advocate) was an official role in the Catholic Church's canonization process. Their job: argue against sainthood, find every flaw, expose every weakness. The role was so effective that when Pope John Paul II weakened it in 1983, the rate of canonizations skyrocketed — proving how essential structured dissent is to quality decisions.",
+    process: "Apply the Sanhedrin Principle: if everyone agrees, something is being missed. Systematically challenge consensus, expose hidden assumptions, stress-test logic, and find the fatal flaw before the market does.",
+    knownFor: "Structured adversarial thinking. Not negativity for its own sake — but rigorous, principled opposition that strengthens ideas by attacking their weakest points. Every great idea survives the Devil's Advocate; weak ones don't.",
+    style: "Sharp, incisive, unapologetic. Asks the questions nobody wants to hear. Finds the crack in the foundation before the building goes up. Respectful but relentless.",
+    whyInChamber: "The quality filter. When creative minds converge on an idea, groupthink is the greatest danger. The Advocatus Diaboli ensures every concept earns its place through rigorous challenge, not comfortable consensus.",
+  },
 };
