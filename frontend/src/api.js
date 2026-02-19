@@ -133,6 +133,25 @@ export const api = {
     return response.json();
   },
 
+  async uploadSoul(file, team = 'custom', color = '#666666') {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('team', team);
+    formData.append('color', color);
+    const response = await fetch(`${API_BASE}/api/souls/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!response.ok) throw new Error('Failed to upload soul');
+    return response.json();
+  },
+
+  async getTeams() {
+    const response = await fetch(`${API_BASE}/api/config/teams`);
+    if (!response.ok) throw new Error('Failed to get teams');
+    return response.json();
+  },
+
   async listPresets() {
     const response = await fetch(`${API_BASE}/api/simulation/presets`);
     if (!response.ok) throw new Error('Failed to list presets');

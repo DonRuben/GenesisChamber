@@ -42,6 +42,31 @@ SIMULATION_OUTPUT_DIR = "output/"
 FAL_KEY = os.getenv("FAL_KEY", "")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
 
+# === TEAM / DIVISION STRUCTURE ===
+
+TEAMS = {
+    "leadership": {
+        "name": "Leadership",
+        "description": "Moderator and evaluator — direct, challenge, and assess",
+        "color": "#6B7280",
+    },
+    "marketing": {
+        "name": "Marketing & Strategy",
+        "description": "Advertising legends — persuasion, positioning, brand strategy",
+        "color": "#F59E0B",
+    },
+    "design": {
+        "name": "Design & Visual",
+        "description": "Design pioneers — visual identity, typography, interface",
+        "color": "#8B5CF6",
+    },
+    "custom": {
+        "name": "Custom",
+        "description": "User-uploaded soul documents",
+        "color": "#666666",
+    },
+}
+
 # Simulation presets (from genesis-chamber-builder/config/simulation-presets.json)
 QUICK_TEST_PRESET = {
     "name": "Quick Test",
@@ -106,24 +131,55 @@ ROUND_MODES = {
     8: "spec",
 }
 
-# Persona colors (from GENESIS-CHAMBER-BLUEPRINT.html)
+# Persona colors (from GENESIS-CHAMBER-BLUEPRINT.html + design team additions)
 PERSONA_COLORS = {
+    # Marketing & Strategy
     "david-ogilvy": "#F59E0B",
     "claude-hopkins": "#3B82F6",
     "leo-burnett": "#10B981",
     "mary-wells-lawrence": "#EC4899",
     "gary-halbert": "#EF4444",
+    # Design & Visual
+    "paul-rand": "#8B5CF6",
+    "paula-scher": "#F97316",
+    "saul-bass": "#DC2626",
+    "susan-kare": "#06B6D4",
+    "rob-janoff": "#A3E635",
+    "tobias-van-schneider": "#D946EF",
+    # Leadership
     "steve-jobs": "#6B7280",
     "jony-ive": "#9CA3AF",
 }
 
+# Team membership — maps persona ID to primary team + optional cross-team roles
+PERSONA_TEAMS = {
+    # Marketing & Strategy
+    "david-ogilvy": {"team": "marketing"},
+    "claude-hopkins": {"team": "marketing"},
+    "leo-burnett": {"team": "marketing"},
+    "mary-wells-lawrence": {"team": "marketing"},
+    "gary-halbert": {"team": "marketing"},
+    # Design & Visual
+    "paul-rand": {"team": "design"},
+    "paula-scher": {"team": "design"},
+    "saul-bass": {"team": "design"},
+    "susan-kare": {"team": "design"},
+    "rob-janoff": {"team": "design"},
+    "tobias-van-schneider": {"team": "design"},
+    # Leadership (cross-functional)
+    "steve-jobs": {"team": "leadership", "cross_teams": ["marketing"]},
+    "jony-ive": {"team": "leadership", "cross_teams": ["design", "marketing"]},
+}
+
 # Default participant configurations
 DEFAULT_PARTICIPANTS = {
+    # --- Marketing & Strategy Team ---
     "david-ogilvy": {
         "name": "David Ogilvy",
         "model": "google/gemini-2.5-pro",
         "soul_document": "souls/david-ogilvy.md",
         "role": "participant",
+        "team": "marketing",
         "temperature": 0.7,
         "max_tokens": 4000,
         "color": "#F59E0B",
@@ -133,6 +189,7 @@ DEFAULT_PARTICIPANTS = {
         "model": "anthropic/claude-sonnet-4-5-20250929",
         "soul_document": "souls/claude-hopkins.md",
         "role": "participant",
+        "team": "marketing",
         "temperature": 0.6,
         "max_tokens": 4000,
         "color": "#3B82F6",
@@ -142,6 +199,7 @@ DEFAULT_PARTICIPANTS = {
         "model": "openai/gpt-5.1",
         "soul_document": "souls/leo-burnett.md",
         "role": "participant",
+        "team": "marketing",
         "temperature": 0.8,
         "max_tokens": 4000,
         "color": "#10B981",
@@ -151,6 +209,7 @@ DEFAULT_PARTICIPANTS = {
         "model": "meta-llama/llama-4-maverick",
         "soul_document": "souls/mary-wells-lawrence.md",
         "role": "participant",
+        "team": "marketing",
         "temperature": 0.75,
         "max_tokens": 4000,
         "color": "#EC4899",
@@ -160,9 +219,71 @@ DEFAULT_PARTICIPANTS = {
         "model": "x-ai/grok-4",
         "soul_document": "souls/gary-halbert.md",
         "role": "participant",
+        "team": "marketing",
         "temperature": 0.85,
         "max_tokens": 4000,
         "color": "#EF4444",
+    },
+    # --- Design & Visual Team ---
+    "paul-rand": {
+        "name": "Paul Rand",
+        "model": "google/gemini-2.5-pro",
+        "soul_document": "souls/paul-rand.md",
+        "role": "participant",
+        "team": "design",
+        "temperature": 0.65,
+        "max_tokens": 4000,
+        "color": "#8B5CF6",
+    },
+    "paula-scher": {
+        "name": "Paula Scher",
+        "model": "openai/gpt-5.1",
+        "soul_document": "souls/paula-scher.md",
+        "role": "participant",
+        "team": "design",
+        "temperature": 0.8,
+        "max_tokens": 4000,
+        "color": "#F97316",
+    },
+    "saul-bass": {
+        "name": "Saul Bass",
+        "model": "anthropic/claude-sonnet-4-5-20250929",
+        "soul_document": "souls/saul-bass.md",
+        "role": "participant",
+        "team": "design",
+        "temperature": 0.7,
+        "max_tokens": 4000,
+        "color": "#DC2626",
+    },
+    "susan-kare": {
+        "name": "Susan Kare",
+        "model": "meta-llama/llama-4-maverick",
+        "soul_document": "souls/susan-kare.md",
+        "role": "participant",
+        "team": "design",
+        "temperature": 0.7,
+        "max_tokens": 4000,
+        "color": "#06B6D4",
+    },
+    "rob-janoff": {
+        "name": "Rob Janoff",
+        "model": "x-ai/grok-4",
+        "soul_document": "souls/rob-janoff.md",
+        "role": "participant",
+        "team": "design",
+        "temperature": 0.7,
+        "max_tokens": 4000,
+        "color": "#A3E635",
+    },
+    "tobias-van-schneider": {
+        "name": "Tobias van Schneider",
+        "model": "google/gemini-2.5-pro",
+        "soul_document": "souls/tobias-van-schneider.md",
+        "role": "participant",
+        "team": "design",
+        "temperature": 0.75,
+        "max_tokens": 4000,
+        "color": "#D946EF",
     },
 }
 
@@ -179,6 +300,9 @@ DEFAULT_MODERATOR = {
     "model": "anthropic/claude-opus-4-6",
     "soul_document": "souls/steve-jobs.md",
     "role": "moderator",
+    "team": "leadership",
+    "cross_teams": ["marketing"],
+    "dual_role": True,  # Can also participate as creative contributor
     "temperature": 0.6,
     "max_tokens": 4000,
     "color": "#6B7280",
@@ -189,6 +313,9 @@ DEFAULT_EVALUATOR = {
     "model": "anthropic/claude-opus-4-6",
     "soul_document": "souls/jony-ive.md",
     "role": "evaluator",
+    "team": "leadership",
+    "cross_teams": ["design", "marketing"],
+    "dual_role": True,  # Can also participate as creative contributor
     "temperature": 0.5,
     "max_tokens": 4000,
     "color": "#9CA3AF",

@@ -11,6 +11,7 @@
     "tier_2_balanced": {
       "description": "Great quality, reasonable cost. Use for most participants.",
       "models": [
+        { "id": "anthropic/claude-sonnet-4-6", "cost_per_1m_tokens": 3.0, "context": "200K", "best_for": "Near-Opus quality at balanced cost — versatile across all persona roles" },
         { "id": "anthropic/claude-sonnet-4.5", "cost_per_1m_tokens": 3.0, "context": "200K", "best_for": "Evaluator (Ive), detailed critique" },
         { "id": "google/gemini-2.5-pro", "cost_per_1m_tokens": 2.5, "context": "1M", "best_for": "Research-heavy personas (Ogilvy, Hopkins)" },
         { "id": "x-ai/grok-4", "cost_per_1m_tokens": 3.0, "context": "128K", "best_for": "Bold, provocative personas (Halbert)" }
@@ -29,7 +30,7 @@
     "strategy": "Use cognitive diversity — different models for each persona creates genuinely different thinking patterns",
     "recommended_assignments": {
       "ogilvy": "gemini-2.5-pro (analytical, research-heavy)",
-      "hopkins": "claude-sonnet-4.5 (precise, scientific)",
+      "hopkins": "claude-sonnet-4-6 (precise, scientific — near-Opus quality)",
       "burnett": "gpt-5.1 (emotional, storytelling)",
       "wells": "grok-4 (bold, unconventional)",
       "halbert": "llama-4-maverick (direct, unfiltered)",
