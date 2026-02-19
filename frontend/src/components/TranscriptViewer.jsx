@@ -28,11 +28,26 @@ const STAGE_LABELS = {
 
 export default function TranscriptViewer({ entries, eventLog }) {
   const [filter, setFilter] = useState('all');
+  const [filterRound, setFilterRound] = useState('all');
+  const [filterPersona, setFilterPersona] = useState('all');
   const [search, setSearch] = useState('');
   const [showLog, setShowLog] = useState(false);
 
-  const filtered = (entries || []).filter(e => {
+  const allEntries = entries || [];
+
+  // Extract unique rounds and personas for filter chips
+  const uniqueRounds = [...new Set(allEntries.map(e => e.round).filter(Boolean))].sort((a, b) => a - b);
+  const uniquePersonas = [...new Set(
+    allEntries.flatMap(e => (e.concepts || []).map(c => c.persona).filter(Boolean))
+  )].sort();
+
+  const filtered = allEntries.filter(e => {
     if (filter !== 'all' && e.stage_name !== filter) return false;
+    if (filterRound !== 'all' && e.round !== parseInt(filterRound)) return false;
+    if (filterPersona !== 'all') {
+      const hasPersona = e.concepts?.some(c => c.persona === filterPersona);
+      if (!hasPersona) return false;
+    }
     if (search) {
       const q = search.toLowerCase();
       const text = JSON.stringify(e).toLowerCase();
@@ -45,18 +60,58 @@ export default function TranscriptViewer({ entries, eventLog }) {
     <div className="tv-container">
       {/* Filter bar */}
       <div className="tv-controls">
-        <div className="tv-filters">
-          {STAGE_FILTERS.map(f => (
-            <button
-              key={f.key}
-              className={`gc-btn gc-btn-ghost tv-filter-btn ${filter === f.key ? 'tv-filter-active' : ''}`}
-              style={filter === f.key && f.color ? { borderColor: f.color, color: f.color } : undefined}
-              onClick={() => setFilter(f.key)}
-            >
-              {f.label}
-            </button>
-          ))}
+        <div className="tv-filter-rows">
+          {uniqueRounds.length > 1 && (
+            <div className="tv-filter-row">
+              <span className="tv-filter-label">Round</span>
+              {['all', ...uniqueRounds].map(r => (
+                <button
+                  key={r}
+                  className={`gc-btn gc-btn-ghost tv-filter-btn ${filterRound === String(r) ? 'tv-filter-active' : ''}`}
+                  onClick={() => setFilterRound(String(r))}
+                >
+                  {r === 'all' ? 'All' : `R${r}`}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="tv-filter-row">
+            <span className="tv-filter-label">Stage</span>
+            {STAGE_FILTERS.map(f => (
+              <button
+                key={f.key}
+                className={`gc-btn gc-btn-ghost tv-filter-btn ${filter === f.key ? 'tv-filter-active' : ''}`}
+                style={filter === f.key && f.color ? { borderColor: f.color, color: f.color } : undefined}
+                onClick={() => setFilter(f.key)}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          {uniquePersonas.length > 1 && (
+            <div className="tv-filter-row">
+              <span className="tv-filter-label">Persona</span>
+              <button
+                className={`gc-btn gc-btn-ghost tv-filter-btn ${filterPersona === 'all' ? 'tv-filter-active' : ''}`}
+                onClick={() => setFilterPersona('all')}
+              >
+                All
+              </button>
+              {uniquePersonas.map(p => (
+                <button
+                  key={p}
+                  className={`gc-btn gc-btn-ghost tv-filter-btn ${filterPersona === p ? 'tv-filter-active' : ''}`}
+                  onClick={() => setFilterPersona(p)}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
+
         <input
           type="text"
           className="gc-input tv-search"

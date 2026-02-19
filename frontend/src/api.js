@@ -272,9 +272,11 @@ export const api = {
     return response.blob();
   },
 
-  async generateImages(simId) {
+  async generateImages(simId, options = {}) {
     const response = await fetch(`${API_BASE}/api/simulation/${simId}/generate-images`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(options),
     });
     if (!response.ok) throw new Error('Failed to generate images');
     return response.json();
@@ -306,6 +308,16 @@ export const api = {
     const response = await fetch(`${API_BASE}/api/simulation/${simId}/videos`);
     if (!response.ok) throw new Error('Failed to get videos');
     return response.json();
+  },
+
+  async getGenerated(simId) {
+    const response = await fetch(`${API_BASE}/api/simulation/${simId}/generated`);
+    if (!response.ok) throw new Error('Failed to get generated content');
+    return response.json();
+  },
+
+  getDownloadUrl(simId, type = 'all') {
+    return `${API_BASE}/api/simulation/${simId}/download/${type}`;
   },
 
   async uploadReference(file) {
