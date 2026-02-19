@@ -68,7 +68,8 @@ def _list_files() -> List[Dict[str, Any]]:
                     "id": data["id"],
                     "created_at": data["created_at"],
                     "title": data.get("title", "New Conversation"),
-                    "message_count": len(data["messages"])
+                    "message_count": len(data["messages"]),
+                    "archived": data.get("archived", False),
                 })
             except (json.JSONDecodeError, KeyError):
                 continue
@@ -143,6 +144,27 @@ def update_conversation_title(conversation_id: str, title: str):
         raise ValueError(f"Conversation {conversation_id} not found")
 
     conversation["title"] = title
+    save_conversation(conversation)
+
+
+def delete_conversation(conversation_id: str) -> bool:
+    """Delete a conversation from file and DB."""
+    path = get_conversation_path(conversation_id)
+    deleted = False
+    if os.path.exists(path):
+        os.remove(path)
+        deleted = True
+    if _db:
+        _schedule_db_call(_db.delete, conversation_id)
+    return deleted
+
+
+def archive_conversation(conversation_id: str, archived: bool = True):
+    """Set or clear the archived flag on a conversation."""
+    conversation = get_conversation(conversation_id)
+    if conversation is None:
+        raise ValueError(f"Conversation {conversation_id} not found")
+    conversation["archived"] = archived
     save_conversation(conversation)
 
 

@@ -141,6 +141,7 @@ class SimulationState(BaseModel):
     quality_gates: List[Dict[str, Any]] = []
     transcript_entries: List[Dict[str, Any]] = []
     event_log: List[Dict[str, Any]] = []
+    archived: bool = False
 
 
 class QualityGate(BaseModel):

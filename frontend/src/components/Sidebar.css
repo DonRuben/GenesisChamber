@@ -210,6 +210,7 @@
   cursor: pointer;
   transition: all var(--transition-fast);
   border: 1px solid transparent;
+  position: relative;
 }
 
 .sidebar-item:hover {
@@ -258,6 +259,172 @@
   width: 1px;
   height: 12px;
   background: var(--border-default);
+}
+
+/* ── Item Management (context menu, rename, delete, archive) ── */
+.sidebar-item-more {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition-fast), background var(--transition-fast);
+}
+
+.sidebar-item:hover .sidebar-item-more,
+.sidebar-item .sidebar-item-more:focus {
+  opacity: 1;
+}
+
+.sidebar-item-more:hover {
+  background: var(--surface-3);
+  color: var(--text-primary);
+}
+
+.sidebar-item-menu {
+  position: absolute;
+  top: 100%;
+  right: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  z-index: 100;
+  min-width: 120px;
+  box-shadow: var(--shadow-md);
+}
+
+.sidebar-item-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-data);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.sidebar-item-menu button:hover {
+  background: var(--surface-3);
+  color: var(--text-primary);
+}
+
+.sidebar-item-menu button.danger {
+  color: var(--status-error);
+}
+
+.sidebar-item-menu button.danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--status-error);
+}
+
+.sidebar-item-edit {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid var(--gc-cyan);
+  border-radius: 4px;
+  background: var(--surface-0);
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: 14px;
+  font-weight: 500;
+  outline: none;
+}
+
+.sidebar-item.archived {
+  opacity: 0.5;
+}
+
+.sidebar-item.archived .sidebar-item-title {
+  font-style: italic;
+}
+
+.sidebar-item-confirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-data);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.sidebar-item-confirm .confirm-yes {
+  padding: 2px 10px;
+  border: none;
+  border-radius: 4px;
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--status-error);
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.sidebar-item-confirm .confirm-yes:hover {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+.sidebar-item-confirm .confirm-no {
+  padding: 2px 10px;
+  border: none;
+  border-radius: 4px;
+  background: var(--surface-3);
+  color: var(--text-muted);
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.sidebar-item-confirm .confirm-no:hover {
+  background: var(--surface-2);
+  color: var(--text-secondary);
+}
+
+/* ── Archive Toggle ── */
+.sidebar-archive-toggle {
+  padding: 2px var(--space-sm) 6px;
+}
+
+.sidebar-archive-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-data);
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.sidebar-archive-toggle input[type="checkbox"] {
+  width: 12px;
+  height: 12px;
+  accent-color: var(--gc-cyan);
+}
+
+/* Hide management UI when collapsed */
+.sidebar.collapsed .sidebar-item-more,
+.sidebar.collapsed .sidebar-item-menu,
+.sidebar.collapsed .sidebar-item-edit,
+.sidebar.collapsed .sidebar-item-confirm,
+.sidebar.collapsed .sidebar-archive-toggle {
+  display: none;
 }
 
 /* ── Library ── */

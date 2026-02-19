@@ -484,6 +484,222 @@ h2 {{ font-size:20px; color:var(--teal); margin:32px 0 16px; padding-bottom:8px;
 <div class="gc-gallery">{items}</div>
 </section>"""
 
+    # === MARKDOWN EXPORT GENERATORS ===
+
+    def _concept_to_md(self, c) -> str:
+        """Convert a single concept to markdown."""
+        lines = [f"## {c.name}"]
+        lines.append(f"**By:** {c.persona_name}  ")
+        lines.append(f"**Status:** {c.status}  ")
+        if c.round_created:
+            lines.append(f"**Round:** {c.round_created}")
+        lines.append("")
+        if c.tagline:
+            lines.extend([f"*{c.tagline}*", ""])
+        if c.idea:
+            lines.extend(["### Idea", c.idea, ""])
+        if c.headline:
+            lines.append(f"### Headline")
+            lines.append(f"**{c.headline}**")
+            if c.subhead:
+                lines.append(c.subhead)
+            lines.append("")
+        if c.body_copy:
+            lines.extend(["### Body Copy", c.body_copy, ""])
+        if c.visual_direction:
+            lines.extend(["### Visual Direction", c.visual_direction, ""])
+        if c.color_mood:
+            lines.extend(["### Color & Mood", c.color_mood, ""])
+        if c.rationale:
+            lines.extend(["### Rationale", c.rationale, ""])
+        if c.image_prompt:
+            lines.extend(["### Image Prompt", "```", c.image_prompt, "```", ""])
+        if c.video_prompt:
+            lines.extend(["### Video Prompt", "```", c.video_prompt, "```", ""])
+        if c.evolution_notes:
+            lines.extend(["### Evolution", c.evolution_notes, ""])
+        if c.scores:
+            lines.append("### Scores")
+            for rnd, score in sorted(c.scores.items(), key=lambda x: int(x[0])):
+                lines.append(f"- Round {rnd}: {score}/10")
+            lines.append("")
+        return "\n".join(lines)
+
+    def generate_markdown_summary(self, state: SimulationState) -> str:
+        """Generate a full simulation summary as markdown."""
+        lines = [f"# {state.config.name}", ""]
+        lines.append(f"**Type:** {state.config.type}  ")
+        lines.append(f"**Status:** {state.status}  ")
+        lines.append(f"**Rounds:** {len(state.rounds)}/{state.config.rounds}  ")
+        lines.append(f"**Created:** {state.created_at}  ")
+        lines.append("")
+
+        # Brief
+        if state.config.brief:
+            lines.extend(["## Brief", state.config.brief, ""])
+
+        # Participants
+        lines.append("## Participants")
+        lines.append(f"**Moderator:** {state.config.moderator.display_name} ({state.config.moderator.model})  ")
+        if state.config.evaluator:
+            lines.append(f"**Evaluator:** {state.config.evaluator.display_name} ({state.config.evaluator.model})  ")
+        if state.config.devils_advocate:
+            lines.append(f"**Devil's Advocate:** {state.config.devils_advocate.display_name} ({state.config.devils_advocate.model})  ")
+        lines.append("")
+        for pid, p in state.config.participants.items():
+            lines.append(f"- **{p.display_name}** — {p.role} ({p.model})")
+        lines.append("")
+
+        # Round summaries
+        for rnd in state.rounds:
+            lines.append(f"## Round {rnd.round_num} — {rnd.mode.upper()}")
+            lines.append(f"**Status:** {rnd.status} | Created: {rnd.concepts_created} | Surviving: {rnd.concepts_surviving} | Eliminated: {rnd.concepts_eliminated}")
+            lines.append("")
+
+        # All concepts
+        active = state.concepts.get("active", [])
+        eliminated = state.concepts.get("eliminated", [])
+
+        if active:
+            lines.append("## Active Concepts")
+            for c in active:
+                lines.append(self._concept_to_md(c))
+                lines.append("---")
+                lines.append("")
+
+        if eliminated:
+            lines.append("## Eliminated Concepts")
+            for c in eliminated:
+                lines.append(self._concept_to_md(c))
+                lines.append("---")
+                lines.append("")
+
+        return "\n".join(lines)
+
+    def generate_markdown_winner(self, state: SimulationState) -> str:
+        """Generate markdown for the winner concept complete package."""
+        active = state.concepts.get("active", [])
+        winner = next((c for c in active if c.status == "winner"), None)
+        if not winner:
+            winner = active[0] if active else None
+        if not winner:
+            return "# No Winner\n\nSimulation has no concepts yet.\n"
+
+        lines = [f"# Winner: {winner.name}", ""]
+        lines.append(self._concept_to_md(winner))
+        lines.append("")
+
+        # Include critiques received by this concept
+        critiques_for_winner = []
+        for entry in state.transcript_entries:
+            crits = entry.get("critiques", [])
+            for crit in crits:
+                if crit.get("concept_id") == winner.id:
+                    critiques_for_winner.append(crit)
+
+        if critiques_for_winner:
+            lines.append("## Critiques Received")
+            for crit in critiques_for_winner:
+                lines.append(f"### By {crit.get('critic_name', 'Anonymous')} — Score: {crit.get('score', '?')}/10")
+                if crit.get("strengths"):
+                    lines.append("**Strengths:**")
+                    for s in crit["strengths"]:
+                        lines.append(f"- {s}")
+                if crit.get("weaknesses"):
+                    lines.append("**Weaknesses:**")
+                    for w in crit["weaknesses"]:
+                        lines.append(f"- {w}")
+                if crit.get("fatal_flaw"):
+                    lines.append(f"**Fatal Flaw:** {crit['fatal_flaw']}")
+                if crit.get("one_change"):
+                    lines.append(f"**One Change:** {crit['one_change']}")
+                lines.append("")
+
+        # Runner-up
+        runner = next((c for c in active if c.status == "runner_up"), None)
+        if runner:
+            lines.extend(["---", "", "## Runner-Up", ""])
+            lines.append(self._concept_to_md(runner))
+
+        return "\n".join(lines)
+
+    def generate_markdown_round(self, state: SimulationState, round_num: int) -> str:
+        """Generate markdown for one specific round."""
+        lines = [f"# Round {round_num}", ""]
+
+        # Round result info
+        rnd = next((r for r in state.rounds if r.round_num == round_num), None)
+        if rnd:
+            lines.append(f"**Mode:** {rnd.mode}  ")
+            lines.append(f"**Status:** {rnd.status}  ")
+            lines.append(f"**Concepts Created:** {rnd.concepts_created}  ")
+            lines.append(f"**Surviving:** {rnd.concepts_surviving}  ")
+            lines.append(f"**Eliminated:** {rnd.concepts_eliminated}  ")
+            lines.append("")
+
+        # Concepts created in this round
+        all_concepts = state.concepts.get("active", []) + state.concepts.get("eliminated", []) + state.concepts.get("merged", [])
+        round_concepts = [c for c in all_concepts if c.round_created == round_num]
+
+        if round_concepts:
+            lines.append("## Concepts")
+            for c in round_concepts:
+                lines.append(self._concept_to_md(c))
+                lines.append("---")
+                lines.append("")
+
+        # Critiques from this round
+        round_crits = []
+        for entry in state.transcript_entries:
+            if entry.get("round") == round_num and entry.get("critiques"):
+                round_crits.extend(entry["critiques"])
+
+        if round_crits:
+            lines.append("## Critiques")
+            for crit in round_crits:
+                lines.append(f"### {crit.get('critic_name', 'Anon')} on {crit.get('concept_label', '?')} — {crit.get('score', '?')}/10")
+                if crit.get("strengths"):
+                    for s in crit["strengths"]:
+                        lines.append(f"- (+) {s}")
+                if crit.get("weaknesses"):
+                    for w in crit["weaknesses"]:
+                        lines.append(f"- (-) {w}")
+                lines.append("")
+
+        # Direction from this round
+        for entry in state.transcript_entries:
+            if entry.get("round") == round_num and entry.get("direction"):
+                lines.extend(["## Moderator Direction", entry["direction"], ""])
+
+        return "\n".join(lines)
+
+    def generate_markdown_persona(self, state: SimulationState, persona_id: str) -> str:
+        """Generate markdown for one persona's contributions across all rounds."""
+        # Find persona name
+        persona_name = persona_id
+        if persona_id in state.config.participants:
+            persona_name = state.config.participants[persona_id].display_name
+        elif state.config.moderator and persona_id in state.config.moderator.display_name.lower().replace(" ", "-"):
+            persona_name = state.config.moderator.display_name
+
+        lines = [f"# {persona_name}", ""]
+
+        # All concepts by this persona
+        all_concepts = state.concepts.get("active", []) + state.concepts.get("eliminated", []) + state.concepts.get("merged", [])
+        persona_concepts = [c for c in all_concepts if c.persona_id == persona_id]
+
+        if persona_concepts:
+            lines.append(f"## Concepts ({len(persona_concepts)})")
+            for c in sorted(persona_concepts, key=lambda x: x.round_created):
+                lines.append(self._concept_to_md(c))
+                lines.append("---")
+                lines.append("")
+        else:
+            lines.append("*No concepts found for this persona.*")
+            lines.append("")
+
+        return "\n".join(lines)
+
     def _slide_credits(self, state: SimulationState) -> str:
         """Credits/footer slide."""
         rounds = len(state.rounds)

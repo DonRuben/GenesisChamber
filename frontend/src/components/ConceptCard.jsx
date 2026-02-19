@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { IconCopy, IconCheck } from './Icons';
+import { conceptToMarkdown, copyToClipboard } from '../utils/clipboard';
 import './ConceptCard.css';
 
 const STATUS_MAP = {
@@ -44,10 +46,18 @@ function ScoreHistory({ scores }) {
 
 export default function ConceptCard({ concept, showDetails = false }) {
   const [expanded, setExpanded] = useState(showDetails);
+  const [copied, setCopied] = useState(false);
   const latestScore = concept.scores ? Object.values(concept.scores).pop() : null;
   const status = STATUS_MAP[concept.status] || STATUS_MAP.active;
   const isWinner = concept.status === 'winner';
   const isEliminated = concept.status === 'eliminated';
+
+  const handleCopy = async (e) => {
+    e.stopPropagation();
+    await copyToClipboard(conceptToMarkdown(concept));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div
@@ -75,6 +85,9 @@ export default function ConceptCard({ concept, showDetails = false }) {
             </div>
           </div>
           <div className="cc-header-right">
+            <button className="cc-copy-btn" onClick={handleCopy} title="Copy as Markdown">
+              {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
+            </button>
             {latestScore != null && (
               <div className="cc-score" style={{ color: scoreColor(latestScore) }}>
                 {latestScore.toFixed(1)}

@@ -162,13 +162,139 @@
   }
 }
 
+/* ── Input Area (model config + form) ── */
+.ci-input-area {
+  border-top: 1px solid var(--border-subtle);
+  background: var(--surface-1);
+  flex-shrink: 0;
+}
+
+.ci-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  width: 100%;
+}
+
+.ci-model-config-toggle {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 12px 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.ci-model-config-toggle:hover,
+.ci-model-config-toggle.active {
+  color: var(--gc-cyan);
+  border-color: rgba(0, 217, 255, 0.3);
+  background: rgba(0, 217, 255, 0.06);
+}
+
+.ci-model-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(0, 217, 255, 0.15);
+  color: var(--gc-cyan);
+  padding: 1px 5px;
+  border-radius: 8px;
+}
+
+.ci-model-config-panel {
+  padding: var(--space-sm) var(--space-lg);
+  border-bottom: 1px solid var(--border-subtle);
+  max-height: 300px;
+  overflow-y: auto;
+  animation: slideDown 0.15s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 300px; }
+}
+
+.ci-model-config-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xs);
+}
+
+.ci-model-config-title {
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.ci-model-reset {
+  font-size: 11px !important;
+  padding: 2px 8px !important;
+}
+
+.ci-model-tier {
+  margin-bottom: var(--space-xs);
+}
+
+.ci-model-tier-label {
+  font-family: var(--font-data);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.ci-model-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  cursor: pointer;
+}
+
+.ci-model-checkbox input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--gc-cyan);
+}
+
+.ci-model-name {
+  font-family: var(--font-data);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.ci-model-chairman {
+  margin-top: var(--space-xs);
+  padding-top: var(--space-xs);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.ci-chairman-select {
+  flex: 1;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
 /* ── Input Form — Always visible at bottom ── */
 .input-form {
   display: flex;
   align-items: flex-end;
   gap: 12px;
   padding: var(--space-md) var(--space-lg);
-  border-top: 1px solid var(--border-subtle);
   background: var(--surface-1);
   flex-shrink: 0;
 }

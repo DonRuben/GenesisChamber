@@ -1,4 +1,5 @@
-import { IconPlus, IconMessage, IconSpark, IconCrystalBall, IconCollapse, IconExpand, IconImage, IconVideo, IconPresentation } from './Icons';
+import { useState, useRef, useEffect } from 'react';
+import { IconPlus, IconMessage, IconSpark, IconCrystalBall, IconCollapse, IconExpand, IconImage, IconVideo, IconPresentation, IconMore, IconPencil, IconArchive, IconTrash } from './Icons';
 import './Sidebar.css';
 
 const STATUS_COLORS = {
@@ -22,14 +23,131 @@ export default function Sidebar({
   currentConversationId,
   onSelectConversation,
   onNewConversation,
+  onRenameConversation,
+  onDeleteConversation,
+  onArchiveConversation,
   simulations,
   currentSimId,
   onSelectSimulation,
   onNewSimulation,
+  onRenameSimulation,
+  onDeleteSimulation,
+  onArchiveSimulation,
+  showArchived,
+  onToggleArchived,
   isOpen,
   collapsed,
   onToggleCollapse,
 }) {
+  const [menuOpenId, setMenuOpenId] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [editingValue, setEditingValue] = useState('');
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const menuRef = useRef(null);
+  const editRef = useRef(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    if (!menuOpenId) return;
+    const handleClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpenId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [menuOpenId]);
+
+  // Focus edit input when entering edit mode
+  useEffect(() => {
+    if (editingId && editRef.current) {
+      editRef.current.focus();
+      editRef.current.select();
+    }
+  }, [editingId]);
+
+  const startRename = (id, currentName) => {
+    setMenuOpenId(null);
+    setConfirmDeleteId(null);
+    setEditingId(id);
+    setEditingValue(currentName || '');
+  };
+
+  const confirmRename = (id) => {
+    if (editingValue.trim()) {
+      if (mode === 'council') {
+        onRenameConversation?.(id, editingValue.trim());
+      } else {
+        onRenameSimulation?.(id, editingValue.trim());
+      }
+    }
+    setEditingId(null);
+    setEditingValue('');
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditingValue('');
+  };
+
+  const handleEditKeyDown = (e, id) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      confirmRename(id);
+    } else if (e.key === 'Escape') {
+      cancelEdit();
+    }
+  };
+
+  const startDelete = (id) => {
+    setMenuOpenId(null);
+    setConfirmDeleteId(id);
+  };
+
+  const confirmDelete = (id) => {
+    if (mode === 'council') {
+      onDeleteConversation?.(id);
+    } else {
+      onDeleteSimulation?.(id);
+    }
+    setConfirmDeleteId(null);
+  };
+
+  const handleArchive = (id, currentlyArchived) => {
+    setMenuOpenId(null);
+    if (mode === 'council') {
+      onArchiveConversation?.(id, !currentlyArchived);
+    } else {
+      onArchiveSimulation?.(id, !currentlyArchived);
+    }
+  };
+
+  const toggleMenu = (e, id) => {
+    e.stopPropagation();
+    setMenuOpenId(menuOpenId === id ? null : id);
+    setConfirmDeleteId(null);
+  };
+
+  // Filter archived items
+  const filteredConversations = conversations.filter(c => showArchived || !c.archived);
+  const filteredSimulations = (simulations || []).filter(s => showArchived || !s.archived);
+  const hasArchivedConversations = conversations.some(c => c.archived);
+  const hasArchivedSimulations = (simulations || []).some(s => s.archived);
+
+  const renderItemMenu = (id, name, isArchived) => (
+    <div className="sidebar-item-menu" ref={menuOpenId === id ? menuRef : null}>
+      <button onClick={(e) => { e.stopPropagation(); startRename(id, name); }}>
+        <IconPencil size={12} /> Rename
+      </button>
+      <button onClick={(e) => { e.stopPropagation(); handleArchive(id, isArchived); }}>
+        <IconArchive size={12} /> {isArchived ? 'Unarchive' : 'Archive'}
+      </button>
+      <button className="danger" onClick={(e) => { e.stopPropagation(); startDelete(id); }}>
+        <IconTrash size={12} /> Delete
+      </button>
+    </div>
+  );
+
   return (
     <aside className={`sidebar ${isOpen ? '' : 'sidebar-hidden'} ${collapsed ? 'collapsed' : ''}`}>
       {/* Brand */}
@@ -71,51 +189,109 @@ export default function Sidebar({
         )}
       </div>
 
+      {/* Archive Toggle */}
+      {((mode === 'council' && hasArchivedConversations) || (mode === 'genesis' && hasArchivedSimulations)) && (
+        <div className="sidebar-archive-toggle">
+          <label>
+            <input type="checkbox" checked={showArchived} onChange={onToggleArchived} />
+            <span>Show archived</span>
+          </label>
+        </div>
+      )}
+
       {/* List */}
       <div className="sidebar-list">
         {mode === 'council' ? (
-          conversations.length === 0 ? (
+          filteredConversations.length === 0 ? (
             <div className="sidebar-empty">
               <IconMessage size={20} className="sidebar-empty-icon" />
               <span>No conversations yet</span>
             </div>
           ) : (
-            conversations.map((conv) => (
+            filteredConversations.map((conv) => (
               <div
                 key={conv.id}
-                className={`sidebar-item ${conv.id === currentConversationId ? 'active' : ''}`}
-                onClick={() => onSelectConversation(conv.id)}
+                className={`sidebar-item ${conv.id === currentConversationId ? 'active' : ''} ${conv.archived ? 'archived' : ''}`}
+                onClick={() => { if (editingId !== conv.id && confirmDeleteId !== conv.id) onSelectConversation(conv.id); }}
               >
-                <div className="sidebar-item-title">{conv.title || 'New Conversation'}</div>
-                <div className="sidebar-item-meta">{conv.message_count} messages</div>
+                {editingId === conv.id ? (
+                  <input
+                    ref={editRef}
+                    className="sidebar-item-edit"
+                    value={editingValue}
+                    onChange={(e) => setEditingValue(e.target.value)}
+                    onKeyDown={(e) => handleEditKeyDown(e, conv.id)}
+                    onBlur={() => confirmRename(conv.id)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : confirmDeleteId === conv.id ? (
+                  <div className="sidebar-item-confirm" onClick={(e) => e.stopPropagation()}>
+                    <span>Delete this?</span>
+                    <button className="confirm-yes" onClick={() => confirmDelete(conv.id)}>Yes</button>
+                    <button className="confirm-no" onClick={() => setConfirmDeleteId(null)}>Cancel</button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="sidebar-item-title">{conv.title || 'New Conversation'}</div>
+                    <div className="sidebar-item-meta">{conv.message_count} messages</div>
+                    <button className="sidebar-item-more" onClick={(e) => toggleMenu(e, conv.id)}>
+                      <IconMore size={14} />
+                    </button>
+                    {menuOpenId === conv.id && renderItemMenu(conv.id, conv.title || 'New Conversation', conv.archived)}
+                  </>
+                )}
               </div>
             ))
           )
         ) : (
-          (!simulations || simulations.length === 0) ? (
+          filteredSimulations.length === 0 ? (
             <div className="sidebar-empty">
               <IconSpark size={20} className="sidebar-empty-icon" />
               <span>No simulations yet</span>
             </div>
           ) : (
-            simulations.map((sim) => (
+            filteredSimulations.map((sim) => (
               <div
                 key={sim.id}
-                className={`sidebar-item ${sim.id === currentSimId ? 'active' : ''}`}
-                onClick={() => onSelectSimulation(sim.id)}
+                className={`sidebar-item ${sim.id === currentSimId ? 'active' : ''} ${sim.archived ? 'archived' : ''}`}
+                onClick={() => { if (editingId !== sim.id && confirmDeleteId !== sim.id) onSelectSimulation(sim.id); }}
               >
-                <div className="sidebar-item-title">{sim.name || 'Unnamed'}</div>
-                <div className="sidebar-item-meta">
-                  <span
-                    className="sidebar-status-dot"
-                    style={{ background: STATUS_COLORS[sim.status] || 'var(--text-muted)' }}
+                {editingId === sim.id ? (
+                  <input
+                    ref={editRef}
+                    className="sidebar-item-edit"
+                    value={editingValue}
+                    onChange={(e) => setEditingValue(e.target.value)}
+                    onKeyDown={(e) => handleEditKeyDown(e, sim.id)}
+                    onBlur={() => confirmRename(sim.id)}
+                    onClick={(e) => e.stopPropagation()}
                   />
-                  <span className="sidebar-status-label">
-                    {STATUS_LABELS[sim.status] || sim.status}
-                  </span>
-                  <span className="sidebar-item-sep" />
-                  <span>R{sim.current_round}/{sim.total_rounds}</span>
-                </div>
+                ) : confirmDeleteId === sim.id ? (
+                  <div className="sidebar-item-confirm" onClick={(e) => e.stopPropagation()}>
+                    <span>Delete this?</span>
+                    <button className="confirm-yes" onClick={() => confirmDelete(sim.id)}>Yes</button>
+                    <button className="confirm-no" onClick={() => setConfirmDeleteId(null)}>Cancel</button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="sidebar-item-title">{sim.name || 'Unnamed'}</div>
+                    <div className="sidebar-item-meta">
+                      <span
+                        className="sidebar-status-dot"
+                        style={{ background: STATUS_COLORS[sim.status] || 'var(--text-muted)' }}
+                      />
+                      <span className="sidebar-status-label">
+                        {STATUS_LABELS[sim.status] || sim.status}
+                      </span>
+                      <span className="sidebar-item-sep" />
+                      <span>R{sim.current_round}/{sim.total_rounds}</span>
+                    </div>
+                    <button className="sidebar-item-more" onClick={(e) => toggleMenu(e, sim.id)}>
+                      <IconMore size={14} />
+                    </button>
+                    {menuOpenId === sim.id && renderItemMenu(sim.id, sim.name || 'Unnamed', sim.archived)}
+                  </>
+                )}
               </div>
             ))
           )
@@ -123,16 +299,16 @@ export default function Sidebar({
       </div>
 
       {/* Library — completed simulations with outputs */}
-      {mode === 'genesis' && simulations && simulations.filter(s => s.status === 'completed').length > 0 && (
+      {mode === 'genesis' && simulations && simulations.filter(s => s.status === 'completed' && !s.archived).length > 0 && (
         <div className="sidebar-library">
           <div className="sidebar-library-header">
             <span className="sidebar-library-label">Library</span>
             <span className="sidebar-library-count">
-              {simulations.filter(s => s.status === 'completed').length}
+              {simulations.filter(s => s.status === 'completed' && !s.archived).length}
             </span>
           </div>
           <div className="sidebar-library-list">
-            {simulations.filter(s => s.status === 'completed').map((sim) => (
+            {simulations.filter(s => s.status === 'completed' && !s.archived).map((sim) => (
               <div
                 key={`lib-${sim.id}`}
                 className={`sidebar-library-item ${sim.id === currentSimId ? 'active' : ''}`}

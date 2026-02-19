@@ -64,6 +64,7 @@ class SimulationStore:
                             "created_at": data.get("created_at", ""),
                             "current_round": data.get("current_round", 0),
                             "total_rounds": data.get("config", {}).get("rounds", 0),
+                            "archived": data.get("archived", False),
                         })
                     except (json.JSONDecodeError, KeyError):
                         continue
@@ -138,6 +139,24 @@ class SimulationStore:
         if decision in ("approved", "redirected"):
             state.status = "running"
 
+        self.save_state(state)
+        return state
+
+    def rename_simulation(self, sim_id: str, name: str):
+        """Rename a simulation by updating its config name."""
+        state = self.load_state(sim_id)
+        if not state:
+            raise ValueError(f"Simulation {sim_id} not found")
+        state.config.name = name
+        self.save_state(state)
+        return state
+
+    def archive_simulation(self, sim_id: str, archived: bool = True):
+        """Set or clear the archived flag on a simulation."""
+        state = self.load_state(sim_id)
+        if not state:
+            raise ValueError(f"Simulation {sim_id} not found")
+        state.archived = archived
         self.save_state(state)
         return state
 

@@ -24,6 +24,9 @@ function App() {
   const [simulations, setSimulations] = useState([]);
   const [currentSimId, setCurrentSimId] = useState(null);
 
+  // Sidebar management
+  const [showArchived, setShowArchived] = useState(false);
+
   // Responsive sidebar
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -148,7 +151,40 @@ function App() {
     if (isMobile) setSidebarOpen(false);
   };
 
-  const handleSendMessage = async (content) => {
+  // === Conversation Management ===
+
+  const handleRenameConversation = async (id, name) => {
+    try {
+      await api.renameConversation(id, name);
+      setConversations(prev => prev.map(c => c.id === id ? { ...c, title: name } : c));
+    } catch (error) {
+      console.error('Failed to rename conversation:', error);
+    }
+  };
+
+  const handleDeleteConversation = async (id) => {
+    try {
+      await api.deleteConversation(id);
+      setConversations(prev => prev.filter(c => c.id !== id));
+      if (currentConversationId === id) {
+        setCurrentConversationId(null);
+        setCurrentConversation(null);
+      }
+    } catch (error) {
+      console.error('Failed to delete conversation:', error);
+    }
+  };
+
+  const handleArchiveConversation = async (id, archived = true) => {
+    try {
+      await api.archiveConversation(id, archived);
+      setConversations(prev => prev.map(c => c.id === id ? { ...c, archived } : c));
+    } catch (error) {
+      console.error('Failed to archive conversation:', error);
+    }
+  };
+
+  const handleSendMessage = async (content, modelConfig = {}) => {
     setIsLoading(true);
     try {
       // Auto-create a conversation if none exists yet
@@ -228,7 +264,7 @@ function App() {
             setIsLoading(false);
             break;
         }
-      });
+      }, modelConfig);
     } catch (error) {
       console.error('Failed to send message:', error);
       setCurrentConversation((prev) => prev ? ({
@@ -258,6 +294,38 @@ function App() {
   const handleSelectSimulation = (id) => {
     setCurrentSimId(id);
     if (isMobile) setSidebarOpen(false);
+  };
+
+  // === Simulation Management ===
+
+  const handleRenameSimulation = async (id, name) => {
+    try {
+      await api.renameSimulation(id, name);
+      setSimulations(prev => prev.map(s => s.id === id ? { ...s, name } : s));
+    } catch (error) {
+      console.error('Failed to rename simulation:', error);
+    }
+  };
+
+  const handleDeleteSimulation = async (id) => {
+    try {
+      await api.deleteSimulation(id);
+      setSimulations(prev => prev.filter(s => s.id !== id));
+      if (currentSimId === id) {
+        setCurrentSimId(null);
+      }
+    } catch (error) {
+      console.error('Failed to delete simulation:', error);
+    }
+  };
+
+  const handleArchiveSimulation = async (id, archived = true) => {
+    try {
+      await api.archiveSimulation(id, archived);
+      setSimulations(prev => prev.map(s => s.id === id ? { ...s, archived } : s));
+    } catch (error) {
+      console.error('Failed to archive simulation:', error);
+    }
   };
 
   // === Render ===
@@ -301,10 +369,18 @@ function App() {
         currentConversationId={currentConversationId}
         onSelectConversation={handleSelectConversation}
         onNewConversation={handleNewConversation}
+        onRenameConversation={handleRenameConversation}
+        onDeleteConversation={handleDeleteConversation}
+        onArchiveConversation={handleArchiveConversation}
         simulations={simulations}
         currentSimId={currentSimId}
         onSelectSimulation={handleSelectSimulation}
         onNewSimulation={handleNewSimulation}
+        onRenameSimulation={handleRenameSimulation}
+        onDeleteSimulation={handleDeleteSimulation}
+        onArchiveSimulation={handleArchiveSimulation}
+        showArchived={showArchived}
+        onToggleArchived={() => setShowArchived(prev => !prev)}
         isOpen={!isMobile || sidebarOpen}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(prev => !prev)}
