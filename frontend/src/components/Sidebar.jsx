@@ -1,4 +1,4 @@
-import { IconPlus, IconMessage, IconSpark, IconCrystalBall, IconCollapse, IconExpand } from './Icons';
+import { IconPlus, IconMessage, IconSpark, IconCrystalBall, IconCollapse, IconExpand, IconImage, IconVideo, IconPresentation } from './Icons';
 import './Sidebar.css';
 
 const STATUS_COLORS = {
@@ -43,20 +43,18 @@ export default function Sidebar({
         <button
           className={`mode-toggle-btn ${mode === 'council' ? 'active' : ''}`}
           onClick={() => onModeChange('council')}
-          title="Council — Q&A Mode"
+          title="LLM Council — Ask questions and get multi-model responses"
         >
           <IconMessage size={14} />
-          <span className="mode-toggle-label">Council</span>
-          <span className="mode-toggle-desc">Q&A Mode</span>
+          <span className="mode-toggle-label">LLM Council</span>
         </button>
         <button
           className={`mode-toggle-btn ${mode === 'genesis' ? 'active' : ''}`}
           onClick={() => onModeChange('genesis')}
-          title="Genesis — Simulation"
+          title="Genesis Chamber — Multi-round creative simulation"
         >
           <IconCrystalBall size={14} />
-          <span className="mode-toggle-label">Genesis</span>
-          <span className="mode-toggle-desc">Simulation</span>
+          <span className="mode-toggle-label">Genesis Chamber</span>
         </button>
       </div>
 
@@ -123,6 +121,35 @@ export default function Sidebar({
           )
         )}
       </div>
+
+      {/* Library — completed simulations with outputs */}
+      {mode === 'genesis' && simulations && simulations.filter(s => s.status === 'completed').length > 0 && (
+        <div className="sidebar-library">
+          <div className="sidebar-library-header">
+            <span className="sidebar-library-label">Library</span>
+            <span className="sidebar-library-count">
+              {simulations.filter(s => s.status === 'completed').length}
+            </span>
+          </div>
+          <div className="sidebar-library-list">
+            {simulations.filter(s => s.status === 'completed').map((sim) => (
+              <div
+                key={`lib-${sim.id}`}
+                className={`sidebar-library-item ${sim.id === currentSimId ? 'active' : ''}`}
+                onClick={() => onSelectSimulation(sim.id)}
+              >
+                <div className="sidebar-library-name">{sim.name || 'Unnamed'}</div>
+                <div className="sidebar-library-badges">
+                  {sim.has_images && <IconImage size={12} className="sidebar-library-badge" />}
+                  {sim.has_videos && <IconVideo size={12} className="sidebar-library-badge" />}
+                  {sim.has_presentation && <IconPresentation size={12} className="sidebar-library-badge" />}
+                  <span className="sidebar-library-rounds">R{sim.total_rounds}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Footer with collapse toggle */}
       <div className="sidebar-footer">

@@ -441,6 +441,79 @@
   font-style: italic;
 }
 
+/* Upload button */
+.brief-upload-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.brief-upload-btn:hover {
+  background: rgba(0, 217, 255, 0.08);
+  border-color: var(--gc-cyan);
+  color: var(--gc-cyan);
+}
+
+/* File badge */
+.brief-file-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(0, 217, 255, 0.08);
+  border: 1px solid rgba(0, 217, 255, 0.2);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--gc-cyan);
+  margin-right: 6px;
+}
+
+/* Drag state */
+.brief-editor.dragging {
+  border-color: var(--gc-cyan);
+  background: rgba(0, 217, 255, 0.02);
+}
+
+.brief-drop-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(0, 217, 255, 0.06);
+  border: 2px dashed var(--gc-cyan);
+  border-radius: var(--radius-md);
+  z-index: 10;
+  color: var(--gc-cyan);
+  font-family: var(--font-data);
+  font-size: 16px;
+  font-weight: 600;
+  animation: fadeIn 150ms ease-out;
+  pointer-events: none;
+}
+
+.brief-drop-hint {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.brief-editor {
+  position: relative;
+}
+
 /* ── Launch Button ── */
 .launcher-start-btn {
   width: 100%;

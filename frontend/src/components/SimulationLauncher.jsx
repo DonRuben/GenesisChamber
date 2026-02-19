@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../api';
-import { IconLightning, IconMessage, IconCrystalBall, IconFactory, IconSparkle, IconCheck } from './Icons';
+import { IconLightning, IconMessage, IconCrystalBall, IconFactory, IconSparkle, IconCheck, IconUpload } from './Icons';
 import HelpTooltip from './HelpTooltip';
 import { helpContent } from './helpContent';
 import ModelSelector from './ModelSelector';
@@ -76,6 +76,9 @@ export default function SimulationLauncher({ onStart }) {
   const [brief, setBrief] = useState('');
   const [isStarting, setIsStarting] = useState(false);
   const [loadError, setLoadError] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadedFileName, setUploadedFileName] = useState(null);
+  const fileInputRef = useRef(null);
 
   // Step tracking
   const [activeStep, setActiveStep] = useState('type');
@@ -151,6 +154,41 @@ export default function SimulationLauncher({ onStart }) {
   const scrollToSection = useCallback((key) => {
     sectionRefs[key]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     setActiveStep(key);
+  }, []);
+
+  // File upload for brief
+  const handleFileRead = useCallback((file) => {
+    if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!['md', 'txt', 'text', 'markdown'].includes(ext)) {
+      alert('Supported formats: .md, .txt, .markdown');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target.result;
+      if (brief.length > 0 && !window.confirm(`Replace current brief with "${file.name}"?`)) return;
+      setBrief(content);
+      setUploadedFileName(file.name);
+    };
+    reader.readAsText(file);
+  }, [brief]);
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleFileRead(file);
+  }, [handleFileRead]);
+
+  const handleDragOver = useCallback((e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e) => {
+    e.preventDefault();
+    setIsDragging(false);
   }, []);
 
   const handleStart = async () => {
@@ -366,7 +404,12 @@ export default function SimulationLauncher({ onStart }) {
           <label className="gc-label">
             Project Brief <HelpTooltip text={helpContent.launcher.brief} position="right" />
           </label>
-          <div className="brief-editor">
+          <div
+            className={`brief-editor${isDragging ? ' dragging' : ''}`}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+          >
             <div className="brief-toolbar">
               <button
                 className="brief-template-btn"
@@ -381,26 +424,55 @@ export default function SimulationLauncher({ onStart }) {
               >
                 Load Template
               </button>
+              <button
+                className="brief-upload-btn"
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <IconUpload size={12} />
+                Upload File
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".md,.txt,.text,.markdown"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  handleFileRead(e.target.files[0]);
+                  e.target.value = '';
+                }}
+              />
               {brief.length > 0 && (
                 <button
                   className="brief-clear-btn"
                   type="button"
                   onClick={() => {
-                    if (window.confirm('Clear the entire brief?')) setBrief('');
+                    if (window.confirm('Clear the entire brief?')) {
+                      setBrief('');
+                      setUploadedFileName(null);
+                    }
                   }}
                 >
                   Clear
                 </button>
               )}
               <span className="brief-char-count">
+                {uploadedFileName && <span className="brief-file-badge">{uploadedFileName}</span>}
                 {brief.length > 0 ? `${brief.length} chars` : 'Optional'}
               </span>
             </div>
+            {isDragging && (
+              <div className="brief-drop-overlay">
+                <IconUpload size={32} />
+                <span>Drop your brief file here</span>
+                <span className="brief-drop-hint">.md, .txt supported</span>
+              </div>
+            )}
             <textarea
               className="gc-textarea launcher-brief"
               value={brief}
-              onChange={(e) => setBrief(e.target.value)}
-              placeholder={`Describe your creative challenge here...\n\nTip: Click "Load Template" above to get a structured briefing guide with all the fields that help the council produce their best work — client, audience, requirements, constraints, tone, and inspiration.\n\nOr just write freely. The council will work with whatever you give them.`}
+              onChange={(e) => { setBrief(e.target.value); setUploadedFileName(null); }}
+              placeholder={`Describe your creative challenge here...\n\nTip: Click "Load Template" for a structured briefing guide, or "Upload File" to import a .md/.txt brief document.\n\nYou can also drag and drop a file directly onto this area.\n\nOr just write freely — the council will work with whatever you give them.`}
               rows={10}
             />
           </div>
