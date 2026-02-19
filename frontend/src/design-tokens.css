@@ -3,7 +3,7 @@
    OmniPresent Brand System
    ============================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @font-face {
   font-family: 'OmniPresent';
@@ -57,9 +57,10 @@
 
   /* ── Typography Families ── */
   --font-display: 'OmniPresent', 'Inter', system-ui, sans-serif;
-  --font-body: 'Playfair Display', Georgia, serif;
-  --font-body-alt: 'Cormorant Garamond', Georgia, serif;
-  --font-caption: 'Crimson Text', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-body-alt: 'Inter', system-ui, sans-serif;
+  --font-caption: 'Inter', system-ui, sans-serif;
+  --font-serif-accent: 'Playfair Display', Georgia, serif;
   --font-data: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
@@ -301,9 +302,9 @@
 .gc-textarea {
   resize: vertical;
   min-height: 120px;
-  font-family: var(--font-body);
-  font-size: 16px;
-  line-height: 1.7;
+  font-family: var(--font-data);
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 .gc-label {

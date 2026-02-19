@@ -167,9 +167,9 @@
 }
 
 .cp-list li {
-  font-family: var(--font-caption);
+  font-family: var(--font-data);
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.5;
   margin-bottom: 3px;
 }
 
@@ -191,7 +191,7 @@
 
 /* ── Fatal Flaw ── */
 .cp-fatal {
-  font-family: var(--font-caption);
+  font-family: var(--font-data);
   font-size: 14px;
   color: var(--text-primary);
   background: rgba(239, 68, 68, 0.06);
@@ -208,7 +208,7 @@
 
 /* ── One Change ── */
 .cp-one-change {
-  font-family: var(--font-caption);
+  font-family: var(--font-data);
   font-size: 14px;
   color: var(--text-primary);
   background: rgba(59, 130, 246, 0.06);

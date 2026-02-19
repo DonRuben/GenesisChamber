@@ -166,13 +166,10 @@
   font-size: 15px;
 }
 
-/* Highlighted bold text within the verdict */
+/* Bold text in the verdict — clean emphasis, no background */
 .s3-verdict-body strong {
-  color: var(--text-primary);
-  background: rgba(16, 185, 129, 0.10);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-weight: 650;
+  color: #fff;
+  font-weight: 700;
 }
 
 /* ── Word count ── */

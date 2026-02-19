@@ -105,8 +105,8 @@
 
 /* ── Content ── */
 .cc-tagline {
-  font-family: var(--font-body);
-  font-size: 16px;
+  font-family: var(--font-data);
+  font-size: 14px;
   color: var(--text-secondary);
   font-style: italic;
   margin-bottom: var(--space-xs);
@@ -114,9 +114,9 @@
 }
 
 .cc-idea {
-  font-family: var(--font-body);
-  font-size: 15px;
-  line-height: 1.7;
+  font-family: var(--font-data);
+  font-size: 14px;
+  line-height: 1.6;
   color: var(--text-primary);
   margin-bottom: var(--space-sm);
 }
@@ -131,7 +131,7 @@
 }
 
 .cc-headline {
-  font-family: var(--font-body);
+  font-family: var(--font-serif-accent);
   font-size: 20px;
   font-weight: 600;
   color: var(--text-primary);
@@ -139,8 +139,8 @@
 }
 
 .cc-subhead {
-  font-family: var(--font-body-alt);
-  font-size: 15px;
+  font-family: var(--font-data);
+  font-size: 14px;
   color: var(--text-secondary);
   margin-top: 4px;
   line-height: 1.4;
@@ -185,17 +185,17 @@
 }
 
 .cc-body-copy {
-  font-family: var(--font-body);
-  font-size: 15px;
-  line-height: 1.8;
+  font-family: var(--font-data);
+  font-size: 14px;
+  line-height: 1.6;
   color: var(--text-primary);
   white-space: pre-line;
 }
 
 .cc-visual-text {
-  font-family: var(--font-caption);
-  font-size: 14px;
-  line-height: 1.7;
+  font-family: var(--font-data);
+  font-size: 13px;
+  line-height: 1.6;
   color: var(--text-secondary);
   font-style: italic;
 }
@@ -207,9 +207,9 @@
 }
 
 .cc-rationale {
-  font-family: var(--font-caption);
-  font-size: 15px;
-  line-height: 1.7;
+  font-family: var(--font-data);
+  font-size: 14px;
+  line-height: 1.6;
   color: var(--text-primary);
 }
 
@@ -226,8 +226,8 @@
 }
 
 .cc-evolution {
-  font-family: var(--font-caption);
-  font-size: 14px;
+  font-family: var(--font-data);
+  font-size: 13px;
   font-style: italic;
   color: var(--gc-gold);
   background: rgba(255, 184, 0, 0.06);
