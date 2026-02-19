@@ -20,8 +20,8 @@ from .simulation import GenesisSimulation
 from .simulation_store import SimulationStore
 from .config import (
     SIMULATION_PRESETS, DEFAULT_PARTICIPANTS, DEFAULT_MODERATOR,
-    DEFAULT_EVALUATOR, SOULS_DIR, PERSONA_COLORS, SIMULATION_OUTPUT_DIR,
-    TEAMS, PERSONA_TEAMS, OPENROUTER_API_KEY, UPLOADS_DIR,
+    DEFAULT_EVALUATOR, DEFAULT_DEVILS_ADVOCATE, SOULS_DIR, PERSONA_COLORS,
+    SIMULATION_OUTPUT_DIR, TEAMS, PERSONA_TEAMS, OPENROUTER_API_KEY, UPLOADS_DIR,
 )
 from .output_engine import OutputEngine
 from .image_generator import ImageGenerator
@@ -241,6 +241,7 @@ import re
 _CANONICAL_NAMES = {pid: p["name"] for pid, p in DEFAULT_PARTICIPANTS.items()}
 _CANONICAL_NAMES[DEFAULT_MODERATOR["soul_document"].split("/")[-1].replace(".md", "")] = DEFAULT_MODERATOR["name"]
 _CANONICAL_NAMES[DEFAULT_EVALUATOR["soul_document"].split("/")[-1].replace(".md", "")] = DEFAULT_EVALUATOR["name"]
+_CANONICAL_NAMES[DEFAULT_DEVILS_ADVOCATE["soul_document"].split("/")[-1].replace(".md", "")] = DEFAULT_DEVILS_ADVOCATE["name"]
 
 
 def clean_soul_name(raw_name: str, persona_id: str) -> str:
@@ -647,12 +648,13 @@ async def get_available_models():
 
 @app.get("/api/config/participants")
 async def get_default_participants():
-    """Return default participant, moderator, and evaluator configurations with team structure."""
-    from .config import DEFAULT_PARTICIPANTS, DEFAULT_MODERATOR, DEFAULT_EVALUATOR, TEAMS, PERSONA_TEAMS
+    """Return default participant, moderator, evaluator, and Devil's Advocate configurations."""
+    from .config import DEFAULT_PARTICIPANTS, DEFAULT_MODERATOR, DEFAULT_EVALUATOR, DEFAULT_DEVILS_ADVOCATE, TEAMS, PERSONA_TEAMS
     return {
         "participants": DEFAULT_PARTICIPANTS,
         "moderator": DEFAULT_MODERATOR,
         "evaluator": DEFAULT_EVALUATOR,
+        "devils_advocate": DEFAULT_DEVILS_ADVOCATE,
         "teams": TEAMS,
         "persona_teams": PERSONA_TEAMS,
     }

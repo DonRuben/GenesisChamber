@@ -148,14 +148,25 @@ function App() {
   };
 
   const handleSendMessage = async (content) => {
-    if (!currentConversationId) return;
-
     setIsLoading(true);
     try {
+      // Auto-create a conversation if none exists yet
+      let convId = currentConversationId;
+      if (!convId) {
+        const newConv = await api.createConversation();
+        convId = newConv.id;
+        setCurrentConversationId(convId);
+        setCurrentConversation(newConv);
+        setConversations((prev) => [
+          { id: newConv.id, created_at: newConv.created_at, title: newConv.title || 'New Conversation', message_count: 0 },
+          ...prev,
+        ]);
+      }
+
       const userMessage = { role: 'user', content };
       setCurrentConversation((prev) => ({
         ...prev,
-        messages: [...prev.messages, userMessage],
+        messages: [...(prev?.messages || []), userMessage],
       }));
 
       const assistantMessage = {
@@ -172,7 +183,7 @@ function App() {
         messages: [...prev.messages, assistantMessage],
       }));
 
-      await api.sendMessageStream(currentConversationId, content, (eventType, event) => {
+      await api.sendMessageStream(convId, content, (eventType, event) => {
         switch (eventType) {
           case 'stage1_start':
             setCurrentConversation((prev) => {
@@ -238,10 +249,10 @@ function App() {
       });
     } catch (error) {
       console.error('Failed to send message:', error);
-      setCurrentConversation((prev) => ({
+      setCurrentConversation((prev) => prev ? ({
         ...prev,
-        messages: prev.messages.slice(0, -2),
-      }));
+        messages: (prev.messages || []).slice(0, -2),
+      }) : prev);
       setIsLoading(false);
     }
   };

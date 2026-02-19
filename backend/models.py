@@ -12,7 +12,7 @@ class ParticipantConfig(BaseModel):
     display_name: str
     model: str  # OpenRouter model identifier
     soul_document: str  # Path to soul markdown file
-    role: Literal["participant", "moderator", "evaluator"] = "participant"
+    role: Literal["participant", "moderator", "evaluator", "devils_advocate"] = "participant"
     temperature: float = 0.7
     max_tokens: int = 2000
     speciality: str = ""
@@ -34,6 +34,7 @@ class SimulationConfig(BaseModel):
     quality_gates: List[int] = []  # round numbers that pause for approval
     brief: str  # The project brief text
     brand_context: str = ""
+    devils_advocate: Optional[ParticipantConfig] = None  # Advocatus Diaboli — optional adversarial critic
 
 
 # --- Concept Lifecycle Models ---
