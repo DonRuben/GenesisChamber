@@ -20,6 +20,7 @@ from .simulation_store import SimulationStore
 from .config import (
     SIMULATION_PRESETS, DEFAULT_PARTICIPANTS, DEFAULT_MODERATOR,
     DEFAULT_EVALUATOR, SOULS_DIR, PERSONA_COLORS, SIMULATION_OUTPUT_DIR,
+    TEAMS, PERSONA_TEAMS,
 )
 from .output_engine import OutputEngine
 from .image_generator import ImageGenerator
@@ -216,11 +217,12 @@ _running_simulations: Dict[str, GenesisSimulation] = {}
 
 @app.get("/api/souls")
 async def list_souls():
-    """List available soul documents."""
+    """List available soul documents with team metadata."""
     souls_path = Path(SOULS_DIR)
     if not souls_path.exists():
         return []
 
+    import re
     souls = []
     for f in sorted(souls_path.glob("*.md")):
         persona_id = f.stem
@@ -228,15 +230,19 @@ async def list_souls():
         with open(f, "r") as fh:
             first_lines = fh.read(500)
         # Extract name from # SOUL DOCUMENT: NAME or # NAME
-        import re
         name_match = re.search(r'^#\s+(?:SOUL DOCUMENT:\s*)?(.+)', first_lines, re.MULTILINE)
         name = name_match.group(1).strip() if name_match else persona_id.replace("-", " ").title()
+
+        # Team membership
+        team_info = PERSONA_TEAMS.get(persona_id, {"team": "custom"})
 
         souls.append({
             "id": persona_id,
             "name": name,
             "file": str(f),
             "color": PERSONA_COLORS.get(persona_id, "#666666"),
+            "team": team_info.get("team", "custom"),
+            "cross_teams": team_info.get("cross_teams", []),
         })
 
     return souls
@@ -560,12 +566,70 @@ async def get_available_models():
 
 @app.get("/api/config/participants")
 async def get_default_participants():
-    """Return default participant, moderator, and evaluator configurations."""
-    from .config import DEFAULT_PARTICIPANTS, DEFAULT_MODERATOR, DEFAULT_EVALUATOR
+    """Return default participant, moderator, and evaluator configurations with team structure."""
+    from .config import DEFAULT_PARTICIPANTS, DEFAULT_MODERATOR, DEFAULT_EVALUATOR, TEAMS, PERSONA_TEAMS
     return {
         "participants": DEFAULT_PARTICIPANTS,
         "moderator": DEFAULT_MODERATOR,
         "evaluator": DEFAULT_EVALUATOR,
+        "teams": TEAMS,
+        "persona_teams": PERSONA_TEAMS,
+    }
+
+
+@app.get("/api/config/teams")
+async def get_teams():
+    """Return team definitions and membership."""
+    return {
+        "teams": TEAMS,
+        "persona_teams": PERSONA_TEAMS,
+    }
+
+
+from fastapi import UploadFile, File, Form
+
+@app.post("/api/souls/upload")
+async def upload_soul_file(
+    file: UploadFile = File(...),
+    team: str = Form("custom"),
+    color: str = Form("#666666"),
+):
+    """Upload a new soul document (.md file). The system extracts the persona name and registers it."""
+    import re
+
+    # Validate file type
+    if not file.filename.endswith(".md"):
+        raise HTTPException(status_code=400, detail="Only .md files are supported")
+
+    # Read contents
+    content = await file.read()
+    text = content.decode("utf-8")
+
+    # Derive persona ID from filename
+    persona_id = file.filename.replace(".md", "").lower().replace(" ", "-")
+
+    # Extract name from soul document header
+    name_match = re.search(r'^#\s+(?:SOUL DOCUMENT:\s*)?(.+)', text, re.MULTILINE)
+    name = name_match.group(1).strip() if name_match else persona_id.replace("-", " ").title()
+
+    # Save to souls directory
+    souls_path = Path(SOULS_DIR)
+    souls_path.mkdir(parents=True, exist_ok=True)
+    dest = souls_path / f"{persona_id}.md"
+    dest.write_text(text, encoding="utf-8")
+
+    # Register in runtime config
+    PERSONA_COLORS[persona_id] = color
+    PERSONA_TEAMS[persona_id] = {"team": team}
+
+    return {
+        "id": persona_id,
+        "name": name,
+        "file": str(dest),
+        "color": color,
+        "team": team,
+        "cross_teams": [],
+        "status": "uploaded",
     }
 
 

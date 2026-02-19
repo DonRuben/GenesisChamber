@@ -178,6 +178,239 @@
   color: var(--gc-gold);
 }
 
+/* ── Team Groups ── */
+.team-group {
+  margin-bottom: var(--space-lg);
+}
+
+.team-group:last-child {
+  margin-bottom: var(--space-sm);
+}
+
+.team-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.team-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.team-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.team-name {
+  font-family: var(--font-data);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.team-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.team-select-all {
+  padding: 3px 10px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.team-select-all:hover {
+  background: rgba(0, 217, 255, 0.08);
+  border-color: var(--gc-cyan);
+  color: var(--gc-cyan);
+}
+
+.team-select-all.active {
+  background: rgba(0, 217, 255, 0.12);
+  border-color: var(--gc-cyan);
+  color: var(--gc-cyan);
+}
+
+/* ── Soul Upload Button ── */
+.soul-upload-btn {
+  padding: 4px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.soul-upload-btn:hover {
+  background: rgba(139, 92, 246, 0.08);
+  border-color: #8B5CF6;
+  color: #8B5CF6;
+}
+
+/* ── Dual Role Toggle ── */
+.dual-role-toggle {
+  padding: 3px 10px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  font-family: var(--font-data);
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.dual-role-toggle:hover {
+  border-color: var(--gc-cyan);
+  color: var(--gc-cyan);
+}
+
+.dual-role-toggle.active {
+  background: rgba(0, 217, 255, 0.12);
+  border-color: var(--gc-cyan);
+  color: var(--gc-cyan);
+}
+
+.dual-role-badge {
+  margin-left: 4px;
+  padding: 1px 5px;
+  background: rgba(0, 217, 255, 0.12);
+  border-radius: 3px;
+  font-size: 9px;
+  color: var(--gc-cyan);
+  font-weight: 600;
+}
+
+.evaluator-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* ── Upload Modal ── */
+.upload-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 150ms ease-out;
+}
+
+.upload-modal {
+  background: var(--surface-1);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-xl);
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.upload-modal-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+
+.upload-modal-desc {
+  font-family: var(--font-data);
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0 0 var(--space-lg);
+}
+
+.upload-field {
+  margin-bottom: var(--space-md);
+}
+
+.upload-field-label {
+  display: block;
+  font-family: var(--font-data);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.upload-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--surface-0);
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: 14px;
+}
+
+.upload-color-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.upload-color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.upload-color-swatch:hover {
+  transform: scale(1.15);
+}
+
+.upload-color-swatch.selected {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 2px var(--surface-1), 0 0 0 4px var(--text-primary);
+}
+
+.upload-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+
 /* ── Participant Grid ── */
 .participant-grid {
   display: grid;

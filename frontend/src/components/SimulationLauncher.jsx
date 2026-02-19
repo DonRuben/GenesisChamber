@@ -58,13 +58,44 @@ const PRESET_DESCRIPTIONS = {
 
 // Default model assignments per persona from the blueprint
 const DEFAULT_MODELS = {
+  // Marketing & Strategy
   'david-ogilvy': 'google/gemini-2.5-pro',
   'claude-hopkins': 'anthropic/claude-sonnet-4-5-20250929',
   'leo-burnett': 'openai/gpt-5.1',
   'mary-wells-lawrence': 'meta-llama/llama-4-maverick',
   'gary-halbert': 'x-ai/grok-4',
+  // Design & Visual
+  'paul-rand': 'google/gemini-2.5-pro',
+  'paula-scher': 'openai/gpt-5.1',
+  'saul-bass': 'anthropic/claude-sonnet-4-5-20250929',
+  'susan-kare': 'meta-llama/llama-4-maverick',
+  'rob-janoff': 'x-ai/grok-4',
+  'tobias-van-schneider': 'google/gemini-2.5-pro',
+  // Leadership
   moderator: 'anthropic/claude-opus-4-6',
+  evaluator: 'anthropic/claude-opus-4-6',
 };
+
+// Team display order and metadata
+const TEAM_ORDER = ['marketing', 'design', 'leadership'];
+const TEAM_LABELS = {
+  marketing: 'Marketing & Strategy',
+  design: 'Design & Visual',
+  leadership: 'Leadership',
+  custom: 'Custom',
+};
+const TEAM_COLORS = {
+  marketing: '#F59E0B',
+  design: '#8B5CF6',
+  leadership: '#6B7280',
+  custom: '#666666',
+};
+
+// Upload color palette for new souls
+const UPLOAD_COLORS = [
+  '#F59E0B', '#3B82F6', '#10B981', '#EC4899', '#EF4444',
+  '#8B5CF6', '#F97316', '#DC2626', '#06B6D4', '#A3E635', '#D946EF',
+];
 
 export default function SimulationLauncher({ onStart }) {
   const [souls, setSouls] = useState([]);
@@ -79,6 +110,14 @@ export default function SimulationLauncher({ onStart }) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState(null);
   const fileInputRef = useRef(null);
+  // Dual-role: leadership personas added as active participants
+  const [dualRoleActive, setDualRoleActive] = useState({ 'jony-ive': false });
+  // Soul upload
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadTeam, setUploadTeam] = useState('custom');
+  const [uploadColor, setUploadColor] = useState('#666666');
+  const [isUploading, setIsUploading] = useState(false);
+  const soulFileInputRef = useRef(null);
 
   // Step tracking
   const [activeStep, setActiveStep] = useState('type');
@@ -110,8 +149,16 @@ export default function SimulationLauncher({ onStart }) {
       ]);
       setSouls(soulsData);
       setPresets(presetsData);
-      setSelectedParticipants(
-        soulsData.filter(s => s.id !== 'steve-jobs').slice(0, 3).map(s => s.id)
+      // Default: first 2 marketing + first 1 design for a mixed team
+      const marketing = soulsData.filter(s => s.team === 'marketing');
+      const design = soulsData.filter(s => s.team === 'design');
+      const defaults = [
+        ...marketing.slice(0, 2).map(s => s.id),
+        ...design.slice(0, 1).map(s => s.id),
+      ];
+      setSelectedParticipants(defaults.length > 0
+        ? defaults
+        : soulsData.filter(s => s.id !== 'steve-jobs' && s.id !== 'jony-ive').slice(0, 3).map(s => s.id)
       );
 
       // Load models (non-blocking — fallback to defaults if endpoint doesn't exist)
@@ -145,6 +192,62 @@ export default function SimulationLauncher({ onStart }) {
     setSelectedParticipants(prev =>
       prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
     );
+  };
+
+  // Group souls by team (excluding leadership — Jobs and Ive are handled separately)
+  const soulsByTeam = (() => {
+    const groups = {};
+    const participantSouls = souls.filter(s => s.id !== 'steve-jobs' && s.id !== 'jony-ive');
+    for (const soul of participantSouls) {
+      const team = soul.team || 'custom';
+      if (!groups[team]) groups[team] = [];
+      groups[team].push(soul);
+    }
+    return groups;
+  })();
+
+  // Get ordered team keys (known teams first, then any custom/unknown)
+  const orderedTeams = [
+    ...TEAM_ORDER.filter(t => soulsByTeam[t]?.length > 0),
+    ...Object.keys(soulsByTeam).filter(t => !TEAM_ORDER.includes(t) && soulsByTeam[t]?.length > 0),
+  ];
+
+  const toggleTeam = (teamKey) => {
+    const teamSoulIds = (soulsByTeam[teamKey] || []).map(s => s.id);
+    const allSelected = teamSoulIds.every(id => selectedParticipants.includes(id));
+    if (allSelected) {
+      setSelectedParticipants(prev => prev.filter(id => !teamSoulIds.includes(id)));
+    } else {
+      setSelectedParticipants(prev => [...new Set([...prev, ...teamSoulIds])]);
+    }
+  };
+
+  const toggleDualRole = (personaId) => {
+    setDualRoleActive(prev => ({ ...prev, [personaId]: !prev[personaId] }));
+  };
+
+  const handleSoulUpload = async (file) => {
+    if (!file || !file.name.endsWith('.md')) {
+      alert('Only .md soul documents are supported');
+      return;
+    }
+    setIsUploading(true);
+    try {
+      const result = await api.uploadSoul(file, uploadTeam, uploadColor);
+      // Refresh souls list
+      const soulsData = await api.listSouls();
+      setSouls(soulsData);
+      // Auto-select the new soul
+      setSelectedParticipants(prev => [...prev, result.id]);
+      setShowUploadModal(false);
+      setUploadTeam('custom');
+      setUploadColor('#666666');
+    } catch (e) {
+      console.error('Failed to upload soul:', e);
+      alert('Failed to upload soul document. Is the backend running?');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const updateModel = useCallback((id, modelId) => {
@@ -212,7 +315,24 @@ export default function SimulationLauncher({ onStart }) {
         }
       }
 
+      // If Jony Ive dual-role is active, add him as a participant too
+      if (dualRoleActive['jony-ive']) {
+        const iveSoul = souls.find(s => s.id === 'jony-ive');
+        if (iveSoul) {
+          participants['jony-ive'] = {
+            display_name: iveSoul.name,
+            model: modelAssignments['jony-ive'] || modelAssignments.evaluator || 'anthropic/claude-opus-4-6',
+            soul_document: iveSoul.file,
+            role: 'participant',
+            temperature: 0.5,
+            max_tokens: 4000,
+            color: iveSoul.color || '#9CA3AF',
+          };
+        }
+      }
+
       const moderator = souls.find(s => s.id === 'steve-jobs');
+      const evaluator = souls.find(s => s.id === 'jony-ive');
       const config = {
         name: preset.name || 'Simulation',
         type: selectedPreset,
@@ -229,6 +349,15 @@ export default function SimulationLauncher({ onStart }) {
           temperature: 0.6,
           max_tokens: 4000,
           color: moderator?.color || '#6B7280',
+        },
+        evaluator: {
+          display_name: evaluator?.name || 'Jony Ive',
+          model: modelAssignments.evaluator || 'anthropic/claude-opus-4-6',
+          soul_document: evaluator?.file || 'souls/jony-ive.md',
+          role: 'evaluator',
+          temperature: 0.5,
+          max_tokens: 4000,
+          color: evaluator?.color || '#9CA3AF',
         },
         elimination_schedule: preset.elimination_schedule || {},
         quality_gates: preset.quality_gates || [],
@@ -305,42 +434,80 @@ export default function SimulationLauncher({ onStart }) {
           </div>
         </section>
 
-        {/* Participants */}
+        {/* Participants — grouped by team */}
         <section className="launcher-section" ref={sectionRefs.participants}>
-          <label className="gc-label">
-            Participants ({selectedParticipants.length} selected)
-            <HelpTooltip text={helpContent.launcher.participants} position="right" />
-          </label>
-          <div className="participant-grid">
-            {souls.filter(s => s.id !== 'steve-jobs').map(soul => {
-              const isSelected = selectedParticipants.includes(soul.id);
-              return (
-                <div
-                  key={soul.id}
-                  className={`participant-card ${isSelected ? 'selected' : ''}`}
-                  onClick={() => toggleParticipant(soul.id)}
-                >
-                  <div
-                    className="participant-avatar"
-                    style={{ borderColor: soul.color, background: isSelected ? soul.color : 'transparent' }}
-                  >
-                    <span className="participant-initial" style={{ color: isSelected ? 'var(--surface-0)' : soul.color }}>
-                      {(soul.name || '?')[0]}
-                    </span>
-                  </div>
-                  <div className="participant-info">
-                    <span className="participant-name">{soul.name}</span>
-                    <span className="participant-model-label">
-                      {getDisplayName(modelAssignments[soul.id] || 'anthropic/claude-sonnet-4.5')}
-                    </span>
-                  </div>
-                  {isSelected && <span className="participant-check"><IconCheck size={14} /></span>}
-                </div>
-              );
-            })}
+          <div className="launcher-section-header">
+            <label className="gc-label">
+              Participants ({selectedParticipants.length} selected)
+              <HelpTooltip text={helpContent.launcher.participants} position="right" />
+            </label>
+            <button
+              className="soul-upload-btn"
+              type="button"
+              onClick={() => setShowUploadModal(true)}
+            >
+              <IconUpload size={12} />
+              Upload Soul
+            </button>
           </div>
 
-          {/* Moderator */}
+          {orderedTeams.map(teamKey => {
+            const teamSouls = soulsByTeam[teamKey] || [];
+            const teamLabel = TEAM_LABELS[teamKey] || teamKey;
+            const teamColor = TEAM_COLORS[teamKey] || '#666666';
+            const allSelected = teamSouls.every(s => selectedParticipants.includes(s.id));
+            const someSelected = teamSouls.some(s => selectedParticipants.includes(s.id));
+            const selectedCount = teamSouls.filter(s => selectedParticipants.includes(s.id)).length;
+
+            return (
+              <div key={teamKey} className="team-group">
+                <div className="team-header">
+                  <div className="team-label" style={{ '--team-color': teamColor }}>
+                    <span className="team-dot" style={{ background: teamColor }} />
+                    <span className="team-name">{teamLabel}</span>
+                    <span className="team-count">{selectedCount}/{teamSouls.length}</span>
+                  </div>
+                  <button
+                    className={`team-select-all ${allSelected ? 'active' : ''}`}
+                    onClick={() => toggleTeam(teamKey)}
+                    type="button"
+                  >
+                    {allSelected ? 'Deselect All' : someSelected ? 'Select All' : 'Select All'}
+                  </button>
+                </div>
+                <div className="participant-grid">
+                  {teamSouls.map(soul => {
+                    const isSelected = selectedParticipants.includes(soul.id);
+                    return (
+                      <div
+                        key={soul.id}
+                        className={`participant-card ${isSelected ? 'selected' : ''}`}
+                        onClick={() => toggleParticipant(soul.id)}
+                      >
+                        <div
+                          className="participant-avatar"
+                          style={{ borderColor: soul.color, background: isSelected ? soul.color : 'transparent' }}
+                        >
+                          <span className="participant-initial" style={{ color: isSelected ? 'var(--surface-0)' : soul.color }}>
+                            {(soul.name || '?')[0]}
+                          </span>
+                        </div>
+                        <div className="participant-info">
+                          <span className="participant-name">{soul.name}</span>
+                          <span className="participant-model-label">
+                            {getDisplayName(modelAssignments[soul.id] || 'anthropic/claude-sonnet-4.5')}
+                          </span>
+                        </div>
+                        {isSelected && <span className="participant-check"><IconCheck size={14} /></span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Leadership — Moderator + Evaluator with dual-role toggle */}
           <div className="moderator-section">
             <div className="moderator-header">
               <div className="moderator-avatar">
@@ -359,7 +526,105 @@ export default function SimulationLauncher({ onStart }) {
                 />
               )}
             </div>
+
+            <div className="evaluator-header" style={{ marginTop: '12px' }}>
+              <div className="moderator-avatar" style={{ borderColor: '#9CA3AF' }}>
+                <span className="moderator-initial" style={{ color: '#9CA3AF' }}>J</span>
+              </div>
+              <div className="moderator-info">
+                <span className="moderator-name">Jony Ive</span>
+                <span className="moderator-role">
+                  Evaluator
+                  {dualRoleActive['jony-ive'] && <span className="dual-role-badge">+ Participant</span>}
+                </span>
+              </div>
+              <button
+                className={`dual-role-toggle ${dualRoleActive['jony-ive'] ? 'active' : ''}`}
+                onClick={() => toggleDualRole('jony-ive')}
+                type="button"
+                title="Enable dual role: Ive also participates as a creative contributor"
+              >
+                {dualRoleActive['jony-ive'] ? 'Dual Role' : 'Evaluate Only'}
+              </button>
+              {availableModels && (
+                <ModelSelector
+                  value={modelAssignments.evaluator || modelAssignments['jony-ive'] || 'anthropic/claude-opus-4-6'}
+                  onChange={(modelId) => updateModel('evaluator', modelId)}
+                  models={availableModels}
+                  compact
+                />
+              )}
+            </div>
           </div>
+
+          {/* Soul Upload Modal */}
+          {showUploadModal && (
+            <div className="upload-modal-overlay" onClick={() => setShowUploadModal(false)}>
+              <div className="upload-modal" onClick={e => e.stopPropagation()}>
+                <h3 className="upload-modal-title">Upload Soul Document</h3>
+                <p className="upload-modal-desc">
+                  Upload a .md soul document to add a new persona to the chamber.
+                  The system will extract the name and register it automatically.
+                </p>
+
+                <div className="upload-field">
+                  <label className="upload-field-label">Team</label>
+                  <select
+                    className="upload-select"
+                    value={uploadTeam}
+                    onChange={e => setUploadTeam(e.target.value)}
+                  >
+                    <option value="marketing">Marketing & Strategy</option>
+                    <option value="design">Design & Visual</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </div>
+
+                <div className="upload-field">
+                  <label className="upload-field-label">Color</label>
+                  <div className="upload-color-grid">
+                    {UPLOAD_COLORS.map(c => (
+                      <button
+                        key={c}
+                        className={`upload-color-swatch ${uploadColor === c ? 'selected' : ''}`}
+                        style={{ background: c }}
+                        onClick={() => setUploadColor(c)}
+                        type="button"
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="upload-actions">
+                  <button
+                    className="gc-btn gc-btn-secondary"
+                    onClick={() => setShowUploadModal(false)}
+                    type="button"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="gc-btn gc-btn-primary"
+                    onClick={() => soulFileInputRef.current?.click()}
+                    disabled={isUploading}
+                    type="button"
+                  >
+                    {isUploading ? 'Uploading...' : 'Choose File & Upload'}
+                  </button>
+                  <input
+                    ref={soulFileInputRef}
+                    type="file"
+                    accept=".md"
+                    style={{ display: 'none' }}
+                    onChange={(e) => {
+                      if (e.target.files[0]) handleSoulUpload(e.target.files[0]);
+                      e.target.value = '';
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Model Configuration (shown when models are available and participants selected) */}
