@@ -272,6 +272,13 @@
   background: var(--surface-1);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
+  position: relative;
+  z-index: 0;
+}
+
+/* Lift moderator section when its model dropdown is open */
+.moderator-section:has(.model-selector-dropdown) {
+  z-index: var(--z-dropdown);
 }
 
 .moderator-header {
@@ -337,6 +344,13 @@
   border-radius: var(--radius-md);
   transition: border-color var(--transition-fast);
   animation: fadeIn var(--transition-fast) both;
+  position: relative;
+  z-index: 0;
+}
+
+/* Lift card above siblings when its model dropdown is open */
+.model-assign-card:has(.model-selector-dropdown) {
+  z-index: var(--z-dropdown);
 }
 
 .model-assign-card:nth-child(1) { animation-delay: 0ms; }
