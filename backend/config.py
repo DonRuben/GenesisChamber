@@ -153,6 +153,8 @@ PERSONA_COLORS = {
     # Leadership
     "steve-jobs": "#6B7280",
     "jony-ive": "#9CA3AF",
+    # Devil's Advocate
+    "devils-advocate": "#DC2626",
 }
 
 # Team membership — maps persona ID to primary team + optional cross-team roles
@@ -173,6 +175,8 @@ PERSONA_TEAMS = {
     # Leadership (cross-functional)
     "steve-jobs": {"team": "leadership", "cross_teams": ["marketing"]},
     "jony-ive": {"team": "leadership", "cross_teams": ["design", "marketing"]},
+    # Devil's Advocate (cross-functional)
+    "devils-advocate": {"team": "leadership", "cross_teams": ["marketing", "design"]},
 }
 
 # Default participant configurations
@@ -323,4 +327,21 @@ DEFAULT_EVALUATOR = {
     "temperature": 0.5,
     "max_tokens": 4000,
     "color": "#9CA3AF",
+}
+
+# Devil's Advocate — the Advocatus Diaboli (Promotor Fidei)
+# Formally established by Pope Sixtus V in 1587 for the Catholic canonization process.
+# Appointed to argue AGAINST, poke holes, and ensure only the strongest ideas survive.
+# Embodies the Sanhedrin principle: unanimous agreement = suspect process.
+# OPTIONAL — activated per simulation via the devils_advocate toggle.
+DEFAULT_DEVILS_ADVOCATE = {
+    "name": "Advocatus Diaboli",
+    "model": "anthropic/claude-sonnet-4.6",
+    "soul_document": "souls/devils-advocate.md",
+    "role": "devils_advocate",
+    "team": "leadership",
+    "cross_teams": ["marketing", "design"],
+    "temperature": 0.75,
+    "max_tokens": 4000,
+    "color": "#DC2626",
 }

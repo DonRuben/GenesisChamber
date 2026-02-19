@@ -75,6 +75,8 @@ const DEFAULT_MODELS = {
   // Leadership
   moderator: 'anthropic/claude-opus-4-6',
   evaluator: 'anthropic/claude-opus-4-6',
+  // Devil's Advocate
+  'devils-advocate': 'anthropic/claude-sonnet-4.6',
 };
 
 // Team display order and metadata
@@ -113,6 +115,8 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
   const fileInputRef = useRef(null);
   // Dual-role: leadership personas added as active participants
   const [dualRoleActive, setDualRoleActive] = useState({ 'jony-ive': false });
+  // Devil's Advocate (Advocatus Diaboli) — optional adversarial critic
+  const [devilsAdvocateActive, setDevilsAdvocateActive] = useState(false);
   // Soul info card
   const [infoSoul, setInfoSoul] = useState(null);
   // Reference file uploads (HTML/ZIP)
@@ -371,6 +375,18 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
         brand_context: referenceFiles.length > 0
           ? referenceFiles.map(rf => rf.extracted_text || '').filter(Boolean).join('\n\n---\n\n')
           : '',
+        // Devil's Advocate (Advocatus Diaboli) — optional adversarial critic
+        ...(devilsAdvocateActive ? {
+          devils_advocate: {
+            display_name: 'Advocatus Diaboli',
+            model: modelAssignments['devils-advocate'] || 'anthropic/claude-sonnet-4.6',
+            soul_document: 'souls/devils-advocate.md',
+            role: 'devils_advocate',
+            temperature: 0.75,
+            max_tokens: 4000,
+            color: '#DC2626',
+          },
+        } : {}),
       };
 
       // Try SSE streaming first for live events, fall back to non-streaming
@@ -596,6 +612,39 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
                 <ModelSelector
                   value={modelAssignments.evaluator || modelAssignments['jony-ive'] || 'anthropic/claude-opus-4-6'}
                   onChange={(modelId) => updateModel('evaluator', modelId)}
+                  models={availableModels}
+                  compact
+                />
+              )}
+            </div>
+
+            {/* Devil's Advocate (Advocatus Diaboli) — optional adversarial critic */}
+            <div className="devils-advocate-header" style={{ marginTop: '12px' }}>
+              <div className="moderator-avatar" style={{ borderColor: '#DC2626' }}>
+                <span className="moderator-initial" style={{ color: '#DC2626' }}>
+                  {'\u2694'}
+                </span>
+              </div>
+              <div className="moderator-info">
+                <span className="moderator-name">Advocatus Diaboli</span>
+                <span className="moderator-role">
+                  Devil's Advocate
+                  {devilsAdvocateActive && <span className="dual-role-badge" style={{ background: '#DC2626' }}>Active</span>}
+                </span>
+              </div>
+              <button
+                className={`dual-role-toggle ${devilsAdvocateActive ? 'active' : ''}`}
+                onClick={() => setDevilsAdvocateActive(prev => !prev)}
+                type="button"
+                title="Enable the Advocatus Diaboli — an adversarial critic who challenges consensus, exposes hidden assumptions, and applies the Sanhedrin principle (if all agree, something is being missed)"
+                style={devilsAdvocateActive ? { background: '#DC2626', borderColor: '#DC2626' } : {}}
+              >
+                {devilsAdvocateActive ? 'Enabled' : 'Disabled'}
+              </button>
+              {devilsAdvocateActive && availableModels && (
+                <ModelSelector
+                  value={modelAssignments['devils-advocate'] || 'anthropic/claude-sonnet-4.6'}
+                  onChange={(modelId) => updateModel('devils-advocate', modelId)}
                   models={availableModels}
                   compact
                 />
@@ -859,6 +908,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
           souls={souls}
           brief={brief}
           modelAssignments={modelAssignments}
+          devilsAdvocateActive={devilsAdvocateActive}
         />
         <div className="launcher-sidebar-launch">
           <button

@@ -224,6 +224,45 @@ YOUR JOB IN THIS ROUND:
 {STAGE_TASKS[3]}"""
         return prompt
 
+    def compile_devils_advocate_prompt(
+        self,
+        persona_name: str,
+        round_num: int,
+        brief: str,
+        context: str = "",
+    ) -> str:
+        """Build the Devil's Advocate system prompt for critique stages.
+
+        The Advocatus Diaboli has a special mandate: adversarial testing,
+        consensus detection (Sanhedrin principle), and constructive opposition.
+        """
+        soul = self.loaded_souls.get("devils-advocate", {})
+        soul_text = soul.get("full", "")
+
+        da_mandate = f"""You are the {persona_name} — the institutionalized critic.
+
+{soul_text}
+
+PROJECT BRIEF:
+{brief}
+
+{f'BRAND CONTEXT: {context}' if context else ''}
+
+YOUR MANDATE IN ROUND {round_num}:
+- Score concepts 1-2 points LOWER than you might otherwise. Your standard is real-world survival.
+- For EVERY concept, identify at least ONE hidden assumption the creator didn't question.
+- For EVERY concept, describe the specific failure scenario — the conditions under which it collapses.
+- Check for consensus: if all other concepts share the same flaw or the same strength, FLAG IT.
+- Apply the SANHEDRIN PRINCIPLE: if all critics agree, that agreement itself is suspicious.
+- Every criticism MUST include what would FIX the problem, not just what IS the problem.
+- End each concept critique with: "This concept earns canonization if it can answer: [specific challenge]"
+
+CRITIQUE FORMAT:
+{STAGE_TASKS[2]}
+
+Be rigorous. Be surgical. Be constructive. The strongest ideas survive the harshest scrutiny."""
+        return da_mandate
+
     def _build_full_prompt(self, soul, persona_name, stage, round_num, brief, context):
         """Full soul injection for large-context models (200K+)."""
         round_instruction = ROUND_INSTRUCTIONS.get(round_num, ROUND_INSTRUCTIONS[4])

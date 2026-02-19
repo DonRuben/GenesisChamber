@@ -349,7 +349,7 @@ class GenesisRound:
         return stage
 
     async def _stage_critique(self, concepts: List[Concept], on_participant_event: Optional[Callable] = None) -> StageResult:
-        """Stage 2: Anonymized peer review."""
+        """Stage 2: Anonymized peer review (+ Devil's Advocate if enabled)."""
         stage = StageResult(stage_num=2, stage_name="critique", status="running",
                             started_at=datetime.utcnow().isoformat())
 
@@ -397,11 +397,38 @@ class GenesisRound:
             })
             participant_ids.append(pid)
 
+        # Devil's Advocate: add adversarial critique query if enabled
+        da = self.config.devils_advocate
+        if da:
+            da_system = self.soul_engine.compile_devils_advocate_prompt(
+                persona_name=da.display_name,
+                round_num=self.round_num,
+                brief=self.config.brief,
+                context=self.config.brand_context,
+            )
+
+            da_prompt = f"Here are {len(concepts)} anonymized concepts to critique as the Advocatus Diaboli:\n"
+            da_prompt += anonymized_text
+            da_prompt += f"\nApply the Devil's Advocate mandate to ALL concepts from Concept A through Concept {last_label}."
+            da_prompt += "\nRemember: check for consensus patterns. If all other critics agree, invoke the Sanhedrin principle."
+
+            queries.append({
+                "model": da.model,
+                "system_prompt": da_system,
+                "user_prompt": da_prompt,
+                "temperature": da.temperature,
+                "max_tokens": da.max_tokens,
+            })
+            participant_ids.append("devils-advocate")
+
         # Emit "thinking" events for each participant
         if on_participant_event:
             for pid in participant_ids:
-                pconfig = self.config.participants[pid]
-                await _maybe_await(on_participant_event, "thinking", pid, pconfig.display_name, "critique")
+                if pid == "devils-advocate" and da:
+                    await _maybe_await(on_participant_event, "thinking", pid, da.display_name, "critique")
+                elif pid in self.config.participants:
+                    pconfig = self.config.participants[pid]
+                    await _maybe_await(on_participant_event, "thinking", pid, pconfig.display_name, "critique")
 
         # Execute in parallel
         responses = await query_with_soul_parallel(queries)
@@ -409,10 +436,16 @@ class GenesisRound:
         # Parse critiques
         all_critiques = []
         for pid, response in zip(participant_ids, responses):
-            pconfig = self.config.participants[pid]
+            if pid == "devils-advocate" and da:
+                display_name = da.display_name
+            elif pid in self.config.participants:
+                display_name = self.config.participants[pid].display_name
+            else:
+                continue
+
             if response and response.get("content"):
                 critiques = OutputParser.parse_critiques(
-                    response["content"], pid, pconfig.display_name
+                    response["content"], pid, display_name
                 )
                 # Resolve concept_ids from labels
                 for critique in critiques:
@@ -422,7 +455,7 @@ class GenesisRound:
                 all_critiques.extend(critiques)
                 # Emit completion event
                 if on_participant_event:
-                    await _maybe_await(on_participant_event, "response", pid, pconfig.display_name, "critique")
+                    await _maybe_await(on_participant_event, "response", pid, display_name, "critique")
 
         stage.outputs = all_critiques
         stage.status = "complete"
@@ -642,6 +675,10 @@ class GenesisSimulation:
         # Load evaluator soul if configured
         if config.evaluator:
             self.soul_engine.load_soul("evaluator", config.evaluator.soul_document)
+
+        # Load Devil's Advocate soul if enabled
+        if config.devils_advocate:
+            self.soul_engine.load_soul("devils-advocate", config.devils_advocate.soul_document)
 
     async def run(
         self,

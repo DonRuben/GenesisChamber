@@ -1,7 +1,7 @@
 import { getDisplayName } from '../utils/modelDisplayNames';
 import './ConfigSummary.css';
 
-export default function ConfigSummary({ preset, participants, souls, brief, modelAssignments, onModelChange, models }) {
+export default function ConfigSummary({ preset, participants, souls, brief, modelAssignments, onModelChange, models, devilsAdvocateActive }) {
   const selectedSouls = souls.filter(s => participants.includes(s.id));
 
   return (
@@ -58,6 +58,22 @@ export default function ConfigSummary({ preset, participants, souls, brief, mode
           </div>
         </div>
       </div>
+
+      {/* Devil's Advocate */}
+      {devilsAdvocateActive && (
+        <div className="config-summary-section">
+          <div className="config-summary-label">Devil's Advocate</div>
+          <div className="config-summary-participant">
+            <span className="config-summary-avatar" style={{ borderColor: '#DC2626', color: '#DC2626' }}>{'\u2694'}</span>
+            <div className="config-summary-participant-info">
+              <span className="config-summary-name">Advocatus Diaboli</span>
+              <span className="config-summary-model">
+                {getDisplayName(modelAssignments['devils-advocate'] || 'anthropic/claude-sonnet-4.6')}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Brief */}
       <div className="config-summary-section">
