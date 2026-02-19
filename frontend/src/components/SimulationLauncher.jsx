@@ -374,7 +374,11 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
         quality_gates: preset.quality_gates || [],
         brief: brief || 'Create a compelling brand concept for a modern AI platform.',
         brand_context: referenceFiles.length > 0
-          ? referenceFiles.map(rf => rf.extracted_text || '').filter(Boolean).join('\n\n---\n\n')
+          ? referenceFiles.map(rf => {
+              const header = `=== REFERENCE: ${rf.filename || 'Uploaded file'} (${rf.type || 'unknown'}) ===`;
+              const text = rf.extracted_text || '[No text could be extracted from this file]';
+              return `${header}\n${text}`;
+            }).join('\n\n')
           : '',
         // Devil's Advocate (Advocatus Diaboli) — optional adversarial critic
         ...(devilsAdvocateActive ? {
@@ -580,6 +584,17 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
                 <span className="moderator-name">Steve Jobs</span>
                 <span className="moderator-role">Moderator</span>
               </div>
+              <button
+                className="participant-info-btn"
+                onClick={() => {
+                  const jobsSoul = souls.find(s => s.id === 'steve-jobs');
+                  if (jobsSoul) setInfoSoul(jobsSoul);
+                }}
+                type="button"
+                aria-label="Info about Steve Jobs"
+              >
+                <IconInfo size={14} />
+              </button>
               {availableModels && (
                 <ModelSelector
                   value={modelAssignments.moderator || 'anthropic/claude-opus-4-6'}
@@ -601,6 +616,17 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
                   {dualRoleActive['jony-ive'] && <span className="dual-role-badge">+ Participant</span>}
                 </span>
               </div>
+              <button
+                className="participant-info-btn"
+                onClick={() => {
+                  const iveSoul = souls.find(s => s.id === 'jony-ive');
+                  if (iveSoul) setInfoSoul(iveSoul);
+                }}
+                type="button"
+                aria-label="Info about Jony Ive"
+              >
+                <IconInfo size={14} />
+              </button>
               <button
                 className={`dual-role-toggle ${dualRoleActive['jony-ive'] ? 'active' : ''}`}
                 onClick={() => toggleDualRole('jony-ive')}
@@ -633,6 +659,14 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
                   {devilsAdvocateActive && <span className="dual-role-badge" style={{ background: '#DC2626' }}>Active</span>}
                 </span>
               </div>
+              <button
+                className="participant-info-btn"
+                onClick={() => setInfoSoul({ id: 'devils-advocate', name: 'Advocatus Diaboli', color: '#DC2626' })}
+                type="button"
+                aria-label="Info about Advocatus Diaboli"
+              >
+                <IconInfo size={14} />
+              </button>
               <button
                 className={`dual-role-toggle ${devilsAdvocateActive ? 'active' : ''}`}
                 onClick={() => setDevilsAdvocateActive(prev => !prev)}
@@ -723,11 +757,11 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
           )}
         </section>
 
-        {/* Reference Files — images, HTML, text, PDF, ZIP */}
+        {/* Project Files — unified upload: briefs, references, images, PDF, ZIP */}
         <section className="launcher-section">
           <label className="gc-label">
-            Reference Files
-            <HelpTooltip text="Upload reference material: images (.png, .jpg, .gif, .svg), text files (.txt, .md, .html), PDFs, or ZIP archives. Text is extracted for LLM context. Images are stored as visual reference." position="right" />
+            Project Files
+            <HelpTooltip text="Upload any project material: brief documents (.md, .txt), reference websites (.html), images (.png, .jpg, .svg), PDFs, or ZIP archives. Text files (.md, .txt) will also auto-fill the brief above. All extracted text is sent as context to the AI participants." position="right" />
           </label>
           <div className="ref-upload-area">
             <button
@@ -736,7 +770,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
               onClick={() => refFileInputRef.current?.click()}
             >
               <IconUpload size={12} />
-              Upload Reference File
+              Upload Project File
             </button>
             <input
               ref={refFileInputRef}
@@ -747,11 +781,25 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
                 const file = e.target.files?.[0];
                 if (!file) return;
                 setUploadError(null);
+                const ext = file.name.split('.').pop().toLowerCase();
+                // Auto-fill brief textarea for text brief documents
+                if (['md', 'txt', 'text', 'markdown'].includes(ext)) {
+                  const reader = new FileReader();
+                  reader.onload = (ev) => {
+                    const content = ev.target.result;
+                    if (!brief || brief.length === 0 || window.confirm(`Fill the brief with "${file.name}"? Your current brief text will be replaced.`)) {
+                      setBrief(content);
+                      setUploadedFileName(file.name);
+                    }
+                  };
+                  reader.readAsText(file);
+                }
+                // Also upload to server for reference context extraction
                 try {
                   const result = await api.uploadReference(file);
                   setReferenceFiles(prev => [...prev, result]);
                 } catch (err) {
-                  console.error('Failed to upload reference file:', err);
+                  console.error('Failed to upload project file:', err);
                   setUploadError(err.message || 'Upload failed. Try a different file.');
                 }
                 e.target.value = '';
@@ -769,25 +817,53 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
             )}
             {referenceFiles.length > 0 && (
               <div className="ref-file-list">
-                {referenceFiles.map(rf => (
-                  <div key={rf.id} className="ref-file-badge">
-                    {rf.type === 'image' && rf.files?.[0] && (
-                      <img
-                        src={api.getUploadUrl(rf.id, rf.files[0])}
-                        alt={rf.filename}
-                        className="ref-file-thumbnail"
-                      />
-                    )}
-                    <span className="brief-file-badge">{rf.filename || rf.type}</span>
-                    <button
-                      className="ref-file-remove"
-                      type="button"
-                      onClick={() => setReferenceFiles(prev => prev.filter(f => f.id !== rf.id))}
-                    >
-                      &times;
-                    </button>
-                  </div>
-                ))}
+                {referenceFiles.map(rf => {
+                  const text = rf.extracted_text || '';
+                  const charCount = text.length;
+                  const isPlaceholder = text.startsWith('[') && text.includes('provided');
+                  const quality = rf.extraction_quality || (charCount > 100 && !isPlaceholder ? 'full' : charCount > 0 && !isPlaceholder ? 'partial' : 'none');
+                  const qualityColor = quality === 'full' ? '#10B981' : quality === 'partial' ? '#F59E0B' : '#EF4444';
+                  const qualityLabel = quality === 'full' ? 'Extracted' : quality === 'partial' ? 'Partial' : 'No text';
+                  return (
+                    <div key={rf.id} className="ref-file-card">
+                      <div className="ref-file-card-row">
+                        {rf.type === 'image' && rf.files?.[0] && (
+                          <img
+                            src={api.getUploadUrl(rf.id, rf.files[0])}
+                            alt={rf.filename}
+                            className="ref-file-thumbnail"
+                          />
+                        )}
+                        <span className="ref-file-dot" style={{ background: qualityColor }} title={qualityLabel} />
+                        <span className="ref-file-name">{rf.filename || rf.type}</span>
+                        <span className="ref-file-meta">
+                          {charCount > 0 ? `${(charCount / 1000).toFixed(1)}k chars` : 'no text'}
+                          {rf.was_truncated && ' (truncated)'}
+                        </span>
+                        <button
+                          className="ref-file-remove"
+                          type="button"
+                          onClick={() => setReferenceFiles(prev => prev.filter(f => f.id !== rf.id))}
+                        >
+                          &times;
+                        </button>
+                      </div>
+                      {quality !== 'full' && (
+                        <div className="ref-file-warning">
+                          {quality === 'none'
+                            ? 'No text could be extracted. The LLM will not have access to this file\'s content.'
+                            : 'Only partial text was extracted. Some content may be missing.'}
+                        </div>
+                      )}
+                      {charCount > 0 && !isPlaceholder && (
+                        <details className="ref-file-preview">
+                          <summary className="ref-file-preview-toggle">Preview extracted text</summary>
+                          <pre className="ref-file-preview-text">{text.slice(0, 800)}{text.length > 800 ? '...' : ''}</pre>
+                        </details>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
             {referenceFiles.some(rf => rf.files?.includes('index.html')) && (
@@ -865,24 +941,6 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
               >
                 Load Template
               </button>
-              <button
-                className="brief-upload-btn"
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <IconUpload size={12} />
-                Upload File
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".md,.txt,.text,.markdown"
-                style={{ display: 'none' }}
-                onChange={(e) => {
-                  handleFileRead(e.target.files[0]);
-                  e.target.value = '';
-                }}
-              />
               {brief.length > 0 && (
                 <button
                   className="brief-clear-btn"
@@ -913,7 +971,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
               className="gc-textarea launcher-brief"
               value={brief}
               onChange={(e) => { setBrief(e.target.value); setUploadedFileName(null); }}
-              placeholder={`Describe your creative challenge here...\n\nTip: Click "Load Template" for a structured briefing guide, or "Upload File" to import a .md/.txt brief document.\n\nYou can also drag and drop a file directly onto this area.\n\nOr just write freely — the council will work with whatever you give them.`}
+              placeholder={`Describe your creative challenge here...\n\nTip: Click "Load Template" for a structured briefing guide, or upload project files below (briefs, references, PDFs, images, ZIPs).\n\nYou can also drag and drop a .md/.txt file here to fill the brief.\n\nOr just write freely — the council will work with whatever you give them.`}
               rows={10}
             />
           </div>

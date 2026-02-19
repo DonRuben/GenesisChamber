@@ -934,16 +934,60 @@ def _extract_text_from_plaintext(raw: bytes, filename: str = "") -> str:
     return f"[File: {filename}]\n{text}" if filename else text
 
 
-def _describe_image_file(filename: str) -> str:
-    """Return a text note indicating an image reference was provided."""
-    return f"[Reference image provided: {filename} — visual reference available in uploaded files]"
+def _describe_image_file(filename: str, raw: bytes = None) -> str:
+    """Return a text note indicating an image reference was provided, with dimensions if possible."""
+    dims = ""
+    if raw:
+        try:
+            import struct
+            if filename.lower().endswith('.png') and raw[:8] == b'\x89PNG\r\n\x1a\n':
+                w, h = struct.unpack('>II', raw[16:24])
+                dims = f" ({w}x{h}px)"
+            elif filename.lower().endswith(('.jpg', '.jpeg')) and raw[:2] == b'\xff\xd8':
+                # Parse JPEG SOF0 marker for dimensions
+                i = 2
+                while i < len(raw) - 9:
+                    if raw[i] == 0xFF and raw[i+1] in (0xC0, 0xC2):
+                        h, w = struct.unpack('>HH', raw[i+5:i+9])
+                        dims = f" ({w}x{h}px)"
+                        break
+                    if raw[i] == 0xFF and raw[i+1] not in (0x00, 0xFF):
+                        seg_len = struct.unpack('>H', raw[i+2:i+4])[0]
+                        i += 2 + seg_len
+                    else:
+                        i += 1
+        except Exception:
+            pass
+    return f"[Reference image provided: {filename}{dims} — visual reference available in uploaded files]"
 
 
 def _extract_text_from_pdf_basic(raw: bytes, filename: str) -> str:
-    """Best-effort PDF text extraction without external libraries."""
+    """PDF text extraction using pypdf with regex fallback."""
+    import io as _io
+
+    # Try pypdf first (reliable extraction)
+    try:
+        from pypdf import PdfReader
+        reader = PdfReader(_io.BytesIO(raw))
+        pages_text = []
+        for i, page in enumerate(reader.pages):
+            page_text = page.extract_text() or ""
+            if page_text.strip():
+                pages_text.append(f"[Page {i+1}]\n{page_text.strip()}")
+        if pages_text:
+            text = "\n\n".join(pages_text)
+            was_truncated = len(text) > 15000
+            if was_truncated:
+                text = text[:15000] + "\n\n[...content truncated for context window...]"
+            return f"[PDF: {filename}]\n{text}"
+    except ImportError:
+        pass
+    except Exception as e:
+        print(f"[upload] pypdf extraction failed for {filename}: {e}")
+
+    # Fallback: regex extraction from raw PDF bytes
     import re as _re
     text_parts = []
-    # PDF text objects: text in parentheses before Tj/TJ operators
     for match in _re.finditer(rb'\(([^)]{1,500})\)\s*Tj', raw):
         try:
             text_parts.append(match.group(1).decode('latin-1', errors='replace'))
@@ -954,7 +998,7 @@ def _extract_text_from_pdf_basic(raw: bytes, filename: str) -> str:
         if len(text) > 15000:
             text = text[:15000] + "\n\n[...content truncated for context window...]"
         return f"[PDF: {filename}]\n{text}"
-    return f"[PDF reference provided: {filename} — uploaded but full text extraction requires additional libraries]"
+    return f"[PDF reference provided: {filename} — uploaded but text could not be extracted from this PDF]"
 
 
 def _extract_member_text(member_path: Path, member_bytes: bytes, member_name: str) -> str:
@@ -965,7 +1009,7 @@ def _extract_member_text(member_path: Path, member_bytes: bytes, member_name: st
     elif suffix in ('.txt', '.md', '.css', '.js', '.json', '.xml'):
         return _extract_text_from_plaintext(member_bytes, member_name)
     elif suffix in ('.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.avif'):
-        return _describe_image_file(member_name)
+        return _describe_image_file(member_name, member_bytes)
     elif suffix == '.pdf':
         return _extract_text_from_pdf_basic(member_bytes, member_name)
     return ""
@@ -1024,7 +1068,7 @@ async def upload_reference_file(file: UploadFile = File(...)):
         dest = upload_path / filename
         dest.write_bytes(content)
         file_list.append(filename)
-        extracted_text = _describe_image_file(filename)
+        extracted_text = _describe_image_file(filename, content)
     elif ext in _PDF_EXTS:
         # PDF file — store and attempt text extraction
         dest = upload_path / filename
@@ -1070,13 +1114,28 @@ async def upload_reference_file(file: UploadFile = File(...)):
                 print(f"[upload] DB save failed: {e}")
         asyncio.create_task(_save_to_db())
 
+    # Determine extraction quality
+    trimmed_text = extracted_text.strip()
+    char_count = len(trimmed_text)
+    is_placeholder = trimmed_text.startswith("[") and ("provided" in trimmed_text or "could not" in trimmed_text)
+    was_truncated = "...content truncated" in trimmed_text
+    if char_count > 100 and not is_placeholder:
+        extraction_quality = "full"
+    elif char_count > 0 and not is_placeholder:
+        extraction_quality = "partial"
+    else:
+        extraction_quality = "none"
+
     return {
         "id": upload_id,
         "url": f"/api/uploads/{upload_id}/",
         "type": file_type,
         "files": file_list,
         "filename": filename,
-        "extracted_text": extracted_text.strip(),
+        "extracted_text": trimmed_text,
+        "extraction_quality": extraction_quality,
+        "char_count": char_count,
+        "was_truncated": was_truncated,
     }
 
 
