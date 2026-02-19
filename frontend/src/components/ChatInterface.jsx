@@ -5,7 +5,7 @@ import Stage2 from './Stage2';
 import Stage3 from './Stage3';
 import { IconSoul, IconSend, IconGear, IconCheck } from './Icons';
 import { api } from '../api';
-import { TIER_CONFIG } from '../utils/modelDisplayNames';
+import { TIER_CONFIG, getDisplayName } from '../utils/modelDisplayNames';
 import './ChatInterface.css';
 
 const QUICK_START_SUGGESTIONS = [
@@ -28,10 +28,22 @@ export default function ChatInterface({
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Load available models
+  // Load available models — flatten nested tier structure into { models: [...] }
   useEffect(() => {
     api.getAvailableModels()
-      .then(data => setAvailableModels(data))
+      .then(data => {
+        if (data?.recommended_models) {
+          const flatModels = [];
+          for (const [tierKey, tierData] of Object.entries(data.recommended_models)) {
+            for (const model of (tierData.models || [])) {
+              flatModels.push({ ...model, tier: tierKey });
+            }
+          }
+          setAvailableModels({ models: flatModels });
+        } else {
+          setAvailableModels(data);
+        }
+      })
       .catch(err => console.error('Failed to load models:', err));
   }, []);
 
@@ -129,7 +141,7 @@ export default function ChatInterface({
                     checked={isModelSelected(model.id)}
                     onChange={() => toggleModel(model.id)}
                   />
-                  <span className="ci-model-name">{model.name || model.id}</span>
+                  <span className="ci-model-name">{getDisplayName(model.id)}</span>
                 </label>
               ))}
             </div>
@@ -145,7 +157,7 @@ export default function ChatInterface({
           >
             <option value="">Default</option>
             {availableModels.models.map(m => (
-              <option key={m.id} value={m.id}>{m.name || m.id}</option>
+              <option key={m.id} value={m.id}>{getDisplayName(m.id)}</option>
             ))}
           </select>
         </div>

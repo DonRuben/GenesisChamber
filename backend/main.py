@@ -1203,10 +1203,29 @@ def _describe_image_file(filename: str, raw: bytes = None) -> str:
 
 
 def _extract_text_from_pdf_basic(raw: bytes, filename: str) -> str:
-    """PDF text extraction using pypdf with regex fallback."""
+    """PDF text extraction using pdfplumber (primary), pypdf (fallback), then regex."""
     import io as _io
 
-    # Try pypdf first (reliable extraction)
+    # Try pdfplumber first (most robust — handles complex layouts, fonts, encoding)
+    try:
+        import pdfplumber
+        pages_text = []
+        with pdfplumber.open(_io.BytesIO(raw)) as pdf:
+            for i, page in enumerate(pdf.pages):
+                page_text = page.extract_text() or ""
+                if page_text.strip():
+                    pages_text.append(f"[Page {i+1}]\n{page_text.strip()}")
+        if pages_text:
+            text = "\n\n".join(pages_text)
+            if len(text) > 15000:
+                text = text[:15000] + "\n\n[...content truncated for context window...]"
+            return f"[PDF: {filename}]\n{text}"
+    except ImportError:
+        pass
+    except Exception as e:
+        print(f"[upload] pdfplumber extraction failed for {filename}: {e}")
+
+    # Fallback: pypdf (lighter but handles fewer PDF types)
     try:
         from pypdf import PdfReader
         reader = PdfReader(_io.BytesIO(raw))
@@ -1217,8 +1236,7 @@ def _extract_text_from_pdf_basic(raw: bytes, filename: str) -> str:
                 pages_text.append(f"[Page {i+1}]\n{page_text.strip()}")
         if pages_text:
             text = "\n\n".join(pages_text)
-            was_truncated = len(text) > 15000
-            if was_truncated:
+            if len(text) > 15000:
                 text = text[:15000] + "\n\n[...content truncated for context window...]"
             return f"[PDF: {filename}]\n{text}"
     except ImportError:
