@@ -39,6 +39,9 @@ CONTEXT_DIR = "context/"
 SIMULATION_OUTPUT_DIR = "output/"
 UPLOADS_DIR = "output/uploads/"
 
+# Database (Vercel Postgres / Neon — optional, falls back to file-based storage)
+DATABASE_URL = os.getenv("DATABASE_URL", "")
+
 # External API keys (for future media integration)
 FAL_KEY = os.getenv("FAL_KEY", "")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
