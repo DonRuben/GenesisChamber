@@ -133,7 +133,7 @@ Each persona uses a DIFFERENT underlying model for maximum cognitive diversity:
 ```json
 {
   "participants": {
-    "ogilvy": { "model": "anthropic/claude-sonnet-4.5", "temperature": 0.7 },
+    "ogilvy": { "model": "anthropic/claude-sonnet-4.6", "temperature": 0.7 },
     "hopkins": { "model": "google/gemini-2.5-pro", "temperature": 0.6 },
     "burnett": { "model": "openai/gpt-5.1", "temperature": 0.8 },
     "wells": { "model": "x-ai/grok-4", "temperature": 0.7 },

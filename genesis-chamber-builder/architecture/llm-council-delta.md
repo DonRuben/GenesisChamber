@@ -24,7 +24,7 @@ SIMULATION_TYPE = "message_lab"  # or "genesis_chamber" or "assembly_line"
 # Participants with persona assignments
 PARTICIPANTS = {
     "ogilvy": {
-        "model": "anthropic/claude-sonnet-4.5",
+        "model": "anthropic/claude-sonnet-4.6",
         "soul_document": "souls/david-ogilvy.md",
         "role": "participant",
         "temperature": 0.7
@@ -46,7 +46,7 @@ MODERATOR = {
 }
 
 EVALUATOR = {
-    "model": "anthropic/claude-sonnet-4.5",
+    "model": "anthropic/claude-sonnet-4.6",
     "soul_document": "souls/jony-ive.md",
     "role": "evaluator",
     "temperature": 0.4

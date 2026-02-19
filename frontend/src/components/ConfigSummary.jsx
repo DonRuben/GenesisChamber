@@ -36,7 +36,7 @@ export default function ConfigSummary({ preset, participants, souls, brief, mode
                 <div className="config-summary-participant-info">
                   <span className="config-summary-name">{soul.name}</span>
                   <span className="config-summary-model">
-                    {getDisplayName(modelAssignments[soul.id] || 'anthropic/claude-sonnet-4-5-20250929')}
+                    {getDisplayName(modelAssignments[soul.id] || 'anthropic/claude-sonnet-4.6')}
                   </span>
                 </div>
               </div>
