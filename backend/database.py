@@ -20,6 +20,19 @@ except ImportError:
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 
 
+def _parse_dt(value) -> datetime:
+    """Convert ISO string or datetime to timezone-aware datetime for asyncpg TIMESTAMPTZ."""
+    if isinstance(value, datetime):
+        return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+    if isinstance(value, str) and value:
+        try:
+            dt = datetime.fromisoformat(value)
+            return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+        except ValueError:
+            pass
+    return datetime.now(timezone.utc)
+
+
 class DatabasePool:
     """Manages the asyncpg connection pool (singleton)."""
     _pool: Optional[Any] = None
@@ -144,7 +157,7 @@ class SimulationDB:
                 data["id"],
                 json.dumps(data["config"]),
                 data["status"],
-                data.get("created_at", datetime.now(timezone.utc).isoformat()),
+                _parse_dt(data.get("created_at")),
                 data["current_round"],
                 data["current_stage"],
                 data["current_stage_name"],
@@ -280,7 +293,7 @@ class ConversationDB:
             """,
                 conversation["id"],
                 conversation.get("title", "New Conversation"),
-                conversation.get("created_at", datetime.now(timezone.utc).isoformat()),
+                _parse_dt(conversation.get("created_at")),
                 json.dumps(conversation.get("messages", [])),
             )
             return True

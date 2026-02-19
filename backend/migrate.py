@@ -17,7 +17,7 @@ except ImportError:
     print("asyncpg is not installed. Run: pip install asyncpg>=0.29.0")
     sys.exit(1)
 
-from .database import SCHEMA_SQL
+from .database import SCHEMA_SQL, _parse_dt
 
 
 async def create_tables(conn):
@@ -56,7 +56,7 @@ async def import_simulations(conn, output_dir: str = "output/"):
                 data.get("id", entry.name),
                 json.dumps(data.get("config", {})),
                 data.get("status", "unknown"),
-                data.get("created_at", ""),
+                _parse_dt(data.get("created_at", "")),
                 data.get("current_round", 0),
                 data.get("current_stage", 0),
                 data.get("current_stage_name", ""),
@@ -94,7 +94,7 @@ async def import_conversations(conn, data_dir: str = "data/conversations/"):
             """,
                 data["id"],
                 data.get("title", "New Conversation"),
-                data.get("created_at", ""),
+                _parse_dt(data.get("created_at", "")),
                 json.dumps(data.get("messages", [])),
             )
             count += 1
@@ -106,6 +106,8 @@ async def import_conversations(conn, data_dir: str = "data/conversations/"):
 
 
 async def migrate():
+    from dotenv import load_dotenv
+    load_dotenv()
     url = os.getenv("DATABASE_URL")
     if not url:
         print("[migrate] DATABASE_URL not set. Set it in your .env file.")

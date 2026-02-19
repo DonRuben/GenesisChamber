@@ -76,13 +76,13 @@ def _list_files() -> List[Dict[str, Any]]:
     return conversations
 
 
-def _schedule_db(coro):
-    """Schedule a DB coroutine if event loop is running."""
+def _schedule_db_call(fn, *args):
+    """Schedule a DB call if event loop is running. Creates coroutine only when loop exists."""
     if not _db:
         return
     try:
         loop = asyncio.get_running_loop()
-        loop.create_task(coro)
+        loop.create_task(fn(*args))
     except RuntimeError:
         pass
 
@@ -91,8 +91,7 @@ def _schedule_db(coro):
 
 def create_conversation(conversation_id: str) -> Dict[str, Any]:
     conversation = _create_file(conversation_id)
-    if _db:
-        _schedule_db(_db.create(conversation_id))
+    _schedule_db_call(_db.create, conversation_id)
     return conversation
 
 
@@ -102,8 +101,7 @@ def get_conversation(conversation_id: str) -> Optional[Dict[str, Any]]:
 
 def save_conversation(conversation: Dict[str, Any]):
     _save_file(conversation)
-    if _db:
-        _schedule_db(_db.save(conversation))
+    _schedule_db_call(_db.save, conversation)
 
 
 def list_conversations() -> List[Dict[str, Any]]:
