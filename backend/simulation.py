@@ -815,10 +815,10 @@ class GenesisSimulation:
         self.state.transcript_entries.append(entry)
 
     async def _save_state(self):
-        """Save simulation state to disk."""
+        """Save simulation state to disk and/or database."""
         from .simulation_store import SimulationStore
         store = SimulationStore()
-        store.save_state(self.state)
+        await store.save_state_async(self.state)
 
     @classmethod
     async def resume(cls, sim_id: str) -> "GenesisSimulation":

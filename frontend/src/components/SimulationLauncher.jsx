@@ -369,35 +369,39 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
         quality_gates: preset.quality_gates || [],
         brief: brief || 'Create a compelling brand concept for a modern AI platform.',
         brand_context: referenceFiles.length > 0
-          ? referenceFiles.map(rf => ({
-              id: rf.id,
-              filename: rf.filename,
-              type: rf.type,
-              url: api.getUploadUrl(rf.id, 'index.html'),
-            }))
-          : undefined,
+          ? referenceFiles.map(rf => rf.extracted_text || '').filter(Boolean).join('\n\n---\n\n')
+          : '',
       };
 
       // Try SSE streaming first for live events, fall back to non-streaming
       let simId = null;
+      let hasNavigated = false;
       const collectedEvents = [];
       try {
         await api.startSimulationStream(config, (type, event) => {
           if (type === 'simulation_started' && event.sim_id) {
             simId = event.sim_id;
-            // Navigate to dashboard immediately once we have the sim_id
-            if (onStart) onStart(simId, collectedEvents);
           }
           // Forward live events to dashboard
           collectedEvents.push(event);
           if (onLiveEvent) onLiveEvent(event);
+          // Navigate after first substantive event (not immediately on sim_started)
+          if (simId && !hasNavigated && (type === 'stage_start' || type === 'simulation_complete' || type === 'error')) {
+            hasNavigated = true;
+            if (onStart) onStart(simId, collectedEvents);
+          }
         });
+        // Stream ended — navigate if we haven't yet
+        if (simId && !hasNavigated) {
+          hasNavigated = true;
+          if (onStart) onStart(simId, collectedEvents);
+        }
       } catch (streamErr) {
         console.warn('SSE streaming failed, falling back to non-streaming:', streamErr);
         if (!simId) {
           const result = await api.startSimulation(config);
           simId = result.sim_id;
-          if (onStart) onStart(simId);
+          if (onStart) onStart(simId, collectedEvents);
         }
       }
     } catch (e) {

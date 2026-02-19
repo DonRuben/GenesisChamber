@@ -26,9 +26,29 @@ from .config import (
 from .output_engine import OutputEngine
 from .image_generator import ImageGenerator
 from .video_generator import VideoGenerator, VIDEO_QUALITY_TIERS
+from .database import DatabasePool, UploadDB, is_db_available, ensure_schema
 
 app = FastAPI(title="LLM Council + Genesis Chamber API")
 simulation_store = SimulationStore()
+upload_db = UploadDB() if is_db_available() else None
+
+
+@app.on_event("startup")
+async def startup():
+    if is_db_available():
+        pool = await DatabasePool.get_pool()
+        if pool:
+            await ensure_schema()
+            print("[startup] Database connected and schema ready")
+        else:
+            print("[startup] Database configured but connection failed — using file storage")
+    else:
+        print("[startup] No DATABASE_URL — using file-based storage only")
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    await DatabasePool.close()
 
 # CORS — allow all origins so frontend can reach backend from any deployment
 app.add_middleware(
@@ -285,7 +305,7 @@ async def list_presets():
 @app.get("/api/simulations")
 async def list_simulations():
     """List all simulations."""
-    return simulation_store.list_simulations()
+    return await simulation_store.list_simulations_async()
 
 
 @app.post("/api/simulation/start")
@@ -864,6 +884,31 @@ async def get_generated_videos(sim_id: str):
 
 MAX_UPLOAD_SIZE = 50 * 1024 * 1024  # 50MB
 
+# Safe file extensions for ZIP extraction
+SAFE_EXTENSIONS = {
+    '.html', '.htm', '.css', '.js', '.json', '.png', '.jpg', '.jpeg',
+    '.gif', '.svg', '.ico', '.woff', '.woff2', '.ttf', '.eot', '.map',
+    '.txt', '.md', '.xml', '.webp', '.avif',
+}
+
+
+def _extract_text_from_html(html: str) -> str:
+    """Strip HTML tags and extract readable text content for LLM context."""
+    import re as _re
+    # Remove script and style blocks
+    text = _re.sub(r'<(script|style)[^>]*>.*?</\1>', '', html, flags=_re.DOTALL | _re.IGNORECASE)
+    # Remove all tags
+    text = _re.sub(r'<[^>]+>', ' ', text)
+    # Decode common entities
+    text = text.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>').replace('&nbsp;', ' ')
+    text = text.replace('&#39;', "'").replace('&quot;', '"')
+    # Collapse whitespace
+    text = _re.sub(r'\s+', ' ', text).strip()
+    # Truncate to prevent exceeding context windows
+    if len(text) > 15000:
+        text = text[:15000] + "\n\n[...content truncated for context window...]"
+    return text
+
 
 @app.post("/api/upload/reference")
 async def upload_reference_file(file: UploadFile = File(...)):
@@ -878,11 +923,12 @@ async def upload_reference_file(file: UploadFile = File(...)):
     if len(content) > MAX_UPLOAD_SIZE:
         raise HTTPException(status_code=400, detail="File too large (max 50MB)")
 
-    upload_id = str(uuid.uuid4())[:8]
+    upload_id = str(uuid.uuid4())
     upload_path = Path(UPLOADS_DIR) / upload_id
     upload_path.mkdir(parents=True, exist_ok=True)
 
     file_list = []
+    extracted_text = ""
 
     if ext == "zip":
         # Extract ZIP file with path traversal protection
@@ -894,13 +940,22 @@ async def upload_reference_file(file: UploadFile = File(...)):
                     member_path = Path(member)
                     if member_path.is_absolute() or ".." in member_path.parts:
                         continue
+                    # Security: skip unsafe file types
+                    if not member.endswith("/") and member_path.suffix.lower() not in SAFE_EXTENSIONS:
+                        continue
                     dest = upload_path / member
                     if member.endswith("/"):
                         dest.mkdir(parents=True, exist_ok=True)
                     else:
                         dest.parent.mkdir(parents=True, exist_ok=True)
-                        dest.write_bytes(zf.read(member))
+                        member_bytes = zf.read(member)
+                        dest.write_bytes(member_bytes)
                         file_list.append(member)
+                        # Extract text from HTML files for LLM context
+                        if member_path.suffix.lower() in ('.html', '.htm'):
+                            html_text = _extract_text_from_html(member_bytes.decode("utf-8", errors="replace"))
+                            if html_text:
+                                extracted_text += html_text + "\n\n"
         except zipfile.BadZipFile:
             raise HTTPException(status_code=400, detail="Invalid ZIP file")
     else:
@@ -908,6 +963,29 @@ async def upload_reference_file(file: UploadFile = File(...)):
         dest = upload_path / "index.html"
         dest.write_bytes(content)
         file_list.append("index.html")
+        # Extract text for LLM context
+        extracted_text = _extract_text_from_html(content.decode("utf-8", errors="replace"))
+
+    # Persist to database (non-blocking) for cross-deploy survival
+    if upload_db:
+        async def _save_to_db():
+            try:
+                await upload_db.save_upload(upload_id, filename,
+                    "zip" if ext == "zip" else "html", extracted_text.strip(), file_list)
+                # Save individual files to DB
+                for member_name in file_list:
+                    member_file = upload_path / member_name
+                    if member_file.is_file():
+                        suffix = Path(member_name).suffix.lower()
+                        ct = {".html": "text/html", ".htm": "text/html", ".css": "text/css",
+                              ".js": "application/javascript", ".json": "application/json",
+                              ".png": "image/png", ".jpg": "image/jpeg", ".svg": "image/svg+xml",
+                              }.get(suffix, "application/octet-stream")
+                        await upload_db.save_file(upload_id, member_name,
+                            member_file.read_bytes(), ct)
+            except Exception as e:
+                print(f"[upload] DB save failed: {e}")
+        asyncio.create_task(_save_to_db())
 
     return {
         "id": upload_id,
@@ -915,6 +993,7 @@ async def upload_reference_file(file: UploadFile = File(...)):
         "type": "zip" if ext == "zip" else "html",
         "files": file_list,
         "filename": filename,
+        "extracted_text": extracted_text.strip(),
     }
 
 
@@ -933,7 +1012,17 @@ async def serve_upload(upload_id: str, path: str = "index.html"):
     if not str(resolved).startswith(str(base)):
         raise HTTPException(status_code=403, detail="Access denied")
 
+    # Try filesystem first
     if not resolved.is_file():
+        # Try database fallback (files survive Render redeploys in DB)
+        if upload_db:
+            db_file = await upload_db.get_file(upload_id, path)
+            if db_file:
+                from fastapi.responses import Response
+                return Response(
+                    content=db_file["content"],
+                    media_type=db_file["content_type"],
+                )
         raise HTTPException(status_code=404, detail="File not found")
 
     # Guess content type

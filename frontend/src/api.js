@@ -103,22 +103,23 @@ export const api = {
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
+    let buffer = '';
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
 
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
 
       for (const line of lines) {
         if (line.startsWith('data: ')) {
-          const data = line.slice(6);
           try {
-            const event = JSON.parse(data);
+            const event = JSON.parse(line.slice(6));
             onEvent(event.type, event);
           } catch (e) {
-            console.error('Failed to parse SSE event:', e);
+            // Ignore parse errors for partial chunks
           }
         }
       }
@@ -233,13 +234,15 @@ export const api = {
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
+    let buffer = '';
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
 
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // Keep incomplete last line in buffer
 
       for (const line of lines) {
         if (line.startsWith('data: ')) {
@@ -247,9 +250,18 @@ export const api = {
             const event = JSON.parse(line.slice(6));
             onEvent(event.type, event);
           } catch (e) {
-            console.error('Failed to parse SSE event:', e);
+            // Ignore parse errors for partial chunks
           }
         }
+      }
+    }
+    // Process any remaining buffered data
+    if (buffer.startsWith('data: ')) {
+      try {
+        const event = JSON.parse(buffer.slice(6));
+        onEvent(event.type, event);
+      } catch (e) {
+        // Ignore
       }
     }
   },
