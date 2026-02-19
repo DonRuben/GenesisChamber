@@ -144,6 +144,11 @@
   color: var(--text-secondary);
 }
 
+.sh-breadcrumb-error {
+  color: var(--status-error);
+  font-weight: 600;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .sh-header {

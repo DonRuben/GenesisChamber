@@ -1,0 +1,153 @@
+/* =============================================
+   SOUL INFO CARD — Modal overlay with bio details
+   ============================================= */
+
+.soul-info-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 150ms ease-out;
+}
+
+.soul-info-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-lg);
+  max-width: 520px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  animation: scaleIn 200ms ease-out;
+  position: relative;
+}
+
+.soul-info-close {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-full);
+  transition: color var(--transition-fast), background var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.soul-info-close:hover {
+  color: var(--text-primary);
+  background: var(--surface-2);
+}
+
+/* ── Header ── */
+.soul-info-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.soul-info-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.soul-info-initial {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--surface-0);
+}
+
+.soul-info-name-block {
+  min-width: 0;
+}
+
+.soul-info-name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.soul-info-title {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--gc-cyan);
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.soul-info-era {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ── Body Sections ── */
+.soul-info-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.soul-info-section {
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.soul-info-label {
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gc-cyan);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.soul-info-text {
+  font-family: var(--font-data);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .soul-info-card {
+    padding: var(--space-md);
+    margin: var(--space-sm);
+    max-height: 90vh;
+  }
+
+  .soul-info-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .soul-info-name {
+    font-size: 18px;
+  }
+}

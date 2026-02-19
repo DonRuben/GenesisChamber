@@ -195,7 +195,9 @@ class GenesisRound:
     async def run_round(
         self,
         stages_to_run: int = 5,
-        on_stage_complete: Optional[Callable] = None
+        on_stage_complete: Optional[Callable] = None,
+        on_stage_start: Optional[Callable] = None,
+        on_participant_event: Optional[Callable] = None,
     ) -> Tuple[RoundResult, List[Concept], Optional[ModeratorDirection]]:
         """Run all stages for this round.
 
@@ -212,8 +214,15 @@ class GenesisRound:
         all_critiques = []
         direction = None
 
+        # Helper to emit stage_start events
+        async def _emit_stage_start(stage_num, stage_name, participants=None):
+            if on_stage_start:
+                await _maybe_await(on_stage_start, stage_num, stage_name, participants or [])
+
         # Stage 1: Creation
-        stage1 = await self._stage_creation()
+        participant_ids = list(self.config.participants.keys())
+        await _emit_stage_start(1, "creation", participant_ids)
+        stage1 = await self._stage_creation(on_participant_event=on_participant_event)
         self.stage_results[1] = stage1
         round_result.stages[1] = stage1
         if stage1.outputs:
@@ -223,7 +232,8 @@ class GenesisRound:
 
         # Stage 2: Critique
         concepts_to_critique = new_concepts if new_concepts else self.active_concepts
-        stage2 = await self._stage_critique(concepts_to_critique)
+        await _emit_stage_start(2, "critique", participant_ids)
+        stage2 = await self._stage_critique(concepts_to_critique, on_participant_event=on_participant_event)
         self.stage_results[2] = stage2
         round_result.stages[2] = stage2
         if stage2.outputs:
@@ -232,6 +242,7 @@ class GenesisRound:
             await _maybe_await(on_stage_complete, 2, "critique", stage2)
 
         # Stage 3: Synthesis (moderator direction)
+        await _emit_stage_start(3, "synthesis", ["moderator", "evaluator"])
         stage3 = await self._stage_synthesis(concepts_to_critique, all_critiques)
         self.stage_results[3] = stage3
         round_result.stages[3] = stage3
@@ -242,6 +253,7 @@ class GenesisRound:
 
         # Stages 4 & 5 only in full mode
         if stages_to_run >= 4 and direction:
+            await _emit_stage_start(4, "refinement", participant_ids)
             stage4 = await self._stage_refinement(concepts_to_critique, direction, all_critiques)
             self.stage_results[4] = stage4
             round_result.stages[4] = stage4
@@ -252,6 +264,7 @@ class GenesisRound:
 
         if stages_to_run >= 5:
             final_concepts = new_concepts if new_concepts else concepts_to_critique
+            await _emit_stage_start(5, "presentation", participant_ids)
             stage5 = await self._stage_presentation(final_concepts)
             self.stage_results[5] = stage5
             round_result.stages[5] = stage5
@@ -268,7 +281,7 @@ class GenesisRound:
 
         return round_result, final_concepts, direction
 
-    async def _stage_creation(self) -> StageResult:
+    async def _stage_creation(self, on_participant_event: Optional[Callable] = None) -> StageResult:
         """Stage 1: Independent concept generation."""
         stage = StageResult(stage_num=1, stage_name="creation", status="running",
                             started_at=datetime.utcnow().isoformat())
@@ -305,6 +318,12 @@ class GenesisRound:
             })
             participant_ids.append(pid)
 
+        # Emit "thinking" events for each participant
+        if on_participant_event:
+            for pid in participant_ids:
+                pconfig = self.config.participants[pid]
+                await _maybe_await(on_participant_event, "thinking", pid, pconfig.display_name, "creation")
+
         # Execute in parallel
         responses = await query_with_soul_parallel(queries)
 
@@ -317,6 +336,10 @@ class GenesisRound:
                     response["content"], pid, pconfig.display_name, self.round_num
                 )
                 all_concepts.extend(concepts)
+                # Emit completion event per participant
+                if on_participant_event:
+                    concept_names = [c.name for c in concepts]
+                    await _maybe_await(on_participant_event, "response", pid, pconfig.display_name, "creation", concept_names)
             else:
                 print(f"Warning: No response from {pconfig.display_name} in Stage 1")
 
@@ -325,7 +348,7 @@ class GenesisRound:
         stage.completed_at = datetime.utcnow().isoformat()
         return stage
 
-    async def _stage_critique(self, concepts: List[Concept]) -> StageResult:
+    async def _stage_critique(self, concepts: List[Concept], on_participant_event: Optional[Callable] = None) -> StageResult:
         """Stage 2: Anonymized peer review."""
         stage = StageResult(stage_num=2, stage_name="critique", status="running",
                             started_at=datetime.utcnow().isoformat())
@@ -374,6 +397,12 @@ class GenesisRound:
             })
             participant_ids.append(pid)
 
+        # Emit "thinking" events for each participant
+        if on_participant_event:
+            for pid in participant_ids:
+                pconfig = self.config.participants[pid]
+                await _maybe_await(on_participant_event, "thinking", pid, pconfig.display_name, "critique")
+
         # Execute in parallel
         responses = await query_with_soul_parallel(queries)
 
@@ -391,6 +420,9 @@ class GenesisRound:
                     if label in label_map:
                         critique.concept_id = label_map[label]
                 all_critiques.extend(critiques)
+                # Emit completion event
+                if on_participant_event:
+                    await _maybe_await(on_participant_event, "response", pid, pconfig.display_name, "critique")
 
         stage.outputs = all_critiques
         stage.status = "complete"
@@ -616,6 +648,8 @@ class GenesisSimulation:
         on_stage_complete: Optional[Callable] = None,
         on_round_complete: Optional[Callable] = None,
         on_gate_reached: Optional[Callable] = None,
+        on_stage_start: Optional[Callable] = None,
+        on_participant_event: Optional[Callable] = None,
     ) -> SimulationState:
         """Run the full simulation.
 
@@ -648,9 +682,22 @@ class GenesisSimulation:
                 if on_stage_complete:
                     await _maybe_await(on_stage_complete, round_num, stage_num, stage_name, result)
 
+            async def stage_start_cb(stage_num, stage_name, participants):
+                self.state.current_stage = stage_num
+                self.state.current_stage_name = stage_name
+                await self._save_state()
+                if on_stage_start:
+                    await _maybe_await(on_stage_start, round_num, stage_num, stage_name, participants)
+
+            async def participant_cb(event_type, pid, display_name, stage_name, extra=None):
+                if on_participant_event:
+                    await _maybe_await(on_participant_event, round_num, event_type, pid, display_name, stage_name, extra)
+
             round_result, concepts, direction = await genesis_round.run_round(
                 stages_to_run=self.config.stages_per_round,
                 on_stage_complete=stage_cb,
+                on_stage_start=stage_start_cb,
+                on_participant_event=participant_cb,
             )
 
             # Update active concepts

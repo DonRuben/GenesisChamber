@@ -16,8 +16,8 @@ wheels/
 .env.*.local
 
 # Data files (runtime generated)
-data/
-output/
+/data/
+/output/
 
 # Frontend
 frontend/node_modules/

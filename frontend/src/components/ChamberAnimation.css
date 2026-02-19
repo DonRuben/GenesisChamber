@@ -1,0 +1,165 @@
+/* =============================================
+   CHAMBER ANIMATION — Circular participant visualization
+   ============================================= */
+
+.ca-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-lg) 0;
+  animation: fadeIn var(--transition-medium);
+}
+
+.ca-chamber {
+  position: relative;
+  width: 340px;
+  height: 340px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── SVG Connection Lines ── */
+.ca-connections {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+.ca-line {
+  opacity: 0.3;
+  transition: all var(--transition-medium);
+}
+
+.ca-line-active {
+  opacity: 0.8;
+  stroke-dasharray: 6 4;
+  animation: ca-dash 1.5s linear infinite;
+}
+
+@keyframes ca-dash {
+  to { stroke-dashoffset: -20; }
+}
+
+/* ── Central Hub ── */
+.ca-hub {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--surface-1);
+  border: 2px solid var(--stage-color, var(--gc-cyan));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  box-shadow: 0 0 20px rgba(0, 217, 255, 0.15);
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.ca-hub-round {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ca-hub-stage {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--stage-color, var(--gc-cyan));
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ── Participant Nodes ── */
+.ca-node {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: rotate(var(--angle)) translateX(var(--radius)) rotate(calc(-1 * var(--angle)));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: -24px;
+  margin-left: -24px;
+  z-index: 3;
+}
+
+.ca-node-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-medium);
+  background: var(--surface-0);
+}
+
+.ca-node-active .ca-node-avatar {
+  box-shadow: 0 0 14px var(--node-color);
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.ca-node-initial {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  transition: color var(--transition-fast);
+}
+
+.ca-node-name {
+  font-family: var(--font-data);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+  white-space: nowrap;
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ca-node-active .ca-node-name {
+  color: var(--text-primary);
+}
+
+/* ── Live Feed Container ── */
+.ca-feed {
+  width: 100%;
+  max-width: 500px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .ca-chamber {
+    width: 280px;
+    height: 280px;
+  }
+
+  .ca-hub {
+    width: 64px;
+    height: 64px;
+  }
+
+  .ca-hub-stage {
+    font-size: 12px;
+  }
+
+  .ca-node-avatar {
+    width: 34px;
+    height: 34px;
+  }
+
+  .ca-node-initial {
+    font-size: 13px;
+  }
+}
