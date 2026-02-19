@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api';
-import { IconImage, IconVideo, IconPresentation, IconScroll, IconCheck, IconDownload } from './Icons';
+import { IconImage, IconVideo, IconPresentation, IconScroll, IconCheck, IconDownload, IconExport } from './Icons';
 import './OutputPanel.css';
 
 // Image model options for user selection
@@ -14,7 +14,7 @@ const IMAGE_MODELS = [
   { key: 'ideogram_v3', label: 'Ideogram V3', desc: 'Typography, text in images' },
 ];
 
-export default function OutputPanel({ simId }) {
+export default function OutputPanel({ simId, simState }) {
   const [imageStatus, setImageStatus] = useState(null); // null | 'generating' | 'complete' | 'error'
   const [videoStatus, setVideoStatus] = useState(null);
   const [images, setImages] = useState([]);
@@ -239,6 +239,38 @@ export default function OutputPanel({ simId }) {
           <button className="gc-btn gc-btn-secondary op-card-action" onClick={handleDownloadTranscript}>
             <IconDownload size={16} /> Download
           </button>
+        </div>
+
+        {/* Markdown Exports Card */}
+        <div className="op-card op-card-wide">
+          <div className="op-card-icon"><IconExport size={24} /></div>
+          <div className="op-card-info">
+            <div className="op-card-title">Markdown Exports</div>
+            <div className="op-card-desc">Download structured markdown for specific rounds, personas, or the winner</div>
+            <div className="op-export-links">
+              <a href={api.getExportUrl(simId, 'summary')} className="gc-btn gc-btn-ghost op-export-btn" download>
+                <IconDownload size={14} /> Full Summary
+              </a>
+              <a href={api.getExportUrl(simId, 'winner')} className="gc-btn gc-btn-ghost op-export-btn" download>
+                <IconDownload size={14} /> Winner Package
+              </a>
+              {simState?.rounds?.map((r) => (
+                <a key={r.round_num} href={api.getExportUrl(simId, 'round', r.round_num)} className="gc-btn gc-btn-ghost op-export-btn" download>
+                  <IconDownload size={14} /> R{r.round_num}
+                </a>
+              ))}
+            </div>
+            {simState?.config?.participants && Object.keys(simState.config.participants).length > 0 && (
+              <div className="op-export-links" style={{ marginTop: '8px' }}>
+                <span className="op-export-label">By Persona:</span>
+                {Object.entries(simState.config.participants).map(([pid, p]) => (
+                  <a key={pid} href={api.getExportUrl(simId, 'persona', pid)} className="gc-btn gc-btn-ghost op-export-btn" download>
+                    <IconDownload size={14} /> {p.display_name || pid}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

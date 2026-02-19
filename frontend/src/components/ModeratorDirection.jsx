@@ -1,14 +1,27 @@
-import { IconCheck, IconError } from './Icons';
+import { useState } from 'react';
+import { IconCheck, IconError, IconCopy } from './Icons';
+import { directionToMarkdown, copyToClipboard } from '../utils/clipboard';
 import './ModeratorDirection.css';
 
 export default function ModeratorDirection({ direction }) {
+  const [copied, setCopied] = useState(false);
+
   if (!direction) return null;
+
+  const handleCopy = async () => {
+    await copyToClipboard(directionToMarkdown(direction));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="md-panel">
       <div className="md-header">
         <span className="gc-badge gc-badge-gold">Moderator Direction</span>
         <span className="md-moderator">by {direction.moderator_name}</span>
+        <button className="md-copy-btn" onClick={handleCopy} title="Copy as Markdown">
+          {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
+        </button>
       </div>
 
       {direction.surviving_concepts?.length > 0 && (

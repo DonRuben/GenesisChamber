@@ -48,6 +48,33 @@
   border-color: var(--border-default);
 }
 
+.op-card-wide {
+  grid-column: 1 / -1;
+}
+
+.op-export-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.op-export-btn {
+  font-size: 12px !important;
+  padding: 4px 10px !important;
+  text-decoration: none;
+}
+
+.op-export-label {
+  font-family: var(--font-data);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  align-self: center;
+  margin-right: 4px;
+}
+
 .op-card-icon {
   color: var(--gc-cyan);
 }

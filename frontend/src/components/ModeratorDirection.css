@@ -24,6 +24,25 @@
   color: var(--text-muted);
 }
 
+.md-copy-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  opacity: 0.5;
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+
+.md-copy-btn:hover {
+  opacity: 1;
+  color: var(--gc-cyan);
+}
+
 /* ── Sections ── */
 .md-section {
   margin-bottom: var(--space-md);

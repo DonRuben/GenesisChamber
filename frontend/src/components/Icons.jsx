@@ -409,6 +409,36 @@ export const IconColumns = (props) => (
   </Icon>
 );
 
+export const IconTrash = (props) => (
+  <Icon {...props}>
+    <path d="M5 6h10M8 6V4h4v2M6 6v10a1 1 0 001 1h6a1 1 0 001-1V6" />
+    <line x1="9" y1="9" x2="9" y2="14" />
+    <line x1="11" y1="9" x2="11" y2="14" />
+  </Icon>
+);
+
+export const IconPencil = (props) => (
+  <Icon {...props}>
+    <path d="M13.5 4.5l2 2M4 16v-2l8.5-8.5 2 2L6 16H4z" />
+  </Icon>
+);
+
+export const IconArchive = (props) => (
+  <Icon {...props}>
+    <rect x="3" y="3" width="14" height="4" rx="1" />
+    <path d="M4 7v8a1 1 0 001 1h10a1 1 0 001-1V7" />
+    <path d="M8 11h4" />
+  </Icon>
+);
+
+export const IconMore = (props) => (
+  <Icon {...props}>
+    <circle cx="10" cy="5" r="1.2" fill="currentColor" stroke="none" />
+    <circle cx="10" cy="10" r="1.2" fill="currentColor" stroke="none" />
+    <circle cx="10" cy="15" r="1.2" fill="currentColor" stroke="none" />
+  </Icon>
+);
+
 // ─── Convenience lookup object ──────────────────────────────────────────────
 
 export const Icons = {
@@ -467,4 +497,9 @@ export const Icons = {
   IconUpload,
   IconCopy,
   IconColumns,
+  // Management
+  IconTrash,
+  IconPencil,
+  IconArchive,
+  IconMore,
 };

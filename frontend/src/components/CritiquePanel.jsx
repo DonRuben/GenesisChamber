@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import HelpTooltip from './HelpTooltip';
-import { IconEye } from './Icons';
+import { IconEye, IconCopy, IconCheck } from './Icons';
+import { critiqueToMarkdown, copyToClipboard } from '../utils/clipboard';
 import './CritiquePanel.css';
 
 function scoreColor(score) {
@@ -18,6 +19,20 @@ function isDA(name) {
 export default function CritiquePanel({ critiques, concepts }) {
   const [showAnonymous, setShowAnonymous] = useState(true);
   const [filterCritic, setFilterCritic] = useState('all');
+  const [copiedId, setCopiedId] = useState(null);
+
+  const handleCopyCritique = async (crit, id) => {
+    await copyToClipboard(critiqueToMarkdown(crit));
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleCopyAll = async (crits) => {
+    const md = crits.map(c => critiqueToMarkdown(c)).join('\n---\n\n');
+    await copyToClipboard(md);
+    setCopiedId('all');
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   // Extract unique critic names for filter chips
   const uniqueCritics = [...new Set((critiques || []).map(c => c.critic_name).filter(Boolean))].sort();
@@ -99,6 +114,13 @@ export default function CritiquePanel({ critiques, concepts }) {
                   )}
                 </div>
                 <div className="cp-score-group">
+                  <button
+                    className="cp-copy-btn"
+                    onClick={() => handleCopyAll(filteredCrits)}
+                    title="Copy all critiques"
+                  >
+                    {copiedId === 'all' ? <IconCheck size={12} /> : <IconCopy size={12} />}
+                  </button>
                   <div className="cp-avg-score" style={{ color: scoreColor(avgScore) }}>
                     {avgScore.toFixed(1)}
                   </div>
@@ -122,6 +144,13 @@ export default function CritiquePanel({ critiques, concepts }) {
                         <span className="cp-da-badge">DA</span>
                       )}
                     </span>
+                    <button
+                      className="cp-copy-btn"
+                      onClick={() => handleCopyCritique(crit, `${conceptKey}-${i}`)}
+                      title="Copy critique"
+                    >
+                      {copiedId === `${conceptKey}-${i}` ? <IconCheck size={12} /> : <IconCopy size={12} />}
+                    </button>
                     <span className="cp-critic-score" style={{ color: scoreColor(crit.score) }}>
                       {crit.score}/10
                     </span>

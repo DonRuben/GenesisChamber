@@ -203,6 +203,24 @@
   font-size: 15px;
 }
 
+.cp-copy-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  opacity: 0.5;
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+
+.cp-copy-btn:hover {
+  opacity: 1;
+  color: var(--gc-cyan);
+}
+
 /* ── List sections ── */
 .cp-list-section {
   margin-bottom: var(--space-xs);

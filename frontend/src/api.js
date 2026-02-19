@@ -46,6 +46,43 @@ export const api = {
   },
 
   /**
+   * Delete a conversation.
+   */
+  async deleteConversation(conversationId) {
+    const response = await fetch(`${API_BASE}/api/conversations/${conversationId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) throw new Error('Failed to delete conversation');
+    return response.json();
+  },
+
+  /**
+   * Rename a conversation.
+   */
+  async renameConversation(conversationId, name) {
+    const response = await fetch(`${API_BASE}/api/conversations/${conversationId}/rename`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    if (!response.ok) throw new Error('Failed to rename conversation');
+    return response.json();
+  },
+
+  /**
+   * Archive or unarchive a conversation.
+   */
+  async archiveConversation(conversationId, archived = true) {
+    const response = await fetch(`${API_BASE}/api/conversations/${conversationId}/archive`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ archived }),
+    });
+    if (!response.ok) throw new Error('Failed to archive conversation');
+    return response.json();
+  },
+
+  /**
    * Get a specific conversation.
    */
   async getConversation(conversationId) {
@@ -85,7 +122,11 @@ export const api = {
    * @param {function} onEvent - Callback function for each event: (eventType, data) => void
    * @returns {Promise<void>}
    */
-  async sendMessageStream(conversationId, content, onEvent) {
+  async sendMessageStream(conversationId, content, onEvent, { models, chairmanModel } = {}) {
+    const body = { content };
+    if (models) body.models = models;
+    if (chairmanModel) body.chairman_model = chairmanModel;
+
     const response = await fetch(
       `${API_BASE}/api/conversations/${conversationId}/message/stream`,
       {
@@ -93,7 +134,7 @@ export const api = {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify(body),
       }
     );
 
@@ -174,6 +215,43 @@ export const api = {
   async listSimulations() {
     const response = await fetch(`${API_BASE}/api/simulations`);
     if (!response.ok) throw new Error('Failed to list simulations');
+    return response.json();
+  },
+
+  /**
+   * Delete a simulation.
+   */
+  async deleteSimulation(simId) {
+    const response = await fetch(`${API_BASE}/api/simulation/${simId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) throw new Error('Failed to delete simulation');
+    return response.json();
+  },
+
+  /**
+   * Rename a simulation.
+   */
+  async renameSimulation(simId, name) {
+    const response = await fetch(`${API_BASE}/api/simulation/${simId}/rename`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    if (!response.ok) throw new Error('Failed to rename simulation');
+    return response.json();
+  },
+
+  /**
+   * Archive or unarchive a simulation.
+   */
+  async archiveSimulation(simId, archived = true) {
+    const response = await fetch(`${API_BASE}/api/simulation/${simId}/archive`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ archived }),
+    });
+    if (!response.ok) throw new Error('Failed to archive simulation');
     return response.json();
   },
 
@@ -318,6 +396,19 @@ export const api = {
 
   getDownloadUrl(simId, type = 'all') {
     return `${API_BASE}/api/simulation/${simId}/download/${type}`;
+  },
+
+  /**
+   * Get markdown export URL for a simulation.
+   * @param {string} simId
+   * @param {'summary'|'winner'|'round'|'persona'} type
+   * @param {string|number} [param] — round number or persona ID
+   */
+  getExportUrl(simId, type, param = '') {
+    const base = `${API_BASE}/api/simulation/${simId}/export`;
+    if (type === 'round') return `${base}/round/${param}`;
+    if (type === 'persona') return `${base}/persona/${param}`;
+    return `${base}/${type}`;
   },
 
   async uploadReference(file) {

@@ -337,6 +337,17 @@ class ConversationDB:
             print(f"[database] update_title failed: {e}")
             return False
 
+    async def delete(self, conversation_id: str) -> bool:
+        pool = await DatabasePool.get_pool()
+        if not pool:
+            return False
+        try:
+            result = await pool.execute("DELETE FROM conversations WHERE id = $1", conversation_id)
+            return result == "DELETE 1"
+        except Exception as e:
+            print(f"[database] delete conversation failed: {e}")
+            return False
+
     async def add_message(self, conversation_id: str, message: Dict[str, Any]) -> bool:
         pool = await DatabasePool.get_pool()
         if not pool:

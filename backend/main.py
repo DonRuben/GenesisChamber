@@ -72,6 +72,18 @@ class CreateConversationRequest(BaseModel):
 class SendMessageRequest(BaseModel):
     """Request to send a message in a conversation."""
     content: str
+    models: Optional[List[str]] = None
+    chairman_model: Optional[str] = None
+
+
+class RenameRequest(BaseModel):
+    """Request to rename a conversation or simulation."""
+    name: str
+
+
+class ArchiveRequest(BaseModel):
+    """Request to archive or unarchive a conversation or simulation."""
+    archived: bool = True
 
 
 class ConversationMetadata(BaseModel):
@@ -189,18 +201,18 @@ async def send_message_stream(conversation_id: str, request: SendMessageRequest)
 
             # Stage 1: Collect responses
             yield f"data: {json.dumps({'type': 'stage1_start'})}\n\n"
-            stage1_results = await stage1_collect_responses(request.content)
+            stage1_results = await stage1_collect_responses(request.content, models=request.models)
             yield f"data: {json.dumps({'type': 'stage1_complete', 'data': stage1_results})}\n\n"
 
             # Stage 2: Collect rankings
             yield f"data: {json.dumps({'type': 'stage2_start'})}\n\n"
-            stage2_results, label_to_model = await stage2_collect_rankings(request.content, stage1_results)
+            stage2_results, label_to_model = await stage2_collect_rankings(request.content, stage1_results, models=request.models)
             aggregate_rankings = calculate_aggregate_rankings(stage2_results, label_to_model)
             yield f"data: {json.dumps({'type': 'stage2_complete', 'data': stage2_results, 'metadata': {'label_to_model': label_to_model, 'aggregate_rankings': aggregate_rankings}})}\n\n"
 
             # Stage 3: Synthesize final answer
             yield f"data: {json.dumps({'type': 'stage3_start'})}\n\n"
-            stage3_result = await stage3_synthesize_final(request.content, stage1_results, stage2_results)
+            stage3_result = await stage3_synthesize_final(request.content, stage1_results, stage2_results, chairman_model=request.chairman_model)
             yield f"data: {json.dumps({'type': 'stage3_complete', 'data': stage3_result})}\n\n"
 
             # Wait for title generation if it was started
@@ -232,6 +244,37 @@ async def send_message_stream(conversation_id: str, request: SendMessageRequest)
             "Connection": "keep-alive",
         }
     )
+
+
+# === CONVERSATION MANAGEMENT ===
+
+@app.delete("/api/conversations/{conversation_id}")
+async def delete_conversation(conversation_id: str):
+    """Delete a conversation."""
+    deleted = storage.delete_conversation(conversation_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return {"status": "deleted", "id": conversation_id}
+
+
+@app.patch("/api/conversations/{conversation_id}/rename")
+async def rename_conversation(conversation_id: str, request: RenameRequest):
+    """Rename a conversation."""
+    try:
+        storage.update_conversation_title(conversation_id, request.name)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return {"status": "renamed", "id": conversation_id, "name": request.name}
+
+
+@app.patch("/api/conversations/{conversation_id}/archive")
+async def archive_conversation(conversation_id: str, request: ArchiveRequest):
+    """Archive or unarchive a conversation."""
+    try:
+        storage.archive_conversation(conversation_id, request.archived)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return {"status": "archived" if request.archived else "unarchived", "id": conversation_id}
 
 
 # === GENESIS CHAMBER ENDPOINTS ===
@@ -524,6 +567,39 @@ async def get_transcript(sim_id: str):
     }
 
 
+# === SIMULATION MANAGEMENT ===
+
+@app.delete("/api/simulation/{sim_id}")
+async def delete_simulation(sim_id: str):
+    """Delete a simulation. Cannot delete while running."""
+    if sim_id in _running_simulations:
+        raise HTTPException(status_code=409, detail="Cannot delete a running simulation")
+    deleted = simulation_store.delete_simulation(sim_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    return {"status": "deleted", "id": sim_id}
+
+
+@app.patch("/api/simulation/{sim_id}/rename")
+async def rename_simulation(sim_id: str, request: RenameRequest):
+    """Rename a simulation."""
+    try:
+        simulation_store.rename_simulation(sim_id, request.name)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    return {"status": "renamed", "id": sim_id, "name": request.name}
+
+
+@app.patch("/api/simulation/{sim_id}/archive")
+async def archive_simulation(sim_id: str, request: ArchiveRequest):
+    """Archive or unarchive a simulation."""
+    try:
+        simulation_store.archive_simulation(sim_id, request.archived)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    return {"status": "archived" if request.archived else "unarchived", "id": sim_id}
+
+
 @app.post("/api/simulation/quick-start")
 async def quick_start_simulation(
     preset: str = "quick_test",
@@ -715,6 +791,69 @@ async def upload_soul_file(
         "cross_teams": [],
         "status": "uploaded",
     }
+
+
+# === MARKDOWN EXPORT ENDPOINTS ===
+
+
+@app.get("/api/simulation/{sim_id}/export/summary")
+async def export_summary_markdown(sim_id: str):
+    """Export full simulation summary as markdown."""
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    engine = OutputEngine()
+    md = engine.generate_markdown_summary(state)
+    return StreamingResponse(
+        io.BytesIO(md.encode("utf-8")),
+        media_type="text/markdown",
+        headers={"Content-Disposition": f'attachment; filename="{sim_id}-summary.md"'},
+    )
+
+
+@app.get("/api/simulation/{sim_id}/export/winner")
+async def export_winner_markdown(sim_id: str):
+    """Export winner concept package as markdown."""
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    engine = OutputEngine()
+    md = engine.generate_markdown_winner(state)
+    return StreamingResponse(
+        io.BytesIO(md.encode("utf-8")),
+        media_type="text/markdown",
+        headers={"Content-Disposition": f'attachment; filename="{sim_id}-winner.md"'},
+    )
+
+
+@app.get("/api/simulation/{sim_id}/export/round/{round_num}")
+async def export_round_markdown(sim_id: str, round_num: int):
+    """Export one round as markdown."""
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    engine = OutputEngine()
+    md = engine.generate_markdown_round(state, round_num)
+    return StreamingResponse(
+        io.BytesIO(md.encode("utf-8")),
+        media_type="text/markdown",
+        headers={"Content-Disposition": f'attachment; filename="{sim_id}-round-{round_num}.md"'},
+    )
+
+
+@app.get("/api/simulation/{sim_id}/export/persona/{persona_id}")
+async def export_persona_markdown(sim_id: str, persona_id: str):
+    """Export one persona's contributions as markdown."""
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    engine = OutputEngine()
+    md = engine.generate_markdown_persona(state, persona_id)
+    return StreamingResponse(
+        io.BytesIO(md.encode("utf-8")),
+        media_type="text/markdown",
+        headers={"Content-Disposition": f'attachment; filename="{sim_id}-{persona_id}.md"'},
+    )
 
 
 # === OUTPUT & MEDIA ENDPOINTS ===

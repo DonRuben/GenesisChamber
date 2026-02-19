@@ -96,6 +96,28 @@
   flex-shrink: 0;
 }
 
+.cc-copy-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+
+.cc-card:hover .cc-copy-btn {
+  opacity: 1;
+}
+
+.cc-copy-btn:hover {
+  color: var(--gc-cyan);
+}
+
 .cc-score {
   font-family: var(--font-display);
   font-size: 28px;

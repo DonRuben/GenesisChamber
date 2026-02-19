@@ -393,7 +393,7 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
 
         {activeView === 'output' && simState.status === 'completed' && (
           <div className="dashboard-view-animate">
-            <OutputPanel simId={currentSimId} />
+            <OutputPanel simId={currentSimId} simState={simState} />
           </div>
         )}
       </div>
