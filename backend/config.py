@@ -14,7 +14,7 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 COUNCIL_MODELS = [
     "openai/gpt-5.1",
     "google/gemini-3-pro-preview",
-    "anthropic/claude-sonnet-4.5",
+    "anthropic/claude-sonnet-4.6",
     "x-ai/grok-4",
 ]
 
@@ -186,7 +186,7 @@ DEFAULT_PARTICIPANTS = {
     },
     "claude-hopkins": {
         "name": "Claude Hopkins",
-        "model": "anthropic/claude-sonnet-4-5-20250929",
+        "model": "anthropic/claude-sonnet-4.6",
         "soul_document": "souls/claude-hopkins.md",
         "role": "participant",
         "team": "marketing",
@@ -247,7 +247,7 @@ DEFAULT_PARTICIPANTS = {
     },
     "saul-bass": {
         "name": "Saul Bass",
-        "model": "anthropic/claude-sonnet-4-5-20250929",
+        "model": "anthropic/claude-sonnet-4.6",
         "soul_document": "souls/saul-bass.md",
         "role": "participant",
         "team": "design",

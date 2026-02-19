@@ -60,14 +60,14 @@ const PRESET_DESCRIPTIONS = {
 const DEFAULT_MODELS = {
   // Marketing & Strategy
   'david-ogilvy': 'google/gemini-2.5-pro',
-  'claude-hopkins': 'anthropic/claude-sonnet-4-5-20250929',
+  'claude-hopkins': 'anthropic/claude-sonnet-4.6',
   'leo-burnett': 'openai/gpt-5.1',
   'mary-wells-lawrence': 'meta-llama/llama-4-maverick',
   'gary-halbert': 'x-ai/grok-4',
   // Design & Visual
   'paul-rand': 'google/gemini-2.5-pro',
   'paula-scher': 'openai/gpt-5.1',
-  'saul-bass': 'anthropic/claude-sonnet-4-5-20250929',
+  'saul-bass': 'anthropic/claude-sonnet-4.6',
   'susan-kare': 'meta-llama/llama-4-maverick',
   'rob-janoff': 'x-ai/grok-4',
   'tobias-van-schneider': 'google/gemini-2.5-pro',
@@ -305,7 +305,7 @@ export default function SimulationLauncher({ onStart }) {
         if (soul) {
           participants[pid] = {
             display_name: soul.name,
-            model: modelAssignments[pid] || DEFAULT_MODELS[pid] || 'anthropic/claude-sonnet-4-5-20250929',
+            model: modelAssignments[pid] || DEFAULT_MODELS[pid] || 'anthropic/claude-sonnet-4.6',
             soul_document: soul.file,
             role: 'participant',
             temperature: 0.7,
@@ -495,7 +495,7 @@ export default function SimulationLauncher({ onStart }) {
                         <div className="participant-info">
                           <span className="participant-name">{soul.name}</span>
                           <span className="participant-model-label">
-                            {getDisplayName(modelAssignments[soul.id] || 'anthropic/claude-sonnet-4.5')}
+                            {getDisplayName(modelAssignments[soul.id] || 'anthropic/claude-sonnet-4.6')}
                           </span>
                         </div>
                         {isSelected && <span className="participant-check"><IconCheck size={14} /></span>}
@@ -652,7 +652,7 @@ export default function SimulationLauncher({ onStart }) {
                       <span className="model-assign-name">{soul.name}</span>
                     </div>
                     <ModelSelector
-                      value={modelAssignments[pid] || DEFAULT_MODELS[pid] || 'anthropic/claude-sonnet-4-5-20250929'}
+                      value={modelAssignments[pid] || DEFAULT_MODELS[pid] || 'anthropic/claude-sonnet-4.6'}
                       onChange={(modelId) => updateModel(pid, modelId)}
                       models={availableModels}
                       compact
