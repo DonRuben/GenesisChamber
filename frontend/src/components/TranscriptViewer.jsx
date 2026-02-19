@@ -18,6 +18,14 @@ const STAGE_COLORS = {
   presentation: 'var(--stage-present)',
 };
 
+const STAGE_LABELS = {
+  creation: 'Creation',
+  critique: 'Critique',
+  synthesis: 'Synthesis',
+  refinement: 'Refinement',
+  presentation: 'Presentation',
+};
+
 export default function TranscriptViewer({ entries, eventLog }) {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
@@ -65,13 +73,14 @@ export default function TranscriptViewer({ entries, eventLog }) {
         <div className="tv-timeline">
           {filtered.map((entry, i) => {
             const stageColor = STAGE_COLORS[entry.stage_name] || 'var(--border-default)';
+            const stageLabel = STAGE_LABELS[entry.stage_name] || entry.stage_name;
             return (
               <div key={i} className="tv-entry" style={{ '--entry-color': stageColor }}>
                 <div className="tv-entry-dot" />
                 <div className="tv-entry-content">
                   <div className="tv-entry-header">
                     <span className="tv-entry-label">
-                      Round {entry.round} — {entry.stage_name}
+                      Round {entry.round} — {stageLabel}
                     </span>
                     <span className="tv-entry-time">
                       {entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString() : ''}
@@ -81,8 +90,10 @@ export default function TranscriptViewer({ entries, eventLog }) {
                   {entry.concepts && (
                     <div className="tv-entry-concepts">
                       {entry.concepts.map((c, j) => (
-                        <div key={j} className="tv-concept-line">
-                          <strong>{c.persona}:</strong> {c.name} — {c.idea}
+                        <div key={j} className="tv-concept-card">
+                          <span className="tv-concept-persona">{c.persona}</span>
+                          <span className="tv-concept-name">{c.name}</span>
+                          {c.idea && <span className="tv-concept-idea">{c.idea}</span>}
                         </div>
                       ))}
                     </div>
