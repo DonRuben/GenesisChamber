@@ -890,36 +890,98 @@ MAX_UPLOAD_SIZE = 50 * 1024 * 1024  # 50MB
 SAFE_EXTENSIONS = {
     '.html', '.htm', '.css', '.js', '.json', '.png', '.jpg', '.jpeg',
     '.gif', '.svg', '.ico', '.woff', '.woff2', '.ttf', '.eot', '.map',
-    '.txt', '.md', '.xml', '.webp', '.avif',
+    '.txt', '.md', '.xml', '.webp', '.avif', '.pdf',
+}
+
+# Categorized upload types
+_TEXT_EXTS = {"html", "htm", "txt", "md", "css", "js", "json", "xml"}
+_IMAGE_EXTS = {"png", "jpg", "jpeg", "gif", "svg", "webp", "avif"}
+_PDF_EXTS = {"pdf"}
+_ARCHIVE_EXTS = {"zip"}
+_ALLOWED_UPLOAD_EXTS = _TEXT_EXTS | _IMAGE_EXTS | _PDF_EXTS | _ARCHIVE_EXTS
+
+# Content-type map (used for DB save + serving)
+_CONTENT_TYPES = {
+    ".html": "text/html", ".htm": "text/html", ".css": "text/css",
+    ".js": "application/javascript", ".json": "application/json",
+    ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+    ".gif": "image/gif", ".svg": "image/svg+xml", ".webp": "image/webp",
+    ".avif": "image/avif", ".ico": "image/x-icon",
+    ".txt": "text/plain", ".md": "text/plain", ".xml": "text/xml",
+    ".pdf": "application/pdf",
+    ".woff": "font/woff", ".woff2": "font/woff2", ".ttf": "font/ttf",
 }
 
 
 def _extract_text_from_html(html: str) -> str:
     """Strip HTML tags and extract readable text content for LLM context."""
     import re as _re
-    # Remove script and style blocks
     text = _re.sub(r'<(script|style)[^>]*>.*?</\1>', '', html, flags=_re.DOTALL | _re.IGNORECASE)
-    # Remove all tags
     text = _re.sub(r'<[^>]+>', ' ', text)
-    # Decode common entities
     text = text.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>').replace('&nbsp;', ' ')
     text = text.replace('&#39;', "'").replace('&quot;', '"')
-    # Collapse whitespace
     text = _re.sub(r'\s+', ' ', text).strip()
-    # Truncate to prevent exceeding context windows
     if len(text) > 15000:
         text = text[:15000] + "\n\n[...content truncated for context window...]"
     return text
 
 
+def _extract_text_from_plaintext(raw: bytes, filename: str = "") -> str:
+    """Extract text from plain text files (.txt, .md, .css, .js, .json, etc.)."""
+    text = raw.decode("utf-8", errors="replace").strip()
+    if len(text) > 15000:
+        text = text[:15000] + "\n\n[...content truncated for context window...]"
+    return f"[File: {filename}]\n{text}" if filename else text
+
+
+def _describe_image_file(filename: str) -> str:
+    """Return a text note indicating an image reference was provided."""
+    return f"[Reference image provided: {filename} — visual reference available in uploaded files]"
+
+
+def _extract_text_from_pdf_basic(raw: bytes, filename: str) -> str:
+    """Best-effort PDF text extraction without external libraries."""
+    import re as _re
+    text_parts = []
+    # PDF text objects: text in parentheses before Tj/TJ operators
+    for match in _re.finditer(rb'\(([^)]{1,500})\)\s*Tj', raw):
+        try:
+            text_parts.append(match.group(1).decode('latin-1', errors='replace'))
+        except Exception:
+            pass
+    if text_parts:
+        text = ' '.join(text_parts).strip()
+        if len(text) > 15000:
+            text = text[:15000] + "\n\n[...content truncated for context window...]"
+        return f"[PDF: {filename}]\n{text}"
+    return f"[PDF reference provided: {filename} — uploaded but full text extraction requires additional libraries]"
+
+
+def _extract_member_text(member_path: Path, member_bytes: bytes, member_name: str) -> str:
+    """Extract text from a single file (for ZIP members or direct uploads)."""
+    suffix = member_path.suffix.lower()
+    if suffix in ('.html', '.htm'):
+        return _extract_text_from_html(member_bytes.decode("utf-8", errors="replace"))
+    elif suffix in ('.txt', '.md', '.css', '.js', '.json', '.xml'):
+        return _extract_text_from_plaintext(member_bytes, member_name)
+    elif suffix in ('.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.avif'):
+        return _describe_image_file(member_name)
+    elif suffix == '.pdf':
+        return _extract_text_from_pdf_basic(member_bytes, member_name)
+    return ""
+
+
 @app.post("/api/upload/reference")
 async def upload_reference_file(file: UploadFile = File(...)):
-    """Upload an HTML or ZIP file as reference material."""
+    """Upload a reference file (image, HTML, text, PDF, or ZIP) for LLM context."""
     filename = file.filename or ""
     ext = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
 
-    if ext not in ("html", "htm", "zip"):
-        raise HTTPException(status_code=400, detail="Only .html, .htm, and .zip files are supported")
+    if ext not in _ALLOWED_UPLOAD_EXTS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type '.{ext}'. Accepted: images (.png, .jpg, .gif, .svg, .webp), text (.html, .txt, .md, .css, .js, .json), PDF, and ZIP archives.",
+        )
 
     content = await file.read()
     if len(content) > MAX_UPLOAD_SIZE:
@@ -932,17 +994,15 @@ async def upload_reference_file(file: UploadFile = File(...)):
     file_list = []
     extracted_text = ""
 
-    if ext == "zip":
+    if ext in _ARCHIVE_EXTS:
         # Extract ZIP file with path traversal protection
         import io
         try:
             with zipfile.ZipFile(io.BytesIO(content)) as zf:
                 for member in zf.namelist():
-                    # Security: prevent path traversal
                     member_path = Path(member)
                     if member_path.is_absolute() or ".." in member_path.parts:
                         continue
-                    # Security: skip unsafe file types
                     if not member.endswith("/") and member_path.suffix.lower() not in SAFE_EXTENSIONS:
                         continue
                     dest = upload_path / member
@@ -953,36 +1013,57 @@ async def upload_reference_file(file: UploadFile = File(...)):
                         member_bytes = zf.read(member)
                         dest.write_bytes(member_bytes)
                         file_list.append(member)
-                        # Extract text from HTML files for LLM context
-                        if member_path.suffix.lower() in ('.html', '.htm'):
-                            html_text = _extract_text_from_html(member_bytes.decode("utf-8", errors="replace"))
-                            if html_text:
-                                extracted_text += html_text + "\n\n"
+                        # Extract text from ALL readable file types
+                        member_text = _extract_member_text(member_path, member_bytes, member)
+                        if member_text:
+                            extracted_text += member_text + "\n\n"
         except zipfile.BadZipFile:
             raise HTTPException(status_code=400, detail="Invalid ZIP file")
-    else:
-        # Save HTML file directly
+    elif ext in _IMAGE_EXTS:
+        # Image file — store and describe
+        dest = upload_path / filename
+        dest.write_bytes(content)
+        file_list.append(filename)
+        extracted_text = _describe_image_file(filename)
+    elif ext in _PDF_EXTS:
+        # PDF file — store and attempt text extraction
+        dest = upload_path / filename
+        dest.write_bytes(content)
+        file_list.append(filename)
+        extracted_text = _extract_text_from_pdf_basic(content, filename)
+    elif ext in ("html", "htm"):
+        # HTML file — save as index.html for iframe preview
         dest = upload_path / "index.html"
         dest.write_bytes(content)
         file_list.append("index.html")
-        # Extract text for LLM context
         extracted_text = _extract_text_from_html(content.decode("utf-8", errors="replace"))
+    else:
+        # Plain text file (.txt, .md, .css, .js, .json, .xml)
+        dest = upload_path / filename
+        dest.write_bytes(content)
+        file_list.append(filename)
+        extracted_text = _extract_text_from_plaintext(content, filename)
+
+    # Determine response type
+    if ext in _ARCHIVE_EXTS:
+        file_type = "zip"
+    elif ext in _IMAGE_EXTS:
+        file_type = "image"
+    elif ext in _PDF_EXTS:
+        file_type = "pdf"
+    else:
+        file_type = "text"
 
     # Persist to database (non-blocking) for cross-deploy survival
     if upload_db:
         async def _save_to_db():
             try:
-                await upload_db.save_upload(upload_id, filename,
-                    "zip" if ext == "zip" else "html", extracted_text.strip(), file_list)
-                # Save individual files to DB
+                await upload_db.save_upload(upload_id, filename, file_type, extracted_text.strip(), file_list)
                 for member_name in file_list:
                     member_file = upload_path / member_name
                     if member_file.is_file():
                         suffix = Path(member_name).suffix.lower()
-                        ct = {".html": "text/html", ".htm": "text/html", ".css": "text/css",
-                              ".js": "application/javascript", ".json": "application/json",
-                              ".png": "image/png", ".jpg": "image/jpeg", ".svg": "image/svg+xml",
-                              }.get(suffix, "application/octet-stream")
+                        ct = _CONTENT_TYPES.get(suffix, "application/octet-stream")
                         await upload_db.save_file(upload_id, member_name,
                             member_file.read_bytes(), ct)
             except Exception as e:
@@ -992,7 +1073,7 @@ async def upload_reference_file(file: UploadFile = File(...)):
     return {
         "id": upload_id,
         "url": f"/api/uploads/{upload_id}/",
-        "type": "zip" if ext == "zip" else "html",
+        "type": file_type,
         "files": file_list,
         "filename": filename,
         "extracted_text": extracted_text.strip(),
@@ -1029,23 +1110,7 @@ async def serve_upload(upload_id: str, path: str = "index.html"):
 
     # Guess content type
     suffix = resolved.suffix.lower()
-    content_types = {
-        ".html": "text/html",
-        ".htm": "text/html",
-        ".css": "text/css",
-        ".js": "application/javascript",
-        ".json": "application/json",
-        ".png": "image/png",
-        ".jpg": "image/jpeg",
-        ".jpeg": "image/jpeg",
-        ".gif": "image/gif",
-        ".svg": "image/svg+xml",
-        ".ico": "image/x-icon",
-        ".woff": "font/woff",
-        ".woff2": "font/woff2",
-        ".ttf": "font/ttf",
-    }
-    media_type = content_types.get(suffix, "application/octet-stream")
+    media_type = _CONTENT_TYPES.get(suffix, "application/octet-stream")
 
     return FileResponse(str(resolved), media_type=media_type)
 

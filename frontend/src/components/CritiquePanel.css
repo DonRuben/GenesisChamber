@@ -1,5 +1,5 @@
 /* =============================================
-   CRITIQUE PANEL
+   CRITIQUE PANEL — Enhanced with section labels
    ============================================= */
 
 .cp-container {
@@ -14,21 +14,18 @@
 }
 
 .cp-title {
-  font-family: var(--font-data);
-  font-size: 17px;
+  font-family: var(--font-display);
+  font-size: 18px;
   font-weight: 700;
   color: var(--gc-gold);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
 }
 
 .cp-toggle {
   font-size: 12px !important;
   padding: 4px 12px !important;
-}
-
-.cp-title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
 }
 
 .cp-empty {
@@ -57,7 +54,7 @@
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: var(--space-md);
-  margin-bottom: var(--space-sm);
+  margin-bottom: var(--space-md);
 }
 
 .cp-panel-header {
@@ -68,9 +65,9 @@
 }
 
 .cp-concept-name {
-  font-family: var(--font-data);
+  font-family: var(--font-display);
   font-weight: 700;
-  font-size: 15px;
+  font-size: 17px;
   color: var(--text-primary);
 }
 
@@ -78,12 +75,26 @@
   font-family: var(--font-data);
   font-size: 12px;
   color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.cp-score-group {
+  text-align: right;
 }
 
 .cp-avg-score {
   font-family: var(--font-display);
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 800;
+  line-height: 1;
+}
+
+.cp-score-sublabel {
+  font-family: var(--font-data);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
 }
 
 /* ── Score Bar ── */
@@ -119,40 +130,118 @@
   font-family: var(--font-data);
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .cp-critic-score {
   font-family: var(--font-data);
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
 }
 
-/* ── Lists ── */
+/* ── List sections ── */
+.cp-list-section {
+  margin-bottom: var(--space-xs);
+}
+
+.cp-list-label {
+  font-family: var(--font-data);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.cp-label-strengths {
+  color: var(--status-success);
+}
+
+.cp-label-weaknesses {
+  color: var(--status-error);
+}
+
 .cp-list {
   padding-left: var(--space-md);
   margin-bottom: var(--space-xs);
 }
 
 .cp-list li {
-  font-family: var(--font-data);
-  font-size: 13px;
-  line-height: 1.5;
-  margin-bottom: 2px;
+  font-family: var(--font-caption);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 3px;
 }
 
 .cp-strengths li {
+  color: var(--text-primary);
+}
+
+.cp-strengths li::marker {
   color: var(--status-success);
 }
 
 .cp-weaknesses li {
+  color: var(--text-primary);
+}
+
+.cp-weaknesses li::marker {
   color: var(--status-error);
 }
 
+/* ── Fatal Flaw ── */
 .cp-fatal {
+  font-family: var(--font-caption);
+  font-size: 14px;
+  color: var(--text-primary);
+  background: rgba(239, 68, 68, 0.06);
+  border-left: 2px solid var(--status-error);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-top: var(--space-xs);
+}
+
+.cp-fatal-label {
+  font-weight: 700;
+  color: var(--status-error);
+}
+
+/* ── One Change ── */
+.cp-one-change {
+  font-family: var(--font-caption);
+  font-size: 14px;
+  color: var(--text-primary);
+  background: rgba(59, 130, 246, 0.06);
+  border-left: 2px solid var(--stage-refine);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-top: var(--space-xs);
+}
+
+.cp-one-change-label {
+  font-weight: 700;
+  color: var(--stage-refine);
+}
+
+/* ── Champion ── */
+.cp-champion {
   font-family: var(--font-data);
   font-size: 13px;
-  color: var(--status-error);
-  font-weight: 600;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
   margin-top: var(--space-xs);
+}
+
+.cp-champion-yes {
+  background: rgba(16, 185, 129, 0.08);
+  color: var(--status-success);
+}
+
+.cp-champion-no {
+  background: rgba(239, 68, 68, 0.06);
+  color: var(--text-muted);
+}
+
+.cp-champion-label {
+  font-weight: 700;
 }

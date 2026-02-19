@@ -6,7 +6,7 @@
   background: var(--surface-1);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  max-height: 280px;
+  max-height: 320px;
   overflow-y: auto;
   animation: fadeIn var(--transition-medium);
 }
@@ -26,6 +26,7 @@
   z-index: 1;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-xs);
 }
 
@@ -36,6 +37,19 @@
   border-radius: 50%;
   background: var(--gc-cyan);
   animation: pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.lf-header-text {
+  flex: 1;
+}
+
+.lf-event-count {
+  font-size: 10px;
+  background: var(--surface-3);
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  color: var(--text-muted);
 }
 
 .lf-events {
@@ -46,7 +60,7 @@
   display: flex;
   align-items: flex-start;
   gap: var(--space-xs);
-  padding: 4px 0;
+  padding: 5px 0;
   animation: fadeIn var(--transition-fast);
 }
 
@@ -56,6 +70,10 @@
   border-radius: 50%;
   flex-shrink: 0;
   margin-top: 4px;
+}
+
+.lf-dot-pulse {
+  animation: pulse 1.5s ease-in-out infinite;
 }
 
 .lf-text {
@@ -73,6 +91,11 @@
 .lf-event-round .lf-text {
   color: var(--gc-gold);
   font-weight: 600;
+}
+
+.lf-event-thinking .lf-text {
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 .lf-empty {

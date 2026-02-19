@@ -58,8 +58,11 @@ export default function CritiquePanel({ critiques, concepts }) {
                     <div className="cp-concept-creator">by {concept.persona_name}</div>
                   )}
                 </div>
-                <div className="cp-avg-score" style={{ color: scoreColor(avgScore) }}>
-                  {avgScore.toFixed(1)}
+                <div className="cp-score-group">
+                  <div className="cp-avg-score" style={{ color: scoreColor(avgScore) }}>
+                    {avgScore.toFixed(1)}
+                  </div>
+                  <div className="cp-score-sublabel">avg score</div>
                 </div>
               </div>
 
@@ -82,19 +85,39 @@ export default function CritiquePanel({ critiques, concepts }) {
                   </div>
 
                   {crit.strengths?.length > 0 && (
-                    <ul className="cp-list cp-strengths">
-                      {crit.strengths.map((s, j) => <li key={j}>{s}</li>)}
-                    </ul>
+                    <div className="cp-list-section">
+                      <div className="cp-list-label cp-label-strengths">Strengths</div>
+                      <ul className="cp-list cp-strengths">
+                        {crit.strengths.map((s, j) => <li key={j}>{s}</li>)}
+                      </ul>
+                    </div>
                   )}
 
                   {crit.weaknesses?.length > 0 && (
-                    <ul className="cp-list cp-weaknesses">
-                      {crit.weaknesses.map((w, j) => <li key={j}>{w}</li>)}
-                    </ul>
+                    <div className="cp-list-section">
+                      <div className="cp-list-label cp-label-weaknesses">Weaknesses</div>
+                      <ul className="cp-list cp-weaknesses">
+                        {crit.weaknesses.map((w, j) => <li key={j}>{w}</li>)}
+                      </ul>
+                    </div>
                   )}
 
                   {crit.fatal_flaw && crit.fatal_flaw.toUpperCase() !== 'NONE' && (
-                    <div className="cp-fatal">Fatal flaw: {crit.fatal_flaw}</div>
+                    <div className="cp-fatal">
+                      <span className="cp-fatal-label">Fatal Flaw:</span> {crit.fatal_flaw}
+                    </div>
+                  )}
+
+                  {crit.one_change && (
+                    <div className="cp-one-change">
+                      <span className="cp-one-change-label">One Change:</span> {crit.one_change}
+                    </div>
+                  )}
+
+                  {crit.would_champion && (
+                    <div className={`cp-champion ${crit.would_champion.toLowerCase().startsWith('yes') ? 'cp-champion-yes' : 'cp-champion-no'}`}>
+                      <span className="cp-champion-label">Would Champion:</span> {crit.would_champion}
+                    </div>
                   )}
                 </div>
               ))}

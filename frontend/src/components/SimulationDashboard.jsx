@@ -37,8 +37,14 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
   const [liveEvents, setLiveEvents] = useState([]);
   const liveEventsRef = useRef([]);
 
+  // Track how many event_log + transcript entries we've already synthesized
+  const lastEventLogLen = useRef(0);
+  const lastTranscriptLen = useRef(0);
+
   useEffect(() => {
     if (currentSimId) {
+      lastEventLogLen.current = 0;
+      lastTranscriptLen.current = 0;
       loadSimState(currentSimId);
       setLiveEvents([]);
       liveEventsRef.current = [];
@@ -46,6 +52,8 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
       setSimState(null);
       setLiveEvents([]);
       liveEventsRef.current = [];
+      lastEventLogLen.current = 0;
+      lastTranscriptLen.current = 0;
     }
   }, [currentSimId]);
 
@@ -71,6 +79,59 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
     try {
       const state = await api.getSimulationState(simId);
       setSimState(state);
+
+      // Synthesize live events from new event_log + transcript entries
+      const newLogEvents = (state.event_log || []).slice(lastEventLogLen.current);
+      const newTranscript = (state.transcript_entries || []).slice(lastTranscriptLen.current);
+
+      if (newLogEvents.length > 0 || newTranscript.length > 0) {
+        const synthesized = [];
+
+        for (const entry of newLogEvents) {
+          if (entry.type === 'round_start') {
+            synthesized.push({ type: 'stage_start', stage: 1, stage_name: 'creation', round: entry.round });
+          } else if (entry.type === 'round_complete') {
+            synthesized.push({ type: 'round_complete', round: entry.round, concepts_surviving: entry.concepts_active });
+          } else if (entry.type === 'quality_gate') {
+            synthesized.push({ type: 'stage_start', stage: 0, stage_name: 'quality gate', round: entry.round });
+          }
+        }
+
+        for (const entry of newTranscript) {
+          if (entry.stage_name === 'creation' && entry.concepts) {
+            for (const c of entry.concepts) {
+              synthesized.push({
+                type: 'participant_response',
+                persona_name: c.persona,
+                persona_id: '',
+                stage_name: 'creation',
+                extra: [c.name],
+              });
+            }
+          } else if (entry.stage_name === 'critique' && entry.critiques_count) {
+            synthesized.push({
+              type: 'stage_complete',
+              stage_name: 'critique',
+              round: entry.round,
+            });
+          } else if (entry.stage_name === 'synthesis' && entry.direction) {
+            synthesized.push({
+              type: 'stage_complete',
+              stage_name: 'synthesis',
+              round: entry.round,
+            });
+          }
+        }
+
+        if (synthesized.length > 0) {
+          liveEventsRef.current = [...liveEventsRef.current, ...synthesized].slice(-100);
+          setLiveEvents([...liveEventsRef.current]);
+        }
+
+        lastEventLogLen.current = (state.event_log || []).length;
+        lastTranscriptLen.current = (state.transcript_entries || []).length;
+      }
+
       if (!selectedRound && state.current_round > 0) {
         setSelectedRound(state.current_round);
       }
@@ -196,44 +257,56 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
       <div className="dashboard-content">
         {activeView === 'concepts' && (
           <div className="dashboard-concepts dashboard-view-animate">
-            <h3 className="dashboard-section-title">
-              Active Concepts <span className="dashboard-section-count">{activeConcepts.length}</span>
-            </h3>
-            {simState.status === 'failed' && errorMessage ? (
+            {/* Live Activity Panel — always visible when simulation is running */}
+            {simState.status === 'running' && (
+              <div className="dashboard-activity-panel">
+                <ChamberAnimation
+                  participants={simState.config?.participants || {}}
+                  currentStage={simState.current_stage_name || 'creation'}
+                  currentRound={simState.current_round || 1}
+                  activeParticipants={
+                    liveEvents
+                      .filter(e => e.type === 'participant_thinking')
+                      .map(e => e.persona_id)
+                  }
+                  recentEvents={liveEvents}
+                  participantColors={participantColors}
+                />
+                <LiveFeed events={liveEvents} participantColors={participantColors} />
+              </div>
+            )}
+
+            {simState.status === 'failed' && errorMessage && (
               <div className="dashboard-error-block">
                 <IconError size={32} />
                 <div className="dashboard-error-title">Simulation Failed</div>
                 <div className="dashboard-error-message">{errorMessage}</div>
               </div>
-            ) : activeConcepts.length === 0 && simState.status === 'running' ? (
-              <ChamberAnimation
-                participants={simState.config?.participants || {}}
-                currentStage={simState.current_stage_name || 'creation'}
-                currentRound={simState.current_round || 1}
-                activeParticipants={
-                  liveEvents
-                    .filter(e => e.type === 'participant_thinking')
-                    .map(e => e.persona_id)
-                }
-                recentEvents={liveEvents}
-                participantColors={participantColors}
-              />
-            ) : activeConcepts.length === 0 ? (
+            )}
+
+            <h3 className="dashboard-section-title">
+              Active Concepts <span className="dashboard-section-count">{activeConcepts.length}</span>
+            </h3>
+
+            {activeConcepts.length === 0 && simState.status !== 'running' && simState.status !== 'failed' ? (
               <div className="dashboard-empty">
                 <IconSpark size={32} className="dashboard-empty-icon" />
                 <div className="dashboard-empty-text">No active concepts</div>
                 <div className="dashboard-empty-hint">Start a new simulation to begin</div>
               </div>
+            ) : activeConcepts.length === 0 && simState.status === 'running' ? (
+              <div className="dashboard-empty">
+                <div className="gc-spinner" style={{ width: 28, height: 28 }} />
+                <div className="dashboard-empty-text">Generating concepts...</div>
+                <div className="dashboard-empty-hint">
+                  Round {simState.current_round} — {simState.current_stage_name || 'working'}
+                </div>
+              </div>
             ) : (
-              activeConcepts.map(concept => (
-                <ConceptCard key={concept.id} concept={concept} showDetails />
-              ))
-            )}
-
-            {/* Live Feed — shown when simulation is running */}
-            {simState.status === 'running' && liveEvents.length > 0 && (
-              <div style={{ marginTop: 'var(--space-md)' }}>
-                <LiveFeed events={liveEvents} participantColors={participantColors} />
+              <div className="dashboard-concepts-grid">
+                {activeConcepts.map(concept => (
+                  <ConceptCard key={concept.id} concept={concept} showDetails />
+                ))}
               </div>
             )}
 
@@ -242,9 +315,11 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
                 <h3 className="dashboard-section-title dashboard-section-eliminated">
                   Eliminated <span className="dashboard-section-count">{eliminatedConcepts.length}</span>
                 </h3>
-                {eliminatedConcepts.map(concept => (
-                  <ConceptCard key={concept.id} concept={concept} />
-                ))}
+                <div className="dashboard-concepts-grid">
+                  {eliminatedConcepts.map(concept => (
+                    <ConceptCard key={concept.id} concept={concept} />
+                  ))}
+                </div>
               </>
             )}
           </div>

@@ -230,6 +230,22 @@
   border-radius: var(--radius-full);
 }
 
+/* ── Activity Panel (running simulation) ── */
+.dashboard-activity-panel {
+  margin-bottom: var(--space-md);
+  border: 1px solid rgba(0, 217, 255, 0.15);
+  border-radius: var(--radius-md);
+  background: rgba(0, 217, 255, 0.03);
+  overflow: hidden;
+}
+
+/* ── Concepts Grid ── */
+.dashboard-concepts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
 /* ── Direction View ── */
 .dashboard-direction-round {
   margin-bottom: var(--space-md);

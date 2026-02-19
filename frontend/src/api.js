@@ -315,7 +315,10 @@ export const api = {
       method: 'POST',
       body: formData,
     });
-    if (!response.ok) throw new Error('Failed to upload reference file');
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({}));
+      throw new Error(errBody.detail || 'Failed to upload reference file');
+    }
     return response.json();
   },
 

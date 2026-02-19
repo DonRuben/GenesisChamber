@@ -119,8 +119,9 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
   const [devilsAdvocateActive, setDevilsAdvocateActive] = useState(false);
   // Soul info card
   const [infoSoul, setInfoSoul] = useState(null);
-  // Reference file uploads (HTML/ZIP)
+  // Reference file uploads
   const [referenceFiles, setReferenceFiles] = useState([]);
+  const [uploadError, setUploadError] = useState(null);
   const refFileInputRef = useRef(null);
   // Soul upload
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -722,11 +723,11 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
           )}
         </section>
 
-        {/* Reference Files (HTML/ZIP) */}
+        {/* Reference Files — images, HTML, text, PDF, ZIP */}
         <section className="launcher-section">
           <label className="gc-label">
             Reference Files
-            <HelpTooltip text="Upload HTML or ZIP files as reference material. ZIP files containing websites will be automatically extracted and can be previewed." position="right" />
+            <HelpTooltip text="Upload reference material: images (.png, .jpg, .gif, .svg), text files (.txt, .md, .html), PDFs, or ZIP archives. Text is extracted for LLM context. Images are stored as visual reference." position="right" />
           </label>
           <div className="ref-upload-area">
             <button
@@ -735,29 +736,48 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
               onClick={() => refFileInputRef.current?.click()}
             >
               <IconUpload size={12} />
-              Upload HTML / ZIP
+              Upload Reference File
             </button>
             <input
               ref={refFileInputRef}
               type="file"
-              accept=".html,.htm,.zip"
+              accept=".html,.htm,.zip,.png,.jpg,.jpeg,.gif,.svg,.webp,.pdf,.txt,.md,.css,.js,.json"
               style={{ display: 'none' }}
               onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
+                setUploadError(null);
                 try {
                   const result = await api.uploadReference(file);
                   setReferenceFiles(prev => [...prev, result]);
                 } catch (err) {
                   console.error('Failed to upload reference file:', err);
+                  setUploadError(err.message || 'Upload failed. Try a different file.');
                 }
                 e.target.value = '';
               }}
             />
+            {uploadError && (
+              <div className="ref-upload-error">
+                {uploadError}
+                <button
+                  className="ref-upload-error-dismiss"
+                  type="button"
+                  onClick={() => setUploadError(null)}
+                >&times;</button>
+              </div>
+            )}
             {referenceFiles.length > 0 && (
               <div className="ref-file-list">
                 {referenceFiles.map(rf => (
                   <div key={rf.id} className="ref-file-badge">
+                    {rf.type === 'image' && rf.files?.[0] && (
+                      <img
+                        src={api.getUploadUrl(rf.id, rf.files[0])}
+                        alt={rf.filename}
+                        className="ref-file-thumbnail"
+                      />
+                    )}
                     <span className="brief-file-badge">{rf.filename || rf.type}</span>
                     <button
                       className="ref-file-remove"
@@ -770,10 +790,10 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
                 ))}
               </div>
             )}
-            {referenceFiles.some(rf => rf.type === 'html' || rf.files?.includes('index.html')) && (
+            {referenceFiles.some(rf => rf.files?.includes('index.html')) && (
               <div className="ref-preview">
                 <iframe
-                  src={api.getUploadUrl(referenceFiles.find(rf => rf.type === 'html' || rf.files?.includes('index.html')).id, 'index.html')}
+                  src={api.getUploadUrl(referenceFiles.find(rf => rf.files?.includes('index.html')).id, 'index.html')}
                   title="Reference preview"
                   sandbox="allow-scripts allow-same-origin"
                   className="ref-iframe"

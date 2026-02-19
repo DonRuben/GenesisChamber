@@ -102,9 +102,10 @@ function App() {
     }
   }, [mode, backendStatus]);
 
-  // Load conversation details when selected
+  // Load conversation details when selected (but NOT during active message send —
+  // the optimistic state with user + assistant skeleton must not be overwritten)
   useEffect(() => {
-    if (currentConversationId) {
+    if (currentConversationId && !isLoading) {
       loadConversation(currentConversationId);
     }
   }, [currentConversationId]);
@@ -183,56 +184,37 @@ function App() {
         messages: [...prev.messages, assistantMessage],
       }));
 
+      // Helper: safely update the last assistant message in conversation state
+      const updateLastAssistant = (updater) => {
+        setCurrentConversation((prev) => {
+          if (!prev?.messages?.length) return prev;
+          const messages = [...prev.messages];
+          const lastMsg = messages[messages.length - 1];
+          if (!lastMsg || lastMsg.role === 'user') return prev; // guard against race
+          updater(lastMsg);
+          return { ...prev, messages };
+        });
+      };
+
       await api.sendMessageStream(convId, content, (eventType, event) => {
         switch (eventType) {
           case 'stage1_start':
-            setCurrentConversation((prev) => {
-              const messages = [...prev.messages];
-              messages[messages.length - 1].loading.stage1 = true;
-              return { ...prev, messages };
-            });
+            updateLastAssistant((msg) => { if (msg.loading) msg.loading.stage1 = true; });
             break;
           case 'stage1_complete':
-            setCurrentConversation((prev) => {
-              const messages = [...prev.messages];
-              const lastMsg = messages[messages.length - 1];
-              lastMsg.stage1 = event.data;
-              lastMsg.loading.stage1 = false;
-              return { ...prev, messages };
-            });
+            updateLastAssistant((msg) => { msg.stage1 = event.data; if (msg.loading) msg.loading.stage1 = false; });
             break;
           case 'stage2_start':
-            setCurrentConversation((prev) => {
-              const messages = [...prev.messages];
-              messages[messages.length - 1].loading.stage2 = true;
-              return { ...prev, messages };
-            });
+            updateLastAssistant((msg) => { if (msg.loading) msg.loading.stage2 = true; });
             break;
           case 'stage2_complete':
-            setCurrentConversation((prev) => {
-              const messages = [...prev.messages];
-              const lastMsg = messages[messages.length - 1];
-              lastMsg.stage2 = event.data;
-              lastMsg.metadata = event.metadata;
-              lastMsg.loading.stage2 = false;
-              return { ...prev, messages };
-            });
+            updateLastAssistant((msg) => { msg.stage2 = event.data; msg.metadata = event.metadata; if (msg.loading) msg.loading.stage2 = false; });
             break;
           case 'stage3_start':
-            setCurrentConversation((prev) => {
-              const messages = [...prev.messages];
-              messages[messages.length - 1].loading.stage3 = true;
-              return { ...prev, messages };
-            });
+            updateLastAssistant((msg) => { if (msg.loading) msg.loading.stage3 = true; });
             break;
           case 'stage3_complete':
-            setCurrentConversation((prev) => {
-              const messages = [...prev.messages];
-              const lastMsg = messages[messages.length - 1];
-              lastMsg.stage3 = event.data;
-              lastMsg.loading.stage3 = false;
-              return { ...prev, messages };
-            });
+            updateLastAssistant((msg) => { msg.stage3 = event.data; if (msg.loading) msg.loading.stage3 = false; });
             break;
           case 'title_complete':
             loadConversations();
