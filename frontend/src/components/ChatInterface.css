@@ -42,8 +42,8 @@
 
 .empty-state p {
   margin: 0 0 var(--space-lg) 0;
-  font-family: var(--font-body);
-  font-size: 16px;
+  font-family: var(--font-data);
+  font-size: 15px;
   max-width: 500px;
   line-height: 1.5;
 }
@@ -181,7 +181,7 @@
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-size: 15px;
-  font-family: var(--font-body);
+  font-family: var(--font-data);
   line-height: 1.5;
   outline: none;
   resize: vertical;

@@ -120,9 +120,9 @@
 }
 
 .md-direction-text {
-  font-family: var(--font-body);
+  font-family: var(--font-data);
   font-size: 14px;
-  line-height: 1.7;
+  line-height: 1.6;
   color: var(--text-primary);
   margin: 0;
 }
@@ -134,7 +134,7 @@
   background: rgba(0, 217, 255, 0.06);
   border-radius: var(--radius-md);
   border: 1px solid rgba(0, 217, 255, 0.2);
-  font-family: var(--font-caption);
+  font-family: var(--font-data);
   font-style: italic;
   font-size: 14px;
   line-height: 1.6;
