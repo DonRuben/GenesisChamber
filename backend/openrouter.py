@@ -15,25 +15,37 @@ def _extract_response(message: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def get_reasoning_config(model: str) -> Dict[str, Any]:
-    """Get the appropriate reasoning config for a model.
+def get_reasoning_config(model: str, thinking_mode: str = "thinking") -> Dict[str, Any]:
+    """Get the appropriate reasoning config for a model and thinking tier.
 
-    - Claude 4.6 (Opus/Sonnet): adaptive thinking (no budget, most powerful)
-    - Claude 4.5 (Opus/Sonnet): effort-based high
-    - GPT-5.2 / GPT-5.1: effort-based high (OpenAI reasoning)
-    - Gemini 3 Pro / 2.5 Pro: effort-based high (Google thinking)
-    - Grok 4: effort-based high (xAI reasoning)
-    - Others: effort-based medium
+    Tiers:
+      - "off": no reasoning (returns empty dict)
+      - "thinking": standard extended reasoning
+      - "deep": maximum reasoning with higher budgets
+
+    Models:
+      - Claude 4.6 (Opus/Sonnet): adaptive thinking (no budget, most powerful)
+      - Claude 4.5 (Opus/Sonnet): effort-based high
+      - GPT-5.2 / GPT-5.1: effort-based high (OpenAI reasoning)
+      - Gemini 3 Pro / 2.5 Pro: effort-based high (Google thinking)
+      - Grok 4: effort-based high (xAI reasoning + native X.com search)
+      - Others: effort-based medium
     """
+    if thinking_mode == "off":
+        return {}
+
     model_lower = model.lower()
     # Claude 4.6 — adaptive thinking (most powerful, no budget needed)
     if any(s in model_lower for s in ('claude-opus-4.6', 'claude-sonnet-4.6',
                                        'claude-opus-4-6', 'claude-sonnet-4-6')):
         return {"exclude": False}
-    # Claude 4.5 — effort high
+    # Claude 4.5 — effort high; deep mode adds explicit budget
     elif any(s in model_lower for s in ('claude-opus-4.5', 'claude-sonnet-4.5',
                                          'claude-opus-4-5', 'claude-sonnet-4-5')):
-        return {"effort": "high", "exclude": False}
+        config = {"effort": "high", "exclude": False}
+        if thinking_mode == "deep":
+            config["max_tokens"] = 32000
+        return config
     # GPT-5.x — effort high
     elif any(s in model_lower for s in ('gpt-5.2', 'gpt-5.1', 'gpt-5')):
         return {"effort": "high", "exclude": False}
@@ -44,7 +56,8 @@ def get_reasoning_config(model: str) -> Dict[str, Any]:
     elif 'grok-4' in model_lower or 'grok-3' in model_lower:
         return {"effort": "high", "exclude": False}
     else:
-        return {"effort": "medium", "exclude": False}
+        effort = "high" if thinking_mode == "deep" else "medium"
+        return {"effort": effort, "exclude": False}
 
 
 async def query_model(
@@ -136,6 +149,7 @@ async def query_with_soul(
     timeout: float = 180.0,
     reasoning: Optional[Dict[str, Any]] = None,
     plugins: Optional[List[Dict[str, Any]]] = None,
+    thinking_mode: str = "off",
 ) -> Optional[Dict[str, Any]]:
     """
     Query a model with a system prompt for soul injection.
@@ -149,6 +163,7 @@ async def query_with_soul(
         timeout: Request timeout in seconds (longer for soul-loaded prompts)
         reasoning: Optional reasoning config for extended thinking
         plugins: Optional plugins list for web search etc.
+        thinking_mode: "off", "thinking", or "deep" — controls token budget scaling
 
     Returns:
         Response dict with 'content', 'reasoning', 'reasoning_details', 'annotations', or None
@@ -163,9 +178,11 @@ async def query_with_soul(
         {"role": "user", "content": user_prompt},
     ]
 
-    # When thinking is enabled, increase max_tokens to leave room for reasoning + output
+    # Scale max_tokens based on thinking mode
     effective_max_tokens = max_tokens
-    if reasoning:
+    if thinking_mode == "deep" and reasoning:
+        effective_max_tokens = min(max(max_tokens * 3, 16000), 32000)
+    elif reasoning:
         effective_max_tokens = min(max(max_tokens * 2, 8000), 16000)
 
     payload = {
@@ -205,7 +222,7 @@ async def query_with_soul_parallel(
 
     Args:
         queries: List of dicts with keys: model, system_prompt, user_prompt, temperature, max_tokens,
-                 and optional: reasoning, plugins
+                 and optional: reasoning, plugins, thinking_mode
 
     Returns:
         List of response dicts (or None for failures), in same order as queries
@@ -221,6 +238,7 @@ async def query_with_soul_parallel(
             max_tokens=q.get("max_tokens", 2000),
             reasoning=q.get("reasoning"),
             plugins=q.get("plugins"),
+            thinking_mode=q.get("thinking_mode", "off"),
         )
         for q in queries
     ]
