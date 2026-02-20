@@ -55,15 +55,55 @@ export default function Stage1({ responses }) {
     <span className="s1-word-count">{wordCounts[index].toLocaleString()} words</span>
   );
 
+  const renderThinking = (resp) => {
+    const reasoning = resp.reasoning || resp.reasoning_details;
+    if (!reasoning) return null;
+    const text = typeof reasoning === 'string' ? reasoning : JSON.stringify(reasoning, null, 2);
+    return (
+      <details className="thinking-block">
+        <summary className="thinking-summary">
+          <span className="thinking-icon">{'\uD83E\uDDE0'}</span>
+          <span>Thinking Process</span>
+        </summary>
+        <div className="thinking-content">
+          <ReactMarkdown>{text}</ReactMarkdown>
+        </div>
+      </details>
+    );
+  };
+
+  const renderCitations = (resp) => {
+    const annotations = resp.annotations;
+    if (!annotations || annotations.length === 0) return null;
+    const urlAnnotations = annotations.filter(a => a.type === 'url_citation' || a.url);
+    if (urlAnnotations.length === 0) return null;
+    return (
+      <div className="citation-block">
+        <span className="citation-label">{'\uD83C\uDF10'} Sources</span>
+        <ul className="citation-list">
+          {urlAnnotations.map((a, i) => (
+            <li key={i}>
+              <a href={a.url || a.href} target="_blank" rel="noopener noreferrer">
+                {a.title || a.url || a.href}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
   const renderResponsePanel = (resp, index) => (
     <div className="s1-response-panel" key={index}>
       <div className="s1-response-header">
         {renderModelBadge(resp, index)}
         {renderWordCount(index)}
       </div>
+      {renderThinking(resp)}
       <div className="s1-response-body markdown-content">
         <ReactMarkdown>{resp.response}</ReactMarkdown>
       </div>
+      {renderCitations(resp)}
     </div>
   );
 

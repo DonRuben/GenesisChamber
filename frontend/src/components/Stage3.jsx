@@ -61,9 +61,46 @@ export default function Stage3({ finalResponse, responseCount }) {
           </div>
         </div>
 
+        {/* Thinking block */}
+        {(finalResponse.reasoning || finalResponse.reasoning_details) && (
+          <details className="thinking-block">
+            <summary className="thinking-summary">
+              <span className="thinking-icon">{'\uD83E\uDDE0'}</span>
+              <span>Thinking Process</span>
+            </summary>
+            <div className="thinking-content">
+              <ReactMarkdown>
+                {typeof (finalResponse.reasoning || finalResponse.reasoning_details) === 'string'
+                  ? (finalResponse.reasoning || finalResponse.reasoning_details)
+                  : JSON.stringify(finalResponse.reasoning || finalResponse.reasoning_details, null, 2)}
+              </ReactMarkdown>
+            </div>
+          </details>
+        )}
+
         <div className="s3-verdict-body markdown-content">
           <ReactMarkdown>{finalResponse.response}</ReactMarkdown>
         </div>
+
+        {/* Web citations */}
+        {finalResponse.annotations && finalResponse.annotations.length > 0 && (() => {
+          const urlAnnotations = finalResponse.annotations.filter(a => a.type === 'url_citation' || a.url);
+          if (urlAnnotations.length === 0) return null;
+          return (
+            <div className="citation-block">
+              <span className="citation-label">{'\uD83C\uDF10'} Sources</span>
+              <ul className="citation-list">
+                {urlAnnotations.map((a, i) => (
+                  <li key={i}>
+                    <a href={a.url || a.href} target="_blank" rel="noopener noreferrer">
+                      {a.title || a.url || a.href}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })()}
 
         <div className="s3-verdict-word-count">
           {wordCount.toLocaleString()} words

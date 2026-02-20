@@ -227,21 +227,27 @@ class GenesisRound:
         # Helper to emit stage_start events
         async def _emit_stage_start(stage_num, stage_name, participants=None):
             if on_stage_start:
-                await _maybe_await(on_stage_start, stage_num, stage_name, participants or [])
+                try:
+                    await _maybe_await(on_stage_start, stage_num, stage_name, participants or [])
+                except Exception as e:
+                    print(f"[SimWarn] stage_start callback error (stage {stage_num}): {e}")
 
         # Stage 1: Creation
         participant_ids = list(self.config.participants.keys())
+        print(f"[Sim] R{self.round_num} Stage 1 — Creation starting with {len(participant_ids)} participants: {participant_ids}")
         await _emit_stage_start(1, "creation", participant_ids)
         stage1 = await self._stage_creation(on_participant_event=on_participant_event)
         self.stage_results[1] = stage1
         round_result.stages[1] = stage1
         if stage1.outputs:
             new_concepts = stage1.outputs
+        print(f"[Sim] R{self.round_num} Stage 1 complete — {len(new_concepts)} concepts created")
         if on_stage_complete:
             await _maybe_await(on_stage_complete, 1, "creation", stage1)
 
         # Stage 2: Critique
         concepts_to_critique = new_concepts if new_concepts else self.active_concepts
+        print(f"[Sim] R{self.round_num} Stage 2 — Critique starting, {len(concepts_to_critique)} concepts to critique")
         await _emit_stage_start(2, "critique", participant_ids)
         stage2 = await self._stage_critique(concepts_to_critique, on_participant_event=on_participant_event)
         self.stage_results[2] = stage2
@@ -337,7 +343,17 @@ class GenesisRound:
                 await _maybe_await(on_participant_event, "thinking", pid, pconfig.display_name, "creation")
 
         # Execute in parallel
-        responses = await query_with_soul_parallel(queries)
+        print(f"[Sim] Stage 1 — Sending {len(queries)} queries to OpenRouter...")
+        for i, q in enumerate(queries):
+            print(f"  [{i+1}] model={q['model']} max_tokens={q.get('max_tokens', 2000)} reasoning={'yes' if q.get('reasoning') else 'no'} web={'yes' if q.get('plugins') else 'no'}")
+        try:
+            responses = await query_with_soul_parallel(queries)
+            print(f"[Sim] Stage 1 — Got {len(responses)} responses, {sum(1 for r in responses if r)} successful")
+        except Exception as e:
+            print(f"[SimError] Stage 1 — query_with_soul_parallel failed: {e}")
+            import traceback
+            traceback.print_exc()
+            responses = [None] * len(queries)
 
         # Parse responses into concepts
         all_concepts = []
@@ -720,9 +736,12 @@ class GenesisSimulation:
         """
         self.state.status = "running"
         active_concepts: List[Concept] = []
+        print(f"[Sim] Starting simulation {self.sim_id} — {self.config.rounds} rounds, "
+              f"{len(self.config.participants)} participants")
 
         for round_num in range(1, self.config.rounds + 1):
             self.state.current_round = round_num
+            print(f"[Sim] === Round {round_num}/{self.config.rounds} starting ===")
             self._log_event("round_start", {"round": round_num,
                                              "mode": ROUND_MODES.get(round_num, "unknown")})
 
@@ -901,6 +920,9 @@ class GenesisSimulation:
 
 async def _maybe_await(fn, *args):
     """Call fn with args, awaiting if it's a coroutine."""
-    result = fn(*args)
-    if asyncio.iscoroutine(result):
-        await result
+    try:
+        result = fn(*args)
+        if asyncio.iscoroutine(result):
+            await result
+    except Exception as e:
+        print(f"[SimWarn] _maybe_await callback error ({fn.__name__ if hasattr(fn, '__name__') else fn}): {e}")
