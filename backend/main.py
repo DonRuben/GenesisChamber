@@ -74,6 +74,8 @@ class SendMessageRequest(BaseModel):
     content: str
     models: Optional[List[str]] = None
     chairman_model: Optional[str] = None
+    enable_thinking: bool = False
+    enable_web_search: bool = False
 
 
 class RenameRequest(BaseModel):
@@ -201,18 +203,28 @@ async def send_message_stream(conversation_id: str, request: SendMessageRequest)
 
             # Stage 1: Collect responses
             yield f"data: {json.dumps({'type': 'stage1_start'})}\n\n"
-            stage1_results = await stage1_collect_responses(request.content, models=request.models)
+            stage1_results = await stage1_collect_responses(
+                request.content, models=request.models,
+                enable_thinking=request.enable_thinking,
+                enable_web_search=request.enable_web_search)
             yield f"data: {json.dumps({'type': 'stage1_complete', 'data': stage1_results})}\n\n"
 
             # Stage 2: Collect rankings
             yield f"data: {json.dumps({'type': 'stage2_start'})}\n\n"
-            stage2_results, label_to_model = await stage2_collect_rankings(request.content, stage1_results, models=request.models)
+            stage2_results, label_to_model = await stage2_collect_rankings(
+                request.content, stage1_results, models=request.models,
+                enable_thinking=request.enable_thinking,
+                enable_web_search=request.enable_web_search)
             aggregate_rankings = calculate_aggregate_rankings(stage2_results, label_to_model)
             yield f"data: {json.dumps({'type': 'stage2_complete', 'data': stage2_results, 'metadata': {'label_to_model': label_to_model, 'aggregate_rankings': aggregate_rankings}})}\n\n"
 
             # Stage 3: Synthesize final answer
             yield f"data: {json.dumps({'type': 'stage3_start'})}\n\n"
-            stage3_result = await stage3_synthesize_final(request.content, stage1_results, stage2_results, chairman_model=request.chairman_model)
+            stage3_result = await stage3_synthesize_final(
+                request.content, stage1_results, stage2_results,
+                chairman_model=request.chairman_model,
+                enable_thinking=request.enable_thinking,
+                enable_web_search=request.enable_web_search)
             yield f"data: {json.dumps({'type': 'stage3_complete', 'data': stage3_result})}\n\n"
 
             # Wait for title generation if it was started

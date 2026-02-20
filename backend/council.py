@@ -1,11 +1,24 @@
 """3-stage LLM Council orchestration."""
 
-from typing import List, Dict, Any, Tuple
-from .openrouter import query_models_parallel, query_model
+from typing import List, Dict, Any, Optional, Tuple
+from .openrouter import query_models_parallel, query_model, get_reasoning_config
 from .config import COUNCIL_MODELS, CHAIRMAN_MODEL
 
 
-async def stage1_collect_responses(user_query: str, models: List[str] = None) -> List[Dict[str, Any]]:
+def _build_council_extras(enable_thinking: bool = False, enable_web_search: bool = False,
+                          model: str = "") -> dict:
+    """Build reasoning/plugins kwargs for council queries."""
+    kwargs = {}
+    if enable_thinking:
+        kwargs["reasoning"] = get_reasoning_config(model)
+    if enable_web_search:
+        kwargs["plugins"] = [{"id": "web", "max_results": 5}]
+    return kwargs
+
+
+async def stage1_collect_responses(user_query: str, models: List[str] = None,
+                                   enable_thinking: bool = False,
+                                   enable_web_search: bool = False) -> List[Dict[str, Any]]:
     """
     Stage 1: Collect individual responses from all council models.
 
@@ -19,17 +32,32 @@ async def stage1_collect_responses(user_query: str, models: List[str] = None) ->
     council_models = models or COUNCIL_MODELS
     messages = [{"role": "user", "content": user_query}]
 
+    # Build per-model extras (reasoning config differs by model)
+    reasoning = None
+    plugins = None
+    if enable_thinking:
+        # Use a generic config; query_model will apply it uniformly
+        reasoning = get_reasoning_config(council_models[0] if council_models else "")
+    if enable_web_search:
+        plugins = [{"id": "web", "max_results": 5}]
+
     # Query all models in parallel
-    responses = await query_models_parallel(council_models, messages)
+    responses = await query_models_parallel(council_models, messages,
+                                            reasoning=reasoning, plugins=plugins)
 
     # Format results
     stage1_results = []
     for model, response in responses.items():
-        if response is not None:  # Only include successful responses
-            stage1_results.append({
+        if response is not None:
+            result = {
                 "model": model,
-                "response": response.get('content', '')
-            })
+                "response": response.get('content', ''),
+            }
+            if response.get('reasoning'):
+                result['reasoning'] = response['reasoning']
+            if response.get('annotations'):
+                result['annotations'] = response['annotations']
+            stage1_results.append(result)
 
     return stage1_results
 
@@ -38,6 +66,8 @@ async def stage2_collect_rankings(
     user_query: str,
     stage1_results: List[Dict[str, Any]],
     models: List[str] = None,
+    enable_thinking: bool = False,
+    enable_web_search: bool = False,
 ) -> Tuple[List[Dict[str, Any]], Dict[str, str]]:
     """
     Stage 2: Each model ranks the anonymized responses.
@@ -98,8 +128,13 @@ Now provide your evaluation and ranking:"""
     council_models = models or COUNCIL_MODELS
     messages = [{"role": "user", "content": ranking_prompt}]
 
+    # Build extras
+    reasoning = get_reasoning_config(council_models[0]) if enable_thinking and council_models else None
+    plugins = [{"id": "web", "max_results": 5}] if enable_web_search else None
+
     # Get rankings from all council models in parallel
-    responses = await query_models_parallel(council_models, messages)
+    responses = await query_models_parallel(council_models, messages,
+                                            reasoning=reasoning, plugins=plugins)
 
     # Format results
     stage2_results = []
@@ -121,6 +156,8 @@ async def stage3_synthesize_final(
     stage1_results: List[Dict[str, Any]],
     stage2_results: List[Dict[str, Any]],
     chairman_model: str = None,
+    enable_thinking: bool = False,
+    enable_web_search: bool = False,
 ) -> Dict[str, Any]:
     """
     Stage 3: Chairman synthesizes final response.
@@ -165,19 +202,24 @@ Provide a clear, well-reasoned final answer that represents the council's collec
 
     # Query the chairman model
     chairman = chairman_model or CHAIRMAN_MODEL
-    response = await query_model(chairman, messages)
+    extras = _build_council_extras(enable_thinking, enable_web_search, chairman)
+    response = await query_model(chairman, messages, **extras)
 
     if response is None:
-        # Fallback if chairman fails
         return {
             "model": chairman,
             "response": "Error: Unable to generate final synthesis."
         }
 
-    return {
+    result = {
         "model": chairman,
-        "response": response.get('content', '')
+        "response": response.get('content', ''),
     }
+    if response.get('reasoning'):
+        result['reasoning'] = response['reasoning']
+    if response.get('annotations'):
+        result['annotations'] = response['annotations']
+    return result
 
 
 def parse_ranking_from_text(ranking_text: str) -> List[str]:
@@ -303,6 +345,8 @@ async def run_full_council(
     user_query: str,
     models: List[str] = None,
     chairman_model: str = None,
+    enable_thinking: bool = False,
+    enable_web_search: bool = False,
 ) -> Tuple[List, List, Dict, Dict]:
     """
     Run the complete 3-stage council process.
@@ -311,12 +355,16 @@ async def run_full_council(
         user_query: The user's question
         models: Optional list of model IDs (defaults to COUNCIL_MODELS)
         chairman_model: Optional chairman model ID (defaults to CHAIRMAN_MODEL)
+        enable_thinking: Enable extended thinking/reasoning
+        enable_web_search: Enable live web search
 
     Returns:
         Tuple of (stage1_results, stage2_results, stage3_result, metadata)
     """
     # Stage 1: Collect individual responses
-    stage1_results = await stage1_collect_responses(user_query, models=models)
+    stage1_results = await stage1_collect_responses(
+        user_query, models=models,
+        enable_thinking=enable_thinking, enable_web_search=enable_web_search)
 
     # If no models responded successfully, return error
     if not stage1_results:
@@ -326,7 +374,9 @@ async def run_full_council(
         }, {}
 
     # Stage 2: Collect rankings
-    stage2_results, label_to_model = await stage2_collect_rankings(user_query, stage1_results, models=models)
+    stage2_results, label_to_model = await stage2_collect_rankings(
+        user_query, stage1_results, models=models,
+        enable_thinking=enable_thinking, enable_web_search=enable_web_search)
 
     # Calculate aggregate rankings
     aggregate_rankings = calculate_aggregate_rankings(stage2_results, label_to_model)
@@ -337,6 +387,8 @@ async def run_full_council(
         stage1_results,
         stage2_results,
         chairman_model=chairman_model,
+        enable_thinking=enable_thinking,
+        enable_web_search=enable_web_search,
     )
 
     # Prepare metadata

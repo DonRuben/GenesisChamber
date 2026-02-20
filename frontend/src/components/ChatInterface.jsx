@@ -25,6 +25,8 @@ export default function ChatInterface({
   const [availableModels, setAvailableModels] = useState(null);
   const [councilModels, setCouncilModels] = useState(null); // null = use defaults
   const [chairmanModel, setChairmanModel] = useState(null); // null = use default
+  const [enableThinking, setEnableThinking] = useState(false);
+  const [enableWebSearch, setEnableWebSearch] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -61,6 +63,8 @@ export default function ChatInterface({
       const modelConfig = {};
       if (councilModels && councilModels.length > 0) modelConfig.models = councilModels;
       if (chairmanModel) modelConfig.chairmanModel = chairmanModel;
+      if (enableThinking) modelConfig.enableThinking = true;
+      if (enableWebSearch) modelConfig.enableWebSearch = true;
       onSendMessage(input, modelConfig);
       setInput('');
     }
@@ -161,6 +165,27 @@ export default function ChatInterface({
             ))}
           </select>
         </div>
+
+        <div className="ci-feature-toggles">
+          <label className="ci-feature-toggle">
+            <input
+              type="checkbox"
+              checked={enableThinking}
+              onChange={(e) => setEnableThinking(e.target.checked)}
+            />
+            <span className="ci-feature-label">Extended Thinking</span>
+            <span className="ci-feature-hint">Deep reasoning for Claude, GPT, Gemini, Grok</span>
+          </label>
+          <label className="ci-feature-toggle">
+            <input
+              type="checkbox"
+              checked={enableWebSearch}
+              onChange={(e) => setEnableWebSearch(e.target.checked)}
+            />
+            <span className="ci-feature-label">Web Search</span>
+            <span className="ci-feature-hint">Live internet access for all models</span>
+          </label>
+        </div>
       </div>
     );
   };
@@ -174,10 +199,12 @@ export default function ChatInterface({
             type="button"
             className={`ci-model-config-toggle ${showModelConfig ? 'active' : ''}`}
             onClick={() => setShowModelConfig(!showModelConfig)}
-            title="Configure council models"
+            title="Configure council models, thinking & web search"
           >
             <IconGear size={16} />
             {councilModels && <span className="ci-model-count">{selectedCount}</span>}
+            {enableThinking && <span className="ci-feature-badge" title="Extended Thinking ON">T</span>}
+            {enableWebSearch && <span className="ci-feature-badge ci-web-badge" title="Web Search ON">W</span>}
           </button>
           <textarea
             ref={inputRef}

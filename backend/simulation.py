@@ -12,8 +12,18 @@ from .models import (
     RoundResult, SimulationConfig, SimulationState, StageResult,
 )
 from .soul_engine import SoulEngine
-from .openrouter import query_with_soul, query_with_soul_parallel
+from .openrouter import query_with_soul, query_with_soul_parallel, get_reasoning_config
 from .config import ROUND_MODES, SIMULATION_OUTPUT_DIR
+
+
+def _build_query_extras(pconfig) -> dict:
+    """Build reasoning and plugins dict entries for a participant config."""
+    extras = {}
+    if pconfig.enable_thinking:
+        extras["reasoning"] = get_reasoning_config(pconfig.model)
+    if pconfig.enable_web_search:
+        extras["plugins"] = [{"id": "web", "max_results": 5}]
+    return extras
 
 
 # ---------------------------------------------------------------------------
@@ -309,13 +319,15 @@ class GenesisRound:
                 for c in self.active_concepts:
                     user_prompt += f"- {c.name}: {c.idea[:200]}\n"
 
-            queries.append({
+            query = {
                 "model": pconfig.model,
                 "system_prompt": system_prompt,
                 "user_prompt": user_prompt,
                 "temperature": pconfig.temperature,
                 "max_tokens": pconfig.max_tokens,
-            })
+                **_build_query_extras(pconfig),
+            }
+            queries.append(query)
             participant_ids.append(pid)
 
         # Emit "thinking" events for each participant
@@ -388,13 +400,15 @@ class GenesisRound:
             user_prompt += anonymized_text
             user_prompt += f"\nCritique ALL concepts from Concept A through Concept {last_label}."
 
-            queries.append({
+            query = {
                 "model": pconfig.model,
                 "system_prompt": system_prompt,
                 "user_prompt": user_prompt,
                 "temperature": max(0.3, pconfig.temperature - 0.2),
                 "max_tokens": pconfig.max_tokens,
-            })
+                **_build_query_extras(pconfig),
+            }
+            queries.append(query)
             participant_ids.append(pid)
 
         # Devil's Advocate: add adversarial critique query if enabled
@@ -412,13 +426,15 @@ class GenesisRound:
             da_prompt += f"\nApply the Devil's Advocate mandate to ALL concepts from Concept A through Concept {last_label}."
             da_prompt += "\nRemember: check for consensus patterns. If all other critics agree, invoke the Sanhedrin principle."
 
-            queries.append({
+            query = {
                 "model": da.model,
                 "system_prompt": da_system,
                 "user_prompt": da_prompt,
                 "temperature": da.temperature,
                 "max_tokens": da.max_tokens,
-            })
+                **_build_query_extras(da),
+            }
+            queries.append(query)
             participant_ids.append("devils-advocate")
 
         # Emit "thinking" events for each participant
@@ -497,12 +513,15 @@ class GenesisRound:
             context=self.config.brand_context,
         )
 
+        mod_extras = _build_query_extras(mod)
         mod_response = await query_with_soul(
             model=mod.model,
             system_prompt=mod_system,
             user_prompt=summary,
             temperature=mod.temperature,
             max_tokens=mod.max_tokens,
+            reasoning=mod_extras.get("reasoning"),
+            plugins=mod_extras.get("plugins"),
         )
 
         direction = None
@@ -562,13 +581,15 @@ class GenesisRound:
                 f"Revise your concept based on this feedback."
             )
 
-            queries.append({
+            query = {
                 "model": pconfig.model,
                 "system_prompt": system_prompt,
                 "user_prompt": user_prompt,
                 "temperature": pconfig.temperature,
                 "max_tokens": pconfig.max_tokens,
-            })
+                **_build_query_extras(pconfig),
+            }
+            queries.append(query)
             participant_ids.append(pid)
 
         responses = await query_with_soul_parallel(queries)
@@ -620,13 +641,15 @@ class GenesisRound:
                 f"- Visual: {concept.visual_direction}\n"
             )
 
-            queries.append({
+            query = {
                 "model": pconfig.model,
                 "system_prompt": system_prompt,
                 "user_prompt": user_prompt,
                 "temperature": pconfig.temperature,
                 "max_tokens": pconfig.max_tokens,
-            })
+                **_build_query_extras(pconfig),
+            }
+            queries.append(query)
             participant_ids.append(pid)
 
         responses = await query_with_soul_parallel(queries)

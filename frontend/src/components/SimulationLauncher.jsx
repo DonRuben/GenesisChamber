@@ -117,6 +117,9 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
   const [dualRoleActive, setDualRoleActive] = useState({ 'jony-ive': false });
   // Devil's Advocate (Advocatus Diaboli) — optional adversarial critic
   const [devilsAdvocateActive, setDevilsAdvocateActive] = useState(false);
+  // AI capabilities
+  const [enableThinking, setEnableThinking] = useState(false);
+  const [enableWebSearch, setEnableWebSearch] = useState(false);
   // Soul info card
   const [infoSoul, setInfoSoul] = useState(null);
   // Reference file uploads
@@ -321,6 +324,8 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
             role: 'participant',
             temperature: 0.7,
             max_tokens: 4000,
+            enable_thinking: enableThinking,
+            enable_web_search: enableWebSearch,
             color: soul.color,
           };
         }
@@ -337,6 +342,8 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
             role: 'participant',
             temperature: 0.5,
             max_tokens: 4000,
+            enable_thinking: enableThinking,
+            enable_web_search: enableWebSearch,
             color: iveSoul.color || '#9CA3AF',
           };
         }
@@ -359,6 +366,8 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
           role: 'moderator',
           temperature: 0.6,
           max_tokens: 4000,
+          enable_thinking: enableThinking,
+          enable_web_search: enableWebSearch,
           color: moderator?.color || '#6B7280',
         },
         evaluator: {
@@ -368,6 +377,8 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
           role: 'evaluator',
           temperature: 0.5,
           max_tokens: 4000,
+          enable_thinking: enableThinking,
+          enable_web_search: enableWebSearch,
           color: evaluator?.color || '#9CA3AF',
         },
         elimination_schedule: preset.elimination_schedule || {},
@@ -389,6 +400,8 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
             role: 'devils_advocate',
             temperature: 0.75,
             max_tokens: 4000,
+            enable_thinking: enableThinking,
+            enable_web_search: enableWebSearch,
             color: '#DC2626',
           },
         } : {}),
@@ -684,6 +697,37 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
                   compact
                 />
               )}
+            </div>
+          </div>
+
+          {/* AI Capabilities — Thinking + Web Search */}
+          <div className="ai-capabilities-section" style={{ marginTop: '16px' }}>
+            <div className="ai-cap-header">
+              <span className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)' }}>AI Capabilities</span>
+            </div>
+            <div className="ai-cap-toggles">
+              <label className="ai-cap-toggle">
+                <input
+                  type="checkbox"
+                  checked={enableThinking}
+                  onChange={(e) => setEnableThinking(e.target.checked)}
+                />
+                <div className="ai-cap-info">
+                  <span className="ai-cap-name">Extended Thinking</span>
+                  <span className="ai-cap-desc">Deep reasoning for Claude, GPT-5, Gemini, Grok</span>
+                </div>
+              </label>
+              <label className="ai-cap-toggle">
+                <input
+                  type="checkbox"
+                  checked={enableWebSearch}
+                  onChange={(e) => setEnableWebSearch(e.target.checked)}
+                />
+                <div className="ai-cap-info">
+                  <span className="ai-cap-name">Web Search</span>
+                  <span className="ai-cap-desc">Live internet access for all participants</span>
+                </div>
+              </label>
             </div>
           </div>
 
