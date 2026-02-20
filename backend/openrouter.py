@@ -138,6 +138,36 @@ async def query_models_parallel(
     return {model: response for model, response in zip(models, responses)}
 
 
+async def query_models_parallel_individual(
+    models: List[str],
+    messages: List[Dict[str, str]],
+    model_reasoning: Optional[Dict[str, Dict[str, Any]]] = None,
+    plugins: Optional[List[Dict[str, Any]]] = None,
+) -> Dict[str, Optional[Dict[str, Any]]]:
+    """
+    Query multiple models in parallel with per-model reasoning configs.
+
+    Args:
+        models: List of OpenRouter model identifiers
+        messages: List of message dicts to send to each model
+        model_reasoning: Dict mapping model ID to its reasoning config
+        plugins: Optional plugins list applied to all models
+
+    Returns:
+        Dict mapping model identifier to response dict (or None if failed)
+    """
+    import asyncio
+
+    tasks = [
+        query_model(model, messages,
+                    reasoning=model_reasoning.get(model) if model_reasoning else None,
+                    plugins=plugins)
+        for model in models
+    ]
+    responses = await asyncio.gather(*tasks)
+    return {model: response for model, response in zip(models, responses)}
+
+
 # --- Genesis Chamber additions ---
 
 async def query_with_soul(

@@ -119,6 +119,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
   const [devilsAdvocateActive, setDevilsAdvocateActive] = useState(false);
   // AI capabilities
   const [thinkingMode, setThinkingMode] = useState('off'); // 'off', 'thinking', 'deep'
+  const [thinkingOverrides, setThinkingOverrides] = useState({}); // per-participant overrides
   const [enableWebSearch, setEnableWebSearch] = useState(false);
   // Soul info card
   const [infoSoul, setInfoSoul] = useState(null);
@@ -268,6 +269,29 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
     setModelAssignments(prev => ({ ...prev, [id]: modelId }));
   }, []);
 
+  const handleThinkingModeChange = useCallback((newMode) => {
+    setThinkingMode(newMode);
+    setThinkingOverrides({}); // Reset per-participant overrides when global changes
+  }, []);
+
+  const handleThinkingOverride = useCallback((pid, mode) => {
+    setThinkingOverrides(prev => {
+      const next = { ...prev };
+      if (mode === thinkingMode) {
+        delete next[pid]; // Same as global = no override needed
+      } else {
+        next[pid] = mode;
+      }
+      return next;
+    });
+  }, [thinkingMode]);
+
+  const getEffectiveThinking = useCallback((pid) => {
+    return thinkingOverrides[pid] || thinkingMode;
+  }, [thinkingOverrides, thinkingMode]);
+
+  const hasThinkingOverrides = Object.keys(thinkingOverrides).length > 0;
+
   const scrollToSection = useCallback((key) => {
     sectionRefs[key]?.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     setActiveStep(key);
@@ -324,7 +348,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
             role: 'participant',
             temperature: 0.7,
             max_tokens: 4000,
-            thinking_mode: thinkingMode,
+            thinking_mode: getEffectiveThinking(pid),
             enable_web_search: enableWebSearch,
             color: soul.color,
           };
@@ -342,7 +366,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
             role: 'participant',
             temperature: 0.5,
             max_tokens: 4000,
-            thinking_mode: thinkingMode,
+            thinking_mode: getEffectiveThinking('jony-ive'),
             enable_web_search: enableWebSearch,
             color: iveSoul.color || '#9CA3AF',
           };
@@ -366,7 +390,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
           role: 'moderator',
           temperature: 0.6,
           max_tokens: 4000,
-          thinking_mode: thinkingMode,
+          thinking_mode: getEffectiveThinking('moderator'),
           enable_web_search: enableWebSearch,
           color: moderator?.color || '#6B7280',
         },
@@ -377,7 +401,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
           role: 'evaluator',
           temperature: 0.5,
           max_tokens: 4000,
-          thinking_mode: thinkingMode,
+          thinking_mode: getEffectiveThinking('evaluator'),
           enable_web_search: enableWebSearch,
           color: evaluator?.color || '#9CA3AF',
         },
@@ -400,7 +424,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
             role: 'devils_advocate',
             temperature: 0.75,
             max_tokens: 4000,
-            thinking_mode: thinkingMode,
+            thinking_mode: getEffectiveThinking('devils-advocate'),
             enable_web_search: enableWebSearch,
             color: '#DC2626',
           },
@@ -616,6 +640,17 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
                   compact
                 />
               )}
+              {thinkingMode !== 'off' && (
+                <select
+                  className="thinking-per-participant thinking-leadership"
+                  value={getEffectiveThinking('moderator')}
+                  onChange={(e) => handleThinkingOverride('moderator', e.target.value)}
+                >
+                  <option value="off">Thinking: Off</option>
+                  <option value="thinking">Thinking</option>
+                  <option value="deep">Deep Thinking</option>
+                </select>
+              )}
             </div>
 
             <div className="evaluator-header" style={{ marginTop: '12px' }}>
@@ -655,6 +690,17 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
                   models={availableModels}
                   compact
                 />
+              )}
+              {thinkingMode !== 'off' && (
+                <select
+                  className="thinking-per-participant thinking-leadership"
+                  value={getEffectiveThinking('evaluator')}
+                  onChange={(e) => handleThinkingOverride('evaluator', e.target.value)}
+                >
+                  <option value="off">Thinking: Off</option>
+                  <option value="thinking">Thinking</option>
+                  <option value="deep">Deep Thinking</option>
+                </select>
               )}
             </div>
 
@@ -697,6 +743,17 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
                   compact
                 />
               )}
+              {devilsAdvocateActive && thinkingMode !== 'off' && (
+                <select
+                  className="thinking-per-participant thinking-leadership"
+                  value={getEffectiveThinking('devils-advocate')}
+                  onChange={(e) => handleThinkingOverride('devils-advocate', e.target.value)}
+                >
+                  <option value="off">Thinking: Off</option>
+                  <option value="thinking">Thinking</option>
+                  <option value="deep">Deep Thinking</option>
+                </select>
+              )}
             </div>
           </div>
 
@@ -712,13 +769,22 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
                   <select
                     className="ai-cap-select"
                     value={thinkingMode}
-                    onChange={(e) => setThinkingMode(e.target.value)}
+                    onChange={(e) => handleThinkingModeChange(e.target.value)}
                   >
                     <option value="off">Off</option>
                     <option value="thinking">Thinking</option>
                     <option value="deep">Deep Thinking</option>
                   </select>
-                  <span className="ai-cap-desc">Reasoning for Claude, GPT-5, Gemini, Grok</span>
+                  <span className="ai-cap-desc">
+                    {thinkingMode !== 'off'
+                      ? 'Baseline for all. Fine-tune per participant in Model Assignment.'
+                      : 'Reasoning for Claude, GPT-5, Gemini, Grok'}
+                  </span>
+                  {hasThinkingOverrides && (
+                    <span className="ai-cap-desc ai-cap-override-count">
+                      {Object.keys(thinkingOverrides).length} override{Object.keys(thinkingOverrides).length !== 1 ? 's' : ''}
+                    </span>
+                  )}
                 </div>
               </div>
               <label className="ai-cap-toggle">
@@ -950,6 +1016,11 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
                         </span>
                       </div>
                       <span className="model-assign-name">{soul.name}</span>
+                      {thinkingOverrides[pid] && (
+                        <span className="thinking-override-badge">
+                          {thinkingOverrides[pid] === 'deep' ? 'Deep' : thinkingOverrides[pid] === 'thinking' ? 'Think' : 'Off'}
+                        </span>
+                      )}
                     </div>
                     <ModelSelector
                       value={modelAssignments[pid] || DEFAULT_MODELS[pid] || 'anthropic/claude-sonnet-4.6'}
@@ -957,6 +1028,17 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
                       models={availableModels}
                       compact
                     />
+                    {thinkingMode !== 'off' && (
+                      <select
+                        className="thinking-per-participant"
+                        value={getEffectiveThinking(pid)}
+                        onChange={(e) => handleThinkingOverride(pid, e.target.value)}
+                      >
+                        <option value="off">Thinking: Off</option>
+                        <option value="thinking">Thinking</option>
+                        <option value="deep">Deep Thinking</option>
+                      </select>
+                    )}
                   </div>
                 );
               })}

@@ -26,6 +26,7 @@ export default function ChatInterface({
   const [councilModels, setCouncilModels] = useState(null); // null = use defaults
   const [chairmanModel, setChairmanModel] = useState(null); // null = use default
   const [thinkingMode, setThinkingMode] = useState('off'); // 'off', 'thinking', 'deep'
+  const [modelThinkingOverrides, setModelThinkingOverrides] = useState({}); // per-model overrides
   const [enableWebSearch, setEnableWebSearch] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -65,6 +66,20 @@ export default function ChatInterface({
       if (chairmanModel) modelConfig.chairmanModel = chairmanModel;
       if (thinkingMode !== 'off') modelConfig.thinkingMode = thinkingMode;
       if (enableWebSearch) modelConfig.enableWebSearch = true;
+      // Build per-model thinking modes if there are overrides
+      if (hasThinkingOverrides || thinkingMode !== 'off') {
+        const activeModels = councilModels || availableModels?.models?.map(m => m.id) || [];
+        const modes = {};
+        let hasNonOff = false;
+        for (const mid of activeModels) {
+          const mode = modelThinkingOverrides[mid] || thinkingMode;
+          modes[mid] = mode;
+          if (mode !== 'off') hasNonOff = true;
+        }
+        if (hasNonOff && hasThinkingOverrides) {
+          modelConfig.modelThinkingModes = modes;
+        }
+      }
       onSendMessage(input, modelConfig);
       setInput('');
     }
@@ -105,7 +120,27 @@ export default function ChatInterface({
   const resetModels = () => {
     setCouncilModels(null);
     setChairmanModel(null);
+    setModelThinkingOverrides({});
   };
+
+  const handleThinkingModeChange = (newMode) => {
+    setThinkingMode(newMode);
+    setModelThinkingOverrides({}); // Reset per-model overrides when global changes
+  };
+
+  const handleModelThinkingOverride = (modelId, mode) => {
+    setModelThinkingOverrides(prev => {
+      const next = { ...prev };
+      if (mode === thinkingMode) {
+        delete next[modelId]; // Same as global = no override needed
+      } else {
+        next[modelId] = mode;
+      }
+      return next;
+    });
+  };
+
+  const hasThinkingOverrides = Object.keys(modelThinkingOverrides).length > 0;
 
   const selectedCount = councilModels ? councilModels.length : (availableModels?.models?.length || 0);
 
@@ -139,14 +174,28 @@ export default function ChatInterface({
                 {tierInfo.label || tier}
               </div>
               {models.map(model => (
-                <label key={model.id} className="ci-model-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={isModelSelected(model.id)}
-                    onChange={() => toggleModel(model.id)}
-                  />
-                  <span className="ci-model-name">{getDisplayName(model.id)}</span>
-                </label>
+                <div key={model.id} className="ci-model-row">
+                  <label className="ci-model-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={isModelSelected(model.id)}
+                      onChange={() => toggleModel(model.id)}
+                    />
+                    <span className="ci-model-name">{getDisplayName(model.id)}</span>
+                  </label>
+                  {thinkingMode !== 'off' && isModelSelected(model.id) && (
+                    <select
+                      className="ci-model-thinking-select"
+                      value={modelThinkingOverrides[model.id] || thinkingMode}
+                      onChange={(e) => handleModelThinkingOverride(model.id, e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <option value="off">Off</option>
+                      <option value="thinking">Think</option>
+                      <option value="deep">Deep</option>
+                    </select>
+                  )}
+                </div>
               ))}
             </div>
           );
@@ -172,13 +221,20 @@ export default function ChatInterface({
             <select
               className="ci-thinking-select"
               value={thinkingMode}
-              onChange={(e) => setThinkingMode(e.target.value)}
+              onChange={(e) => handleThinkingModeChange(e.target.value)}
             >
               <option value="off">Off</option>
               <option value="thinking">Thinking</option>
               <option value="deep">Deep Thinking</option>
             </select>
-            <span className="ci-feature-hint">Reasoning for Claude, GPT, Gemini, Grok</span>
+            <span className="ci-feature-hint">
+              {thinkingMode !== 'off' ? 'Baseline for all. Fine-tune per model above.' : 'Reasoning for Claude, GPT, Gemini, Grok'}
+            </span>
+            {hasThinkingOverrides && (
+              <span className="ci-feature-hint ci-override-count">
+                {Object.keys(modelThinkingOverrides).length} model{Object.keys(modelThinkingOverrides).length !== 1 ? 's' : ''} overridden
+              </span>
+            )}
           </div>
           <label className="ci-feature-toggle">
             <input
@@ -207,8 +263,9 @@ export default function ChatInterface({
           >
             <IconGear size={16} />
             {councilModels && <span className="ci-model-count">{selectedCount}</span>}
-            {thinkingMode === 'thinking' && <span className="ci-feature-badge" title="Thinking ON">T</span>}
-            {thinkingMode === 'deep' && <span className="ci-feature-badge ci-deep-badge" title="Deep Thinking ON">D</span>}
+            {thinkingMode === 'thinking' && !hasThinkingOverrides && <span className="ci-feature-badge" title="Thinking ON">T</span>}
+            {thinkingMode === 'deep' && !hasThinkingOverrides && <span className="ci-feature-badge ci-deep-badge" title="Deep Thinking ON">D</span>}
+            {thinkingMode !== 'off' && hasThinkingOverrides && <span className="ci-feature-badge ci-mixed-badge" title="Per-model thinking configured">T*</span>}
             {enableWebSearch && <span className="ci-feature-badge ci-web-badge" title="Web Search ON">W</span>}
           </button>
           <textarea
