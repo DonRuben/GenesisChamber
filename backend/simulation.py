@@ -12,8 +12,18 @@ from .models import (
     RoundResult, SimulationConfig, SimulationState, StageResult,
 )
 from .soul_engine import SoulEngine
-from .openrouter import query_with_soul, query_with_soul_parallel
+from .openrouter import query_with_soul, query_with_soul_parallel, get_reasoning_config
 from .config import ROUND_MODES, SIMULATION_OUTPUT_DIR
+
+
+def _build_query_extras(pconfig) -> dict:
+    """Build reasoning and plugins dict entries for a participant config."""
+    extras = {}
+    if pconfig.enable_thinking:
+        extras["reasoning"] = get_reasoning_config(pconfig.model)
+    if pconfig.enable_web_search:
+        extras["plugins"] = [{"id": "web", "max_results": 5}]
+    return extras
 
 
 # ---------------------------------------------------------------------------
@@ -217,21 +227,27 @@ class GenesisRound:
         # Helper to emit stage_start events
         async def _emit_stage_start(stage_num, stage_name, participants=None):
             if on_stage_start:
-                await _maybe_await(on_stage_start, stage_num, stage_name, participants or [])
+                try:
+                    await _maybe_await(on_stage_start, stage_num, stage_name, participants or [])
+                except Exception as e:
+                    print(f"[SimWarn] stage_start callback error (stage {stage_num}): {e}")
 
         # Stage 1: Creation
         participant_ids = list(self.config.participants.keys())
+        print(f"[Sim] R{self.round_num} Stage 1 — Creation starting with {len(participant_ids)} participants: {participant_ids}")
         await _emit_stage_start(1, "creation", participant_ids)
         stage1 = await self._stage_creation(on_participant_event=on_participant_event)
         self.stage_results[1] = stage1
         round_result.stages[1] = stage1
         if stage1.outputs:
             new_concepts = stage1.outputs
+        print(f"[Sim] R{self.round_num} Stage 1 complete — {len(new_concepts)} concepts created")
         if on_stage_complete:
             await _maybe_await(on_stage_complete, 1, "creation", stage1)
 
         # Stage 2: Critique
         concepts_to_critique = new_concepts if new_concepts else self.active_concepts
+        print(f"[Sim] R{self.round_num} Stage 2 — Critique starting, {len(concepts_to_critique)} concepts to critique")
         await _emit_stage_start(2, "critique", participant_ids)
         stage2 = await self._stage_critique(concepts_to_critique, on_participant_event=on_participant_event)
         self.stage_results[2] = stage2
@@ -309,13 +325,15 @@ class GenesisRound:
                 for c in self.active_concepts:
                     user_prompt += f"- {c.name}: {c.idea[:200]}\n"
 
-            queries.append({
+            query = {
                 "model": pconfig.model,
                 "system_prompt": system_prompt,
                 "user_prompt": user_prompt,
                 "temperature": pconfig.temperature,
                 "max_tokens": pconfig.max_tokens,
-            })
+                **_build_query_extras(pconfig),
+            }
+            queries.append(query)
             participant_ids.append(pid)
 
         # Emit "thinking" events for each participant
@@ -325,7 +343,17 @@ class GenesisRound:
                 await _maybe_await(on_participant_event, "thinking", pid, pconfig.display_name, "creation")
 
         # Execute in parallel
-        responses = await query_with_soul_parallel(queries)
+        print(f"[Sim] Stage 1 — Sending {len(queries)} queries to OpenRouter...")
+        for i, q in enumerate(queries):
+            print(f"  [{i+1}] model={q['model']} max_tokens={q.get('max_tokens', 2000)} reasoning={'yes' if q.get('reasoning') else 'no'} web={'yes' if q.get('plugins') else 'no'}")
+        try:
+            responses = await query_with_soul_parallel(queries)
+            print(f"[Sim] Stage 1 — Got {len(responses)} responses, {sum(1 for r in responses if r)} successful")
+        except Exception as e:
+            print(f"[SimError] Stage 1 — query_with_soul_parallel failed: {e}")
+            import traceback
+            traceback.print_exc()
+            responses = [None] * len(queries)
 
         # Parse responses into concepts
         all_concepts = []
@@ -388,13 +416,15 @@ class GenesisRound:
             user_prompt += anonymized_text
             user_prompt += f"\nCritique ALL concepts from Concept A through Concept {last_label}."
 
-            queries.append({
+            query = {
                 "model": pconfig.model,
                 "system_prompt": system_prompt,
                 "user_prompt": user_prompt,
                 "temperature": max(0.3, pconfig.temperature - 0.2),
                 "max_tokens": pconfig.max_tokens,
-            })
+                **_build_query_extras(pconfig),
+            }
+            queries.append(query)
             participant_ids.append(pid)
 
         # Devil's Advocate: add adversarial critique query if enabled
@@ -412,13 +442,15 @@ class GenesisRound:
             da_prompt += f"\nApply the Devil's Advocate mandate to ALL concepts from Concept A through Concept {last_label}."
             da_prompt += "\nRemember: check for consensus patterns. If all other critics agree, invoke the Sanhedrin principle."
 
-            queries.append({
+            query = {
                 "model": da.model,
                 "system_prompt": da_system,
                 "user_prompt": da_prompt,
                 "temperature": da.temperature,
                 "max_tokens": da.max_tokens,
-            })
+                **_build_query_extras(da),
+            }
+            queries.append(query)
             participant_ids.append("devils-advocate")
 
         # Emit "thinking" events for each participant
@@ -497,12 +529,15 @@ class GenesisRound:
             context=self.config.brand_context,
         )
 
+        mod_extras = _build_query_extras(mod)
         mod_response = await query_with_soul(
             model=mod.model,
             system_prompt=mod_system,
             user_prompt=summary,
             temperature=mod.temperature,
             max_tokens=mod.max_tokens,
+            reasoning=mod_extras.get("reasoning"),
+            plugins=mod_extras.get("plugins"),
         )
 
         direction = None
@@ -562,13 +597,15 @@ class GenesisRound:
                 f"Revise your concept based on this feedback."
             )
 
-            queries.append({
+            query = {
                 "model": pconfig.model,
                 "system_prompt": system_prompt,
                 "user_prompt": user_prompt,
                 "temperature": pconfig.temperature,
                 "max_tokens": pconfig.max_tokens,
-            })
+                **_build_query_extras(pconfig),
+            }
+            queries.append(query)
             participant_ids.append(pid)
 
         responses = await query_with_soul_parallel(queries)
@@ -620,13 +657,15 @@ class GenesisRound:
                 f"- Visual: {concept.visual_direction}\n"
             )
 
-            queries.append({
+            query = {
                 "model": pconfig.model,
                 "system_prompt": system_prompt,
                 "user_prompt": user_prompt,
                 "temperature": pconfig.temperature,
                 "max_tokens": pconfig.max_tokens,
-            })
+                **_build_query_extras(pconfig),
+            }
+            queries.append(query)
             participant_ids.append(pid)
 
         responses = await query_with_soul_parallel(queries)
@@ -697,9 +736,12 @@ class GenesisSimulation:
         """
         self.state.status = "running"
         active_concepts: List[Concept] = []
+        print(f"[Sim] Starting simulation {self.sim_id} — {self.config.rounds} rounds, "
+              f"{len(self.config.participants)} participants")
 
         for round_num in range(1, self.config.rounds + 1):
             self.state.current_round = round_num
+            print(f"[Sim] === Round {round_num}/{self.config.rounds} starting ===")
             self._log_event("round_start", {"round": round_num,
                                              "mode": ROUND_MODES.get(round_num, "unknown")})
 
@@ -878,6 +920,9 @@ class GenesisSimulation:
 
 async def _maybe_await(fn, *args):
     """Call fn with args, awaiting if it's a coroutine."""
-    result = fn(*args)
-    if asyncio.iscoroutine(result):
-        await result
+    try:
+        result = fn(*args)
+        if asyncio.iscoroutine(result):
+            await result
+    except Exception as e:
+        print(f"[SimWarn] _maybe_await callback error ({fn.__name__ if hasattr(fn, '__name__') else fn}): {e}")

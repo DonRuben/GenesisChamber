@@ -15,6 +15,8 @@ class ParticipantConfig(BaseModel):
     role: Literal["participant", "moderator", "evaluator", "devils_advocate"] = "participant"
     temperature: float = 0.7
     max_tokens: int = 2000
+    enable_thinking: bool = False
+    enable_web_search: bool = False
     speciality: str = ""
     color: str = "#666666"
 

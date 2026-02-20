@@ -948,6 +948,67 @@
   display: block;
 }
 
+/* ── AI Capabilities ── */
+.ai-capabilities-section {
+  padding: var(--space-md);
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.ai-cap-header {
+  margin-bottom: var(--space-sm);
+}
+
+.ai-cap-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ai-cap-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+
+.ai-cap-toggle:hover {
+  background: var(--surface-2);
+}
+
+.ai-cap-toggle input[type="checkbox"] {
+  margin-top: 2px;
+  accent-color: var(--gc-cyan);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.ai-cap-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ai-cap-name {
+  font-family: var(--font-data);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ai-cap-desc {
+  font-family: var(--font-data);
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
 /* ── Launch Button ── */
 .launcher-start-btn {
   width: 100%;

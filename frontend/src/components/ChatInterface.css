@@ -289,6 +289,60 @@
   padding: 4px 8px;
 }
 
+/* ── Feature Toggles (Thinking + Web Search) ── */
+.ci-feature-toggles {
+  margin-top: var(--space-xs);
+  padding-top: var(--space-xs);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ci-feature-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.ci-feature-toggle input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--gc-cyan);
+}
+
+.ci-feature-label {
+  font-family: var(--font-data);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ci-feature-hint {
+  font-family: var(--font-data);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.ci-feature-badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  background: rgba(168, 85, 247, 0.2);
+  color: #a855f7;
+  padding: 1px 4px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.ci-web-badge {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
 /* ── Input Form — Always visible at bottom ── */
 .input-form {
   display: flex;
