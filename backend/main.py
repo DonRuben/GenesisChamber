@@ -75,6 +75,7 @@ class SendMessageRequest(BaseModel):
     models: Optional[List[str]] = None
     chairman_model: Optional[str] = None
     thinking_mode: str = "off"  # "off", "thinking", or "deep"
+    model_thinking_modes: Optional[Dict[str, str]] = None  # per-model overrides
     enable_web_search: bool = False
 
 
@@ -206,7 +207,8 @@ async def send_message_stream(conversation_id: str, request: SendMessageRequest)
             stage1_results = await stage1_collect_responses(
                 request.content, models=request.models,
                 thinking_mode=request.thinking_mode,
-                enable_web_search=request.enable_web_search)
+                enable_web_search=request.enable_web_search,
+                model_thinking_modes=request.model_thinking_modes)
             yield f"data: {json.dumps({'type': 'stage1_complete', 'data': stage1_results})}\n\n"
 
             # Stage 2: Collect rankings
@@ -214,7 +216,8 @@ async def send_message_stream(conversation_id: str, request: SendMessageRequest)
             stage2_results, label_to_model = await stage2_collect_rankings(
                 request.content, stage1_results, models=request.models,
                 thinking_mode=request.thinking_mode,
-                enable_web_search=request.enable_web_search)
+                enable_web_search=request.enable_web_search,
+                model_thinking_modes=request.model_thinking_modes)
             aggregate_rankings = calculate_aggregate_rankings(stage2_results, label_to_model)
             yield f"data: {json.dumps({'type': 'stage2_complete', 'data': stage2_results, 'metadata': {'label_to_model': label_to_model, 'aggregate_rankings': aggregate_rankings}})}\n\n"
 
@@ -224,7 +227,8 @@ async def send_message_stream(conversation_id: str, request: SendMessageRequest)
                 request.content, stage1_results, stage2_results,
                 chairman_model=request.chairman_model,
                 thinking_mode=request.thinking_mode,
-                enable_web_search=request.enable_web_search)
+                enable_web_search=request.enable_web_search,
+                model_thinking_modes=request.model_thinking_modes)
             yield f"data: {json.dumps({'type': 'stage3_complete', 'data': stage3_result})}\n\n"
 
             # Wait for title generation if it was started

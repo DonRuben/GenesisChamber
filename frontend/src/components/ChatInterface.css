@@ -364,6 +364,46 @@
   border-color: var(--gc-cyan);
 }
 
+/* ── Per-model thinking controls ── */
+.ci-model-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ci-model-row .ci-model-checkbox {
+  flex: 1;
+  min-width: 0;
+}
+
+.ci-model-thinking-select {
+  padding: 2px 6px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--surface-0);
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: 10px;
+  cursor: pointer;
+  outline: none;
+  flex-shrink: 0;
+  width: 68px;
+}
+
+.ci-model-thinking-select:focus {
+  border-color: var(--gc-cyan);
+}
+
+.ci-mixed-badge {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.ci-override-count {
+  color: #a855f7;
+  font-weight: 600;
+}
+
 /* ── Input Form — Always visible at bottom ── */
 .input-form {
   display: flex;

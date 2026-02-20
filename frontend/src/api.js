@@ -122,12 +122,13 @@ export const api = {
    * @param {function} onEvent - Callback function for each event: (eventType, data) => void
    * @returns {Promise<void>}
    */
-  async sendMessageStream(conversationId, content, onEvent, { models, chairmanModel, thinkingMode, enableWebSearch } = {}) {
+  async sendMessageStream(conversationId, content, onEvent, { models, chairmanModel, thinkingMode, enableWebSearch, modelThinkingModes } = {}) {
     const body = { content };
     if (models) body.models = models;
     if (chairmanModel) body.chairman_model = chairmanModel;
     if (thinkingMode && thinkingMode !== 'off') body.thinking_mode = thinkingMode;
     if (enableWebSearch) body.enable_web_search = true;
+    if (modelThinkingModes && Object.keys(modelThinkingModes).length > 0) body.model_thinking_modes = modelThinkingModes;
 
     const response = await fetch(
       `${API_BASE}/api/conversations/${conversationId}/message/stream`,
