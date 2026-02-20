@@ -25,7 +25,7 @@ export default function ChatInterface({
   const [availableModels, setAvailableModels] = useState(null);
   const [councilModels, setCouncilModels] = useState(null); // null = use defaults
   const [chairmanModel, setChairmanModel] = useState(null); // null = use default
-  const [enableThinking, setEnableThinking] = useState(false);
+  const [thinkingMode, setThinkingMode] = useState('off'); // 'off', 'thinking', 'deep'
   const [enableWebSearch, setEnableWebSearch] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -63,7 +63,7 @@ export default function ChatInterface({
       const modelConfig = {};
       if (councilModels && councilModels.length > 0) modelConfig.models = councilModels;
       if (chairmanModel) modelConfig.chairmanModel = chairmanModel;
-      if (enableThinking) modelConfig.enableThinking = true;
+      if (thinkingMode !== 'off') modelConfig.thinkingMode = thinkingMode;
       if (enableWebSearch) modelConfig.enableWebSearch = true;
       onSendMessage(input, modelConfig);
       setInput('');
@@ -167,15 +167,19 @@ export default function ChatInterface({
         </div>
 
         <div className="ci-feature-toggles">
-          <label className="ci-feature-toggle">
-            <input
-              type="checkbox"
-              checked={enableThinking}
-              onChange={(e) => setEnableThinking(e.target.checked)}
-            />
-            <span className="ci-feature-label">Extended Thinking</span>
-            <span className="ci-feature-hint">Deep reasoning for Claude, GPT, Gemini, Grok</span>
-          </label>
+          <div className="ci-feature-toggle">
+            <span className="ci-feature-label">Thinking Mode</span>
+            <select
+              className="ci-thinking-select"
+              value={thinkingMode}
+              onChange={(e) => setThinkingMode(e.target.value)}
+            >
+              <option value="off">Off</option>
+              <option value="thinking">Thinking</option>
+              <option value="deep">Deep Thinking</option>
+            </select>
+            <span className="ci-feature-hint">Reasoning for Claude, GPT, Gemini, Grok</span>
+          </div>
           <label className="ci-feature-toggle">
             <input
               type="checkbox"
@@ -183,7 +187,7 @@ export default function ChatInterface({
               onChange={(e) => setEnableWebSearch(e.target.checked)}
             />
             <span className="ci-feature-label">Web Search</span>
-            <span className="ci-feature-hint">Live internet access for all models</span>
+            <span className="ci-feature-hint">Live internet + X.com access for all models</span>
           </label>
         </div>
       </div>
@@ -203,7 +207,8 @@ export default function ChatInterface({
           >
             <IconGear size={16} />
             {councilModels && <span className="ci-model-count">{selectedCount}</span>}
-            {enableThinking && <span className="ci-feature-badge" title="Extended Thinking ON">T</span>}
+            {thinkingMode === 'thinking' && <span className="ci-feature-badge" title="Thinking ON">T</span>}
+            {thinkingMode === 'deep' && <span className="ci-feature-badge ci-deep-badge" title="Deep Thinking ON">D</span>}
             {enableWebSearch && <span className="ci-feature-badge ci-web-badge" title="Web Search ON">W</span>}
           </button>
           <textarea

@@ -87,7 +87,9 @@ class SimulationStore:
         """Async save — tries DB first, always writes file as backup."""
         if self._db:
             try:
-                await self._db.save_state(state)
+                await asyncio.wait_for(self._db.save_state(state), timeout=10)
+            except asyncio.TimeoutError:
+                print(f"[store] DB save timeout (10s), file fallback")
             except Exception as e:
                 print(f"[store] DB save failed, file fallback: {e}")
         self._save_file(state)

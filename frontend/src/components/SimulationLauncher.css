@@ -1009,6 +1009,24 @@
   line-height: 1.4;
 }
 
+.ai-cap-select {
+  margin-top: 4px;
+  padding: 5px 10px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--surface-0);
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: 12px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.ai-cap-select:focus {
+  border-color: var(--gc-cyan);
+  outline: none;
+}
+
 /* ── Launch Button ── */
 .launcher-start-btn {
   width: 100%;

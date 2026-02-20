@@ -5,19 +5,19 @@ from .openrouter import query_models_parallel, query_model, get_reasoning_config
 from .config import COUNCIL_MODELS, CHAIRMAN_MODEL
 
 
-def _build_council_extras(enable_thinking: bool = False, enable_web_search: bool = False,
+def _build_council_extras(thinking_mode: str = "off", enable_web_search: bool = False,
                           model: str = "") -> dict:
     """Build reasoning/plugins kwargs for council queries."""
     kwargs = {}
-    if enable_thinking:
-        kwargs["reasoning"] = get_reasoning_config(model)
+    if thinking_mode and thinking_mode != "off":
+        kwargs["reasoning"] = get_reasoning_config(model, thinking_mode)
     if enable_web_search:
         kwargs["plugins"] = [{"id": "web", "max_results": 5}]
     return kwargs
 
 
 async def stage1_collect_responses(user_query: str, models: List[str] = None,
-                                   enable_thinking: bool = False,
+                                   thinking_mode: str = "off",
                                    enable_web_search: bool = False) -> List[Dict[str, Any]]:
     """
     Stage 1: Collect individual responses from all council models.
@@ -25,6 +25,7 @@ async def stage1_collect_responses(user_query: str, models: List[str] = None,
     Args:
         user_query: The user's question
         models: Optional list of model IDs to use (defaults to COUNCIL_MODELS)
+        thinking_mode: "off", "thinking", or "deep"
 
     Returns:
         List of dicts with 'model' and 'response' keys
@@ -35,9 +36,8 @@ async def stage1_collect_responses(user_query: str, models: List[str] = None,
     # Build per-model extras (reasoning config differs by model)
     reasoning = None
     plugins = None
-    if enable_thinking:
-        # Use a generic config; query_model will apply it uniformly
-        reasoning = get_reasoning_config(council_models[0] if council_models else "")
+    if thinking_mode and thinking_mode != "off":
+        reasoning = get_reasoning_config(council_models[0] if council_models else "", thinking_mode)
     if enable_web_search:
         plugins = [{"id": "web", "max_results": 5}]
 
@@ -66,7 +66,7 @@ async def stage2_collect_rankings(
     user_query: str,
     stage1_results: List[Dict[str, Any]],
     models: List[str] = None,
-    enable_thinking: bool = False,
+    thinking_mode: str = "off",
     enable_web_search: bool = False,
 ) -> Tuple[List[Dict[str, Any]], Dict[str, str]]:
     """
@@ -129,7 +129,7 @@ Now provide your evaluation and ranking:"""
     messages = [{"role": "user", "content": ranking_prompt}]
 
     # Build extras
-    reasoning = get_reasoning_config(council_models[0]) if enable_thinking and council_models else None
+    reasoning = get_reasoning_config(council_models[0], thinking_mode) if thinking_mode != "off" and council_models else None
     plugins = [{"id": "web", "max_results": 5}] if enable_web_search else None
 
     # Get rankings from all council models in parallel
@@ -156,7 +156,7 @@ async def stage3_synthesize_final(
     stage1_results: List[Dict[str, Any]],
     stage2_results: List[Dict[str, Any]],
     chairman_model: str = None,
-    enable_thinking: bool = False,
+    thinking_mode: str = "off",
     enable_web_search: bool = False,
 ) -> Dict[str, Any]:
     """
@@ -202,7 +202,7 @@ Provide a clear, well-reasoned final answer that represents the council's collec
 
     # Query the chairman model
     chairman = chairman_model or CHAIRMAN_MODEL
-    extras = _build_council_extras(enable_thinking, enable_web_search, chairman)
+    extras = _build_council_extras(thinking_mode, enable_web_search, chairman)
     response = await query_model(chairman, messages, **extras)
 
     if response is None:
@@ -345,7 +345,7 @@ async def run_full_council(
     user_query: str,
     models: List[str] = None,
     chairman_model: str = None,
-    enable_thinking: bool = False,
+    thinking_mode: str = "off",
     enable_web_search: bool = False,
 ) -> Tuple[List, List, Dict, Dict]:
     """
@@ -355,7 +355,7 @@ async def run_full_council(
         user_query: The user's question
         models: Optional list of model IDs (defaults to COUNCIL_MODELS)
         chairman_model: Optional chairman model ID (defaults to CHAIRMAN_MODEL)
-        enable_thinking: Enable extended thinking/reasoning
+        thinking_mode: "off", "thinking", or "deep"
         enable_web_search: Enable live web search
 
     Returns:
@@ -364,7 +364,7 @@ async def run_full_council(
     # Stage 1: Collect individual responses
     stage1_results = await stage1_collect_responses(
         user_query, models=models,
-        enable_thinking=enable_thinking, enable_web_search=enable_web_search)
+        thinking_mode=thinking_mode, enable_web_search=enable_web_search)
 
     # If no models responded successfully, return error
     if not stage1_results:
@@ -376,7 +376,7 @@ async def run_full_council(
     # Stage 2: Collect rankings
     stage2_results, label_to_model = await stage2_collect_rankings(
         user_query, stage1_results, models=models,
-        enable_thinking=enable_thinking, enable_web_search=enable_web_search)
+        thinking_mode=thinking_mode, enable_web_search=enable_web_search)
 
     # Calculate aggregate rankings
     aggregate_rankings = calculate_aggregate_rankings(stage2_results, label_to_model)
@@ -387,7 +387,7 @@ async def run_full_council(
         stage1_results,
         stage2_results,
         chairman_model=chairman_model,
-        enable_thinking=enable_thinking,
+        thinking_mode=thinking_mode,
         enable_web_search=enable_web_search,
     )
 

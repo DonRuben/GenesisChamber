@@ -118,7 +118,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
   // Devil's Advocate (Advocatus Diaboli) — optional adversarial critic
   const [devilsAdvocateActive, setDevilsAdvocateActive] = useState(false);
   // AI capabilities
-  const [enableThinking, setEnableThinking] = useState(false);
+  const [thinkingMode, setThinkingMode] = useState('off'); // 'off', 'thinking', 'deep'
   const [enableWebSearch, setEnableWebSearch] = useState(false);
   // Soul info card
   const [infoSoul, setInfoSoul] = useState(null);
@@ -324,7 +324,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
             role: 'participant',
             temperature: 0.7,
             max_tokens: 4000,
-            enable_thinking: enableThinking,
+            thinking_mode: thinkingMode,
             enable_web_search: enableWebSearch,
             color: soul.color,
           };
@@ -342,7 +342,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
             role: 'participant',
             temperature: 0.5,
             max_tokens: 4000,
-            enable_thinking: enableThinking,
+            thinking_mode: thinkingMode,
             enable_web_search: enableWebSearch,
             color: iveSoul.color || '#9CA3AF',
           };
@@ -366,7 +366,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
           role: 'moderator',
           temperature: 0.6,
           max_tokens: 4000,
-          enable_thinking: enableThinking,
+          thinking_mode: thinkingMode,
           enable_web_search: enableWebSearch,
           color: moderator?.color || '#6B7280',
         },
@@ -377,7 +377,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
           role: 'evaluator',
           temperature: 0.5,
           max_tokens: 4000,
-          enable_thinking: enableThinking,
+          thinking_mode: thinkingMode,
           enable_web_search: enableWebSearch,
           color: evaluator?.color || '#9CA3AF',
         },
@@ -400,7 +400,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
             role: 'devils_advocate',
             temperature: 0.75,
             max_tokens: 4000,
-            enable_thinking: enableThinking,
+            thinking_mode: thinkingMode,
             enable_web_search: enableWebSearch,
             color: '#DC2626',
           },
@@ -706,17 +706,21 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
               <span className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)' }}>AI Capabilities</span>
             </div>
             <div className="ai-cap-toggles">
-              <label className="ai-cap-toggle">
-                <input
-                  type="checkbox"
-                  checked={enableThinking}
-                  onChange={(e) => setEnableThinking(e.target.checked)}
-                />
+              <div className="ai-cap-toggle">
                 <div className="ai-cap-info">
-                  <span className="ai-cap-name">Extended Thinking</span>
-                  <span className="ai-cap-desc">Deep reasoning for Claude, GPT-5, Gemini, Grok</span>
+                  <span className="ai-cap-name">Thinking Mode</span>
+                  <select
+                    className="ai-cap-select"
+                    value={thinkingMode}
+                    onChange={(e) => setThinkingMode(e.target.value)}
+                  >
+                    <option value="off">Off</option>
+                    <option value="thinking">Thinking</option>
+                    <option value="deep">Deep Thinking</option>
+                  </select>
+                  <span className="ai-cap-desc">Reasoning for Claude, GPT-5, Gemini, Grok</span>
                 </div>
-              </label>
+              </div>
               <label className="ai-cap-toggle">
                 <input
                   type="checkbox"
@@ -725,7 +729,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
                 />
                 <div className="ai-cap-info">
                   <span className="ai-cap-name">Web Search</span>
-                  <span className="ai-cap-desc">Live internet access for all participants</span>
+                  <span className="ai-cap-desc">Live internet + X.com access for all participants</span>
                 </div>
               </label>
             </div>

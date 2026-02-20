@@ -17,10 +17,12 @@ from .config import ROUND_MODES, SIMULATION_OUTPUT_DIR
 
 
 def _build_query_extras(pconfig) -> dict:
-    """Build reasoning and plugins dict entries for a participant config."""
+    """Build reasoning, plugins, and thinking_mode dict entries for a participant config."""
     extras = {}
-    if pconfig.enable_thinking:
-        extras["reasoning"] = get_reasoning_config(pconfig.model)
+    mode = getattr(pconfig, "thinking_mode", "off")
+    if mode and mode != "off":
+        extras["reasoning"] = get_reasoning_config(pconfig.model, mode)
+        extras["thinking_mode"] = mode
     if pconfig.enable_web_search:
         extras["plugins"] = [{"id": "web", "max_results": 5}]
     return extras
@@ -347,8 +349,11 @@ class GenesisRound:
         for i, q in enumerate(queries):
             print(f"  [{i+1}] model={q['model']} max_tokens={q.get('max_tokens', 2000)} reasoning={'yes' if q.get('reasoning') else 'no'} web={'yes' if q.get('plugins') else 'no'}")
         try:
-            responses = await query_with_soul_parallel(queries)
+            responses = await asyncio.wait_for(query_with_soul_parallel(queries), timeout=300)
             print(f"[Sim] Stage 1 — Got {len(responses)} responses, {sum(1 for r in responses if r)} successful")
+        except asyncio.TimeoutError:
+            print(f"[SimError] Stage 1 Creation — OpenRouter timeout after 5 min")
+            responses = [None] * len(queries)
         except Exception as e:
             print(f"[SimError] Stage 1 — query_with_soul_parallel failed: {e}")
             import traceback
@@ -462,8 +467,12 @@ class GenesisRound:
                     pconfig = self.config.participants[pid]
                     await _maybe_await(on_participant_event, "thinking", pid, pconfig.display_name, "critique")
 
-        # Execute in parallel
-        responses = await query_with_soul_parallel(queries)
+        # Execute in parallel (5 min timeout)
+        try:
+            responses = await asyncio.wait_for(query_with_soul_parallel(queries), timeout=300)
+        except asyncio.TimeoutError:
+            print(f"[SimError] Stage 2 Critique — OpenRouter timeout after 5 min")
+            responses = [None] * len(queries)
 
         # Parse critiques
         all_critiques = []
@@ -530,15 +539,19 @@ class GenesisRound:
         )
 
         mod_extras = _build_query_extras(mod)
-        mod_response = await query_with_soul(
-            model=mod.model,
-            system_prompt=mod_system,
-            user_prompt=summary,
-            temperature=mod.temperature,
-            max_tokens=mod.max_tokens,
-            reasoning=mod_extras.get("reasoning"),
-            plugins=mod_extras.get("plugins"),
-        )
+        try:
+            mod_response = await asyncio.wait_for(query_with_soul(
+                model=mod.model,
+                system_prompt=mod_system,
+                user_prompt=summary,
+                temperature=mod.temperature,
+                max_tokens=mod.max_tokens,
+                reasoning=mod_extras.get("reasoning"),
+                plugins=mod_extras.get("plugins"),
+            ), timeout=300)
+        except asyncio.TimeoutError:
+            print(f"[SimError] Stage 3 Synthesis — Moderator query timeout after 5 min")
+            mod_response = None
 
         direction = None
         if mod_response and mod_response.get("content"):
@@ -608,7 +621,11 @@ class GenesisRound:
             queries.append(query)
             participant_ids.append(pid)
 
-        responses = await query_with_soul_parallel(queries)
+        try:
+            responses = await asyncio.wait_for(query_with_soul_parallel(queries), timeout=300)
+        except asyncio.TimeoutError:
+            print(f"[SimError] Stage 4 Refinement — OpenRouter timeout after 5 min")
+            responses = [None] * len(queries)
 
         refined_concepts = []
         for pid, response in zip(participant_ids, responses):
@@ -668,7 +685,11 @@ class GenesisRound:
             queries.append(query)
             participant_ids.append(pid)
 
-        responses = await query_with_soul_parallel(queries)
+        try:
+            responses = await asyncio.wait_for(query_with_soul_parallel(queries), timeout=300)
+        except asyncio.TimeoutError:
+            print(f"[SimError] Stage 5 Presentation — OpenRouter timeout after 5 min")
+            responses = [None] * len(queries)
 
         presentations = []
         for pid, response in zip(participant_ids, responses):
@@ -919,10 +940,11 @@ class GenesisSimulation:
 # ---------------------------------------------------------------------------
 
 async def _maybe_await(fn, *args):
-    """Call fn with args, awaiting if it's a coroutine."""
+    """Call fn with args, awaiting if it's a coroutine. Re-raises on error."""
     try:
         result = fn(*args)
         if asyncio.iscoroutine(result):
             await result
     except Exception as e:
-        print(f"[SimWarn] _maybe_await callback error ({fn.__name__ if hasattr(fn, '__name__') else fn}): {e}")
+        print(f"[SimError] _maybe_await callback error ({fn.__name__ if hasattr(fn, '__name__') else fn}): {e}")
+        raise
