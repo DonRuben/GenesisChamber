@@ -360,6 +360,42 @@ async def list_souls():
     return souls
 
 
+@app.get("/api/souls/{soul_id}/content")
+async def get_soul_content(soul_id: str):
+    """Get the raw markdown content of a soul document."""
+    soul_path = Path(SOULS_DIR) / f"{soul_id}.md"
+    if not soul_path.exists():
+        raise HTTPException(status_code=404, detail="Soul not found")
+    return {"id": soul_id, "content": soul_path.read_text(encoding="utf-8")}
+
+
+@app.get("/api/souls/{soul_id}/download")
+async def download_soul(soul_id: str):
+    """Download a soul document as a markdown file."""
+    from fastapi.responses import FileResponse
+    soul_path = Path(SOULS_DIR) / f"{soul_id}.md"
+    if not soul_path.exists():
+        raise HTTPException(status_code=404, detail="Soul not found")
+    return FileResponse(
+        path=str(soul_path),
+        media_type="text/markdown",
+        filename=f"{soul_id}.md",
+    )
+
+
+@app.put("/api/souls/{soul_id}/content")
+async def update_soul_content(soul_id: str, request: dict):
+    """Update the markdown content of a soul document."""
+    soul_path = Path(SOULS_DIR) / f"{soul_id}.md"
+    if not soul_path.exists():
+        raise HTTPException(status_code=404, detail="Soul not found")
+    content = request.get("content", "")
+    if not content.strip():
+        raise HTTPException(status_code=400, detail="Content cannot be empty")
+    soul_path.write_text(content, encoding="utf-8")
+    return {"id": soul_id, "status": "updated"}
+
+
 @app.get("/api/simulation/presets")
 async def list_presets():
     """List available simulation presets."""

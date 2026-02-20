@@ -60,18 +60,24 @@ const PRESET_DESCRIPTIONS = {
 // Default model assignments per persona from the blueprint
 const DEFAULT_MODELS = {
   // Marketing & Strategy
-  'david-ogilvy': 'google/gemini-2.5-pro',
+  'david-ogilvy': 'google/gemini-3-pro',
   'claude-hopkins': 'anthropic/claude-sonnet-4.6',
-  'leo-burnett': 'openai/gpt-5.1',
+  'leo-burnett': 'openai/gpt-5.2',
   'mary-wells-lawrence': 'meta-llama/llama-4-maverick',
   'gary-halbert': 'x-ai/grok-4',
   // Design & Visual
-  'paul-rand': 'google/gemini-2.5-pro',
-  'paula-scher': 'openai/gpt-5.1',
+  'paul-rand': 'google/gemini-3-pro',
+  'paula-scher': 'openai/gpt-5.2',
   'saul-bass': 'anthropic/claude-sonnet-4.6',
   'susan-kare': 'meta-llama/llama-4-maverick',
   'rob-janoff': 'x-ai/grok-4',
-  'tobias-van-schneider': 'google/gemini-2.5-pro',
+  'tobias-van-schneider': 'google/gemini-3-pro',
+  // Business & Strategy
+  'elon-musk': 'x-ai/grok-4',
+  'jeff-bezos': 'google/gemini-3-pro',
+  'warren-buffett': 'anthropic/claude-sonnet-4.6',
+  'richard-branson': 'openai/gpt-5.2',
+  'dietrich-mateschitz': 'meta-llama/llama-4-maverick',
   // Leadership
   moderator: 'anthropic/claude-opus-4-6',
   evaluator: 'anthropic/claude-opus-4-6',
@@ -80,16 +86,18 @@ const DEFAULT_MODELS = {
 };
 
 // Team display order and metadata
-const TEAM_ORDER = ['marketing', 'design', 'leadership'];
+const TEAM_ORDER = ['marketing', 'design', 'business', 'leadership'];
 const TEAM_LABELS = {
   marketing: 'Marketing & Strategy',
   design: 'Design & Visual',
+  business: 'Business & Strategy',
   leadership: 'Leadership',
   custom: 'Custom',
 };
 const TEAM_COLORS = {
   marketing: '#F59E0B',
   design: '#8B5CF6',
+  business: '#FF9900',
   leadership: '#6B7280',
   custom: '#666666',
 };
@@ -113,8 +121,11 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState(null);
   const fileInputRef = useRef(null);
+  // Flexible leadership: select any soul as moderator or evaluator
+  const [moderatorSoul, setModeratorSoul] = useState('steve-jobs');
+  const [evaluatorSoul, setEvaluatorSoul] = useState('jony-ive');
   // Dual-role: leadership personas added as active participants
-  const [dualRoleActive, setDualRoleActive] = useState({ 'jony-ive': false });
+  const [dualRoleActive, setDualRoleActive] = useState({});
   // Devil's Advocate (Advocatus Diaboli) — optional adversarial critic
   const [devilsAdvocateActive, setDevilsAdvocateActive] = useState(false);
   // AI capabilities
@@ -164,13 +175,9 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
       ]);
       setSouls(soulsData);
       setPresets(presetsData);
-      // Default: first 2 marketing + first 1 design for a mixed team
+      // Default: first 3 marketing personas
       const marketing = soulsData.filter(s => s.team === 'marketing');
-      const design = soulsData.filter(s => s.team === 'design');
-      const defaults = [
-        ...marketing.slice(0, 2).map(s => s.id),
-        ...design.slice(0, 1).map(s => s.id),
-      ];
+      const defaults = marketing.slice(0, 3).map(s => s.id);
       setSelectedParticipants(defaults.length > 0
         ? defaults
         : soulsData.filter(s => s.id !== 'steve-jobs' && s.id !== 'jony-ive').slice(0, 3).map(s => s.id)
@@ -355,26 +362,43 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
         }
       }
 
-      // If Jony Ive dual-role is active, add him as a participant too
-      if (dualRoleActive['jony-ive']) {
-        const iveSoul = souls.find(s => s.id === 'jony-ive');
-        if (iveSoul) {
-          participants['jony-ive'] = {
-            display_name: iveSoul.name,
-            model: modelAssignments['jony-ive'] || modelAssignments.evaluator || 'anthropic/claude-opus-4-6',
-            soul_document: iveSoul.file,
+      // If moderator dual-role is active, add as participant too
+      if (dualRoleActive[moderatorSoul]) {
+        const modSoul = souls.find(s => s.id === moderatorSoul);
+        if (modSoul && !participants[moderatorSoul]) {
+          participants[moderatorSoul] = {
+            display_name: modSoul.name,
+            model: modelAssignments[moderatorSoul] || modelAssignments.moderator || 'anthropic/claude-opus-4-6',
+            soul_document: modSoul.file,
+            role: 'participant',
+            temperature: 0.6,
+            max_tokens: 4000,
+            thinking_mode: getEffectiveThinking(moderatorSoul),
+            enable_web_search: enableWebSearch,
+            color: modSoul.color || '#6B7280',
+          };
+        }
+      }
+      // If evaluator dual-role is active, add as participant too
+      if (dualRoleActive[evaluatorSoul]) {
+        const evalSoul = souls.find(s => s.id === evaluatorSoul);
+        if (evalSoul && !participants[evaluatorSoul]) {
+          participants[evaluatorSoul] = {
+            display_name: evalSoul.name,
+            model: modelAssignments[evaluatorSoul] || modelAssignments.evaluator || 'anthropic/claude-opus-4-6',
+            soul_document: evalSoul.file,
             role: 'participant',
             temperature: 0.5,
             max_tokens: 4000,
-            thinking_mode: getEffectiveThinking('jony-ive'),
+            thinking_mode: getEffectiveThinking(evaluatorSoul),
             enable_web_search: enableWebSearch,
-            color: iveSoul.color || '#9CA3AF',
+            color: evalSoul.color || '#9CA3AF',
           };
         }
       }
 
-      const moderator = souls.find(s => s.id === 'steve-jobs');
-      const evaluator = souls.find(s => s.id === 'jony-ive');
+      const moderator = souls.find(s => s.id === moderatorSoul);
+      const evaluator = souls.find(s => s.id === evaluatorSoul);
       const config = {
         name: preset.name || 'Simulation',
         type: selectedPreset,
@@ -611,26 +635,48 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
             );
           })}
 
-          {/* Leadership — Moderator + Evaluator with dual-role toggle */}
+          {/* Leadership — Flexible Moderator + Evaluator selection */}
           <div className="moderator-section">
+            {/* Moderator */}
             <div className="moderator-header">
-              <div className="moderator-avatar">
-                <span className="moderator-initial">S</span>
+              <div className="moderator-avatar" style={{ borderColor: souls.find(s => s.id === moderatorSoul)?.color || '#6B7280', background: souls.find(s => s.id === moderatorSoul)?.color || '#6B7280' }}>
+                <span className="moderator-initial" style={{ color: 'var(--surface-0)' }}>
+                  {(souls.find(s => s.id === moderatorSoul)?.name || 'M')[0]}
+                </span>
               </div>
               <div className="moderator-info">
-                <span className="moderator-name">Steve Jobs</span>
-                <span className="moderator-role">Moderator</span>
+                <select
+                  className="leadership-soul-select"
+                  value={moderatorSoul}
+                  onChange={(e) => setModeratorSoul(e.target.value)}
+                >
+                  {souls.map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+                <span className="moderator-role">
+                  Moderator
+                  {dualRoleActive[moderatorSoul] && <span className="dual-role-badge">+ Participant</span>}
+                </span>
               </div>
               <button
                 className="participant-info-btn"
                 onClick={() => {
-                  const jobsSoul = souls.find(s => s.id === 'steve-jobs');
-                  if (jobsSoul) setInfoSoul(jobsSoul);
+                  const soul = souls.find(s => s.id === moderatorSoul);
+                  if (soul) setInfoSoul(soul);
                 }}
                 type="button"
-                aria-label="Info about Steve Jobs"
+                aria-label="Info about moderator"
               >
                 <IconInfo size={14} />
+              </button>
+              <button
+                className={`dual-role-toggle ${dualRoleActive[moderatorSoul] ? 'active' : ''}`}
+                onClick={() => toggleDualRole(moderatorSoul)}
+                type="button"
+                title="Enable dual role: moderator also participates as creative contributor"
+              >
+                {dualRoleActive[moderatorSoul] ? 'Dual Role' : 'Moderate Only'}
               </button>
               {availableModels && (
                 <ModelSelector
@@ -653,39 +699,50 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
               )}
             </div>
 
+            {/* Evaluator */}
             <div className="evaluator-header" style={{ marginTop: '12px' }}>
-              <div className="moderator-avatar" style={{ borderColor: '#9CA3AF' }}>
-                <span className="moderator-initial" style={{ color: '#9CA3AF' }}>J</span>
+              <div className="moderator-avatar" style={{ borderColor: souls.find(s => s.id === evaluatorSoul)?.color || '#9CA3AF', background: souls.find(s => s.id === evaluatorSoul)?.color || '#9CA3AF' }}>
+                <span className="moderator-initial" style={{ color: 'var(--surface-0)' }}>
+                  {(souls.find(s => s.id === evaluatorSoul)?.name || 'E')[0]}
+                </span>
               </div>
               <div className="moderator-info">
-                <span className="moderator-name">Jony Ive</span>
+                <select
+                  className="leadership-soul-select"
+                  value={evaluatorSoul}
+                  onChange={(e) => setEvaluatorSoul(e.target.value)}
+                >
+                  {souls.map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
                 <span className="moderator-role">
                   Evaluator
-                  {dualRoleActive['jony-ive'] && <span className="dual-role-badge">+ Participant</span>}
+                  {dualRoleActive[evaluatorSoul] && <span className="dual-role-badge">+ Participant</span>}
                 </span>
               </div>
               <button
                 className="participant-info-btn"
                 onClick={() => {
-                  const iveSoul = souls.find(s => s.id === 'jony-ive');
-                  if (iveSoul) setInfoSoul(iveSoul);
+                  const soul = souls.find(s => s.id === evaluatorSoul);
+                  if (soul) setInfoSoul(soul);
                 }}
                 type="button"
-                aria-label="Info about Jony Ive"
+                aria-label="Info about evaluator"
               >
                 <IconInfo size={14} />
               </button>
               <button
-                className={`dual-role-toggle ${dualRoleActive['jony-ive'] ? 'active' : ''}`}
-                onClick={() => toggleDualRole('jony-ive')}
+                className={`dual-role-toggle ${dualRoleActive[evaluatorSoul] ? 'active' : ''}`}
+                onClick={() => toggleDualRole(evaluatorSoul)}
                 type="button"
-                title="Enable dual role: Ive also participates as a creative contributor"
+                title="Enable dual role: evaluator also participates as creative contributor"
               >
-                {dualRoleActive['jony-ive'] ? 'Dual Role' : 'Evaluate Only'}
+                {dualRoleActive[evaluatorSoul] ? 'Dual Role' : 'Evaluate Only'}
               </button>
               {availableModels && (
                 <ModelSelector
-                  value={modelAssignments.evaluator || modelAssignments['jony-ive'] || 'anthropic/claude-opus-4-6'}
+                  value={modelAssignments.evaluator || 'anthropic/claude-opus-4-6'}
                   onChange={(modelId) => updateModel('evaluator', modelId)}
                   models={availableModels}
                   compact
@@ -820,6 +877,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
                   >
                     <option value="marketing">Marketing & Strategy</option>
                     <option value="design">Design & Visual</option>
+                    <option value="business">Business & Strategy</option>
                     <option value="custom">Custom</option>
                   </select>
                 </div>
