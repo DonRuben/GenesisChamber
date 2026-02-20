@@ -12,14 +12,14 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 # Council members - list of OpenRouter model identifiers
 COUNCIL_MODELS = [
-    "openai/gpt-5.1",
-    "google/gemini-3-pro-preview",
+    "openai/gpt-5.2",
+    "google/gemini-3-pro",
     "anthropic/claude-sonnet-4.6",
     "x-ai/grok-4",
 ]
 
 # Chairman model - synthesizes final response
-CHAIRMAN_MODEL = "google/gemini-3-pro-preview"
+CHAIRMAN_MODEL = "google/gemini-3-pro"
 
 # OpenRouter API endpoint
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
@@ -63,6 +63,11 @@ TEAMS = {
         "name": "Design & Visual",
         "description": "Design pioneers — visual identity, typography, interface",
         "color": "#8B5CF6",
+    },
+    "business": {
+        "name": "Business & Strategy",
+        "description": "Business titans — growth, value, disruption, category creation",
+        "color": "#FF9900",
     },
     "custom": {
         "name": "Custom",
@@ -150,6 +155,12 @@ PERSONA_COLORS = {
     "susan-kare": "#06B6D4",
     "rob-janoff": "#A3E635",
     "tobias-van-schneider": "#D946EF",
+    # Business & Strategy
+    "elon-musk": "#1DA1F2",
+    "jeff-bezos": "#FF9900",
+    "warren-buffett": "#374151",
+    "richard-branson": "#E11D48",
+    "dietrich-mateschitz": "#1E40AF",
     # Leadership
     "steve-jobs": "#6B7280",
     "jony-ive": "#9CA3AF",
@@ -172,6 +183,12 @@ PERSONA_TEAMS = {
     "susan-kare": {"team": "design"},
     "rob-janoff": {"team": "design"},
     "tobias-van-schneider": {"team": "design"},
+    # Business & Strategy
+    "elon-musk": {"team": "business"},
+    "jeff-bezos": {"team": "business"},
+    "warren-buffett": {"team": "business"},
+    "richard-branson": {"team": "business"},
+    "dietrich-mateschitz": {"team": "business"},
     # Leadership (cross-functional)
     "steve-jobs": {"team": "leadership", "cross_teams": ["marketing"]},
     "jony-ive": {"team": "leadership", "cross_teams": ["design", "marketing"]},
@@ -184,7 +201,7 @@ DEFAULT_PARTICIPANTS = {
     # --- Marketing & Strategy Team ---
     "david-ogilvy": {
         "name": "David Ogilvy",
-        "model": "google/gemini-2.5-pro",
+        "model": "google/gemini-3-pro",
         "soul_document": "souls/david-ogilvy.md",
         "role": "participant",
         "team": "marketing",
@@ -204,7 +221,7 @@ DEFAULT_PARTICIPANTS = {
     },
     "leo-burnett": {
         "name": "Leo Burnett",
-        "model": "openai/gpt-5.1",
+        "model": "openai/gpt-5.2",
         "soul_document": "souls/leo-burnett.md",
         "role": "participant",
         "team": "marketing",
@@ -235,7 +252,7 @@ DEFAULT_PARTICIPANTS = {
     # --- Design & Visual Team ---
     "paul-rand": {
         "name": "Paul Rand",
-        "model": "google/gemini-2.5-pro",
+        "model": "google/gemini-3-pro",
         "soul_document": "souls/paul-rand.md",
         "role": "participant",
         "team": "design",
@@ -245,7 +262,7 @@ DEFAULT_PARTICIPANTS = {
     },
     "paula-scher": {
         "name": "Paula Scher",
-        "model": "openai/gpt-5.1",
+        "model": "openai/gpt-5.2",
         "soul_document": "souls/paula-scher.md",
         "role": "participant",
         "team": "design",
@@ -285,13 +302,64 @@ DEFAULT_PARTICIPANTS = {
     },
     "tobias-van-schneider": {
         "name": "Tobias van Schneider",
-        "model": "google/gemini-2.5-pro",
+        "model": "google/gemini-3-pro",
         "soul_document": "souls/tobias-van-schneider.md",
         "role": "participant",
         "team": "design",
         "temperature": 0.75,
         "max_tokens": 4000,
         "color": "#D946EF",
+    },
+    # --- Business & Strategy Team ---
+    "elon-musk": {
+        "name": "Elon Musk",
+        "model": "x-ai/grok-4",
+        "soul_document": "souls/elon-musk.md",
+        "role": "participant",
+        "team": "business",
+        "temperature": 0.85,
+        "max_tokens": 4000,
+        "color": "#1DA1F2",
+    },
+    "jeff-bezos": {
+        "name": "Jeff Bezos",
+        "model": "google/gemini-3-pro",
+        "soul_document": "souls/jeff-bezos.md",
+        "role": "participant",
+        "team": "business",
+        "temperature": 0.7,
+        "max_tokens": 4000,
+        "color": "#FF9900",
+    },
+    "warren-buffett": {
+        "name": "Warren Buffett",
+        "model": "anthropic/claude-sonnet-4.6",
+        "soul_document": "souls/warren-buffett.md",
+        "role": "participant",
+        "team": "business",
+        "temperature": 0.65,
+        "max_tokens": 4000,
+        "color": "#374151",
+    },
+    "richard-branson": {
+        "name": "Richard Branson",
+        "model": "openai/gpt-5.2",
+        "soul_document": "souls/richard-branson.md",
+        "role": "participant",
+        "team": "business",
+        "temperature": 0.8,
+        "max_tokens": 4000,
+        "color": "#E11D48",
+    },
+    "dietrich-mateschitz": {
+        "name": "Dietrich Mateschitz",
+        "model": "meta-llama/llama-4-maverick",
+        "soul_document": "souls/dietrich-mateschitz.md",
+        "role": "participant",
+        "team": "business",
+        "temperature": 0.7,
+        "max_tokens": 4000,
+        "color": "#1E40AF",
     },
 }
 
