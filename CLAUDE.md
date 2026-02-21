@@ -25,6 +25,14 @@ A 5-stage (+ optional DA Defense), multi-round simulation engine with:
 - Markdown export + reveal.js presentations
 - Vercel Postgres/Neon database with file-based fallback
 - OmniPresent brand design system with custom font + Fibonacci spacing
+- **V3 Production Pipeline:**
+  - Persistent media archive — local download of fal.ai images/videos, backend serving, Local/Expires badges
+  - Prompt Engineering Bible — model-specific prompt optimization for 16+ fal.ai models
+  - Simulation Overview — case-study tab with brief, participants, results, media preview
+  - Copy-to-clipboard on text blocks (prompts, headlines, taglines, brief)
+  - Simulation starring with localStorage persistence
+  - Scope-based image generation (active/all/winner) with compare view
+  - Cinematic 4-act reveal.js presentations (Sora font, embedded media, score evolution)
 
 ## Architecture: Three Engines
 
@@ -58,6 +66,11 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - reveal.js presentations with Genesis Chamber dark theme
 - Image prompt extraction for fal.ai generation
 - Video prompt extraction for fal.ai generation
+- V3: `generate_image_prompts()` scope parameter — `"winner"`, `"active"` (default), `"all"` (including eliminated)
+- V3: `generate_reveal_presentation()` — 4-act storytelling (Challenge → Battle → Reveal → Production)
+- V3: `GENESIS_REVEAL_THEME` cinematic overhaul — Sora/Inter/JetBrains Mono, design-tokens.css alignment
+- V3: 10 new slide methods (`_slide_opening`, `_slide_brief`, `_slide_round_intro`, `_slide_round_concepts`, `_slide_round_direction`, `_slide_winner_reveal`, `_slide_runner_up`, `_slide_evolution`, `_slide_media_gallery`, `_slide_production_spec`) + updated `_slide_credits`
+- V3: Legacy slide methods preserved (`_slide_title`, `_slide_round`, `_slide_winner`, `_slide_image_gallery`)
 
 ## Soul Document Roster (19 Personas)
 
@@ -131,6 +144,11 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - `DARatingRequest`: Pydantic model for DA interaction ratings (JSON body, not query params)
 - Upload serving with database fallback for cross-deploy survival
 - `clean_soul_name()`: Canonical lookup + regex cleanup for soul document headings
+- V3: `GET /api/simulation/{sim_id}/media/{media_type}/{filename}` — serve locally persisted media (path traversal prevention)
+- V3: `POST /api/simulation/{sim_id}/persist-media` — migration endpoint: download + persist fal.ai URLs not yet saved locally
+- V3: `GET /api/prompt-bible/strategies` — all model prompt strategies for UI display
+- V3: `POST /api/prompt-bible/optimize` — preview prompt optimization for a concept
+- V3: `GenerateImagesRequest.scope`: `"winner"` | `"active"` | `"all"` — controls which concepts get images generated
 
 **`simulation.py`** — Core 5-stage engine (+ optional DA Defense)
 - `OutputParser`: 3-tier structured output parsing (strict delimiters -> loose extraction -> raw fallback)
@@ -209,18 +227,28 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - `generate_markdown_persona()`: Per-persona export
 - `generate_markdown_devils_advocate()`: Full DA report with critiques, defense results, verdicts, evolution notes fallback
 - `_concept_to_md()`: Concept rendering with version history chain + previous_version_id lineage
-- `generate_reveal_presentation()`: reveal.js HTML with dark Genesis Chamber theme
-- `generate_image_prompts()`: Extract IMAGE_PROMPT fields for fal.ai
+- `generate_reveal_presentation()`: V3 4-act storytelling structure (Challenge → Battle → Reveal → Production) with Sora/Inter/JetBrains Mono fonts, CSS variables matching design-tokens.css, embedded media gallery, score evolution bars, winner card with gold gradient
+- `generate_image_prompts()`: Extract IMAGE_PROMPT fields for fal.ai. V3: `scope` parameter (`"winner"` | `"active"` | `"all"`) + enriched prompt entries (color_mood, headline, tagline, idea, persona_id)
+- V3 slide methods: `_slide_opening`, `_slide_brief`, `_slide_roster`, `_slide_round_intro`, `_slide_round_concepts`, `_slide_round_direction`, `_slide_winner_reveal`, `_slide_runner_up`, `_slide_evolution`, `_slide_media_gallery`, `_slide_production_spec`, `_slide_credits`
+- Legacy preserved: `_slide_title`, `_slide_round`, `_slide_winner`, `_slide_image_gallery`
 
 **`image_generator.py`** — fal.ai image integration
 - Models: Recraft V4 (raster + vector/SVG), Flux 2 Pro/Max, Seedream 4.5, Ideogram V3, Nano Banana Pro
 - REST calls via fal.ai queue API with polling
 - Batch generation with per-concept model auto-selection
+- V3: `from .prompt_bible import optimize_prompt` — optimizes prompts before generation
+- V3: Stores both `result["original_prompt"]` and `result["optimized_prompt"]`
+- V3: Downloads generated images to `output/{sim_id}/media/images/` (60s timeout via httpx)
+- V3: Sets `local_path`, `filename`, `file_size`, `generated_at`, `concept_status`, `visual_direction` on each result
 
 **`video_generator.py`** — fal.ai video integration
 - Image-to-Video: Kling 3.0 Pro, Kling O3 Pro, MiniMax Hailuo 2.3, Luma Ray 2
 - Text-to-Video: Kling O3 Pro, Google Veo 3.1
 - Quality tiers: hero, standard, draft
+- V3: `from .prompt_bible import optimize_prompt` — optimizes prompts before generation
+- V3: Stores both `original_prompt` and `optimized_prompt`
+- V3: Downloads videos to `output/{sim_id}/media/videos/` (180s timeout via httpx)
+- V3: Sets `local_path`, `filename`, `file_size`, `generated_at` on each result
 
 **`migrate.py`** — Database migration utilities
 
@@ -231,6 +259,21 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - `save_rating(state, interaction_id, rating, notes)`: Update rating in `da_interactions` + `da_ratings`
 - `generate_training_report(state)`: Aggregate patterns (brilliant/effective/weak/unfair), effectiveness score, response rate, verdict stats
 - `generate_refinement_suggestions(state)`: Human-readable markdown suggestions for manual soul editing (no auto-rewrite)
+
+**`prompt_bible.py`** — V3 model-specific prompt optimization for fal.ai generation
+- `MODEL_STRATEGIES`: 16+ fal.ai model entries (flux_2_pro, flux_2_max, seedream_4_5, ideogram_v3, recraft_v4, nano_banana_pro, veo_3_1_t2v, veo_3_1_extend, kling_3_i2v, kling_o3_i2v, kling_o3_t2v, minimax_i2v, minimax_fast_i2v, minimax_t2v, luma_i2v, luma_t2v)
+- Each strategy: `name`, `category` (image/video), `strengths`, `prompt_rules`, `style_map`, `camera_map` (Flux only), `quality_suffix`
+- Strategy inheritance via `inherits` key — model variants inherit parent config (e.g., flux_2_max inherits flux_2_pro)
+- `PromptOptimizer` class: transforms creative advertising prompts into model-optimal prompts
+  - `optimize(concept, model_key)` — main entry, routes to builder based on model category + prompt_rules
+  - `_build_image_prompt()` — 6-part structure: Subject + Visual + Style + Camera + Color + Quality (Flux, Seedream, Recraft, Nano Banana)
+  - `_build_typography_prompt()` — Ideogram V3: headline in quotes (critical for text rendering), font/layout focus
+  - `_build_video_prompt()` — Kling, MiniMax, Luma: camera movement first, then action + style
+  - `_build_json_prompt()` — Veo 3.1: structured JSON with scene/camera/lighting/audio/style/color_grade (300%+ better consistency per Google docs)
+  - `_clean_advertising_language()` — strips abstract phrases ("suggesting trust", "evoking possibility") that confuse image models
+  - `_detect_best_style()`, `_suggest_camera()`, `_extract_camera_movement()`, `_detect_ambient_audio()`
+- Module-level convenience: `optimize_prompt()`, `get_strategy()`, `get_all_strategies()`
+- Research sources: Flux 2 (docs.bfl.ml), Veo 3.1 (Google Cloud), Seedream 4.5 (fal.ai), Ideogram V3, Recraft V4
 
 ## API Endpoints
 
@@ -269,13 +312,19 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - `GET /api/simulation/{id}/presentation` — reveal.js HTML
 
 ### Media
-- `POST /api/simulation/{id}/generate-images` — Generate via fal.ai
+- `POST /api/simulation/{id}/generate-images` — Generate via fal.ai (V3: accepts `scope` in body)
 - `GET /api/simulation/{id}/images` — Get generated images
 - `POST /api/simulation/{id}/generate-videos` — Generate via fal.ai
 - `GET /api/simulation/{id}/video-tiers` — Quality tiers
 - `GET /api/simulation/{id}/videos` — Get generated videos
 - `GET /api/simulation/{id}/generated` — All generated content
 - `GET /api/simulation/{id}/download/all` — ZIP download
+- `GET /api/simulation/{id}/media/{type}/{filename}` — V3: Serve locally persisted media (images/videos)
+- `POST /api/simulation/{id}/persist-media` — V3: Download + persist any fal.ai URLs not yet saved locally
+
+### Prompt Bible (V3)
+- `GET /api/prompt-bible/strategies` — All model prompt strategies (16+ models)
+- `POST /api/prompt-bible/optimize` — Preview prompt optimization for a concept (body: `{concept, model_key}`)
 
 ### Config
 - `GET /api/simulation/presets` — List presets
@@ -305,6 +354,7 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - **Spacing**: Fibonacci scale (8, 13, 21, 34, 55, 89px)
 - **Surfaces**: 4-tier dark surface system (#1B1D22 -> #33363E)
 - **Utility Classes**: `.gc-btn`, `.gc-badge`, `.gc-status`, `.gc-card`, `.gc-input`, `.gc-spinner`
+- V3: `.gc-btn-copy` (absolute-positioned copy button, appears on hover) + `.gc-copyable` (parent class that triggers copy button visibility)
 
 ### Core Files
 - `App.jsx` — Main orchestration, manages conversations + simulations
@@ -326,7 +376,7 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - `Stage1.jsx` — Tab view of model responses
 - `Stage2.jsx` — Anonymized critique display with de-anonymization
 - `Stage3.jsx` — Chairman synthesis (green-tinted)
-- `Sidebar.jsx` — Conversation/simulation list with rename/archive/delete
+- `Sidebar.jsx` — Conversation/simulation list with rename/archive/delete. V3: simulation starring via `localStorage('gc-starred-sims')`, starred sort to top, optional filter
 
 ### Components — Genesis Chamber
 
@@ -339,7 +389,7 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - `HelpTooltip.jsx` + `helpContent.js` — Contextual help popovers
 
 **Dashboard & Live:**
-- `SimulationDashboard.jsx` — Live simulation monitoring + conditional DA Arena tab (shown when DA enabled + simulation completed)
+- `SimulationDashboard.jsx` — Live simulation monitoring + conditional DA Arena tab (shown when DA enabled + simulation completed). V3: Overview tab added as first position in VIEW_TABS
 - `StatusHeader.jsx` — Status bar with round/stage info
 - `LiveFeed.jsx` — Real-time SSE event feed (+ `da_defense` stage verb/label)
 - `ChamberAnimation.jsx` — Animated visual during processing
@@ -347,7 +397,7 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - `Skeleton.jsx` — Loading skeleton placeholders
 
 **Concepts & Critique:**
-- `ConceptCard.jsx` — Concept display with evolution tracking
+- `ConceptCard.jsx` — Concept display with evolution tracking. V3: CopyButton on headline, tagline, idea, image_prompt
 - `CritiquePanel.jsx` — Anonymized critique scores + feedback
 - `ModeratorDirection.jsx` — Decisions, eliminations, merge suggestions
 - `QualityGate.jsx` — Human approval checkpoints
@@ -357,8 +407,8 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - `PresentationGallery.jsx` — Browse concepts across rounds
 - `TranscriptViewer.jsx` — Interactive full transcript with V1 enrichment: bulleted critique strengths/weaknesses lists, DA badge on devil's advocate critiques, score color-coding (high/mid/low), synthesis badges showing surviving (green) and eliminated (red) concepts with reasons, moderator direction_notes, DA Defense cards (challenge + defense text + verdict with accepted/insufficient styling + revised score), evolution labels on refined concepts, and presentation cards with concept name + persona. All stage types fully rendered
 - `TranscriptViewer.css` — Transcript styles including ~90 lines of DA defense card styles + critique cards + synthesis badges + evolution labels + presentation items
-- `GeneratedGallery.jsx` — Image + video gallery with download
-- `OutputPanel.jsx` — Export buttons (markdown, presentation, media)
+- `GeneratedGallery.jsx` — Image + video gallery with download. V3: `getMediaUrl()` prefers local files over fal.ai URLs, Local/Expires badges, "Creative Prompt" + "Optimized for {model}" display with CopyButton, Gallery/Compare view toggle, compare grid (side-by-side with 1:1 images, concept name, persona, status badges)
+- `OutputPanel.jsx` — Export buttons (markdown, presentation, media). V3: `imageScope` state (`"active"` | `"all"` | `"winner"`), scope selector dropdown, CopyButton on prompt text
 
 **DA Arena:**
 - `DAArena.jsx` — Post-simulation DA interaction review with two modes:
@@ -370,7 +420,11 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - `DAArena.css` — ~450 lines using design-tokens.css variables exclusively (3D perspective, backface-visibility, color-specific glow effects)
 
 **Shared:**
-- `Icons.jsx` — SVG icon components
+- `Icons.jsx` — SVG icon components. V3: Added `IconStar`
+- `CopyButton.jsx` — V3: Reusable copy-to-clipboard component (`navigator.clipboard.writeText`). Shows IconCopy, switches to IconCheck for 2s after copy. CSS class `.gc-btn-copy` (absolute positioned, appears on parent `.gc-copyable` hover)
+
+**V3 — Overview & Archive:**
+- `SimulationOverview.jsx` + `SimulationOverview.css` — Case study overview tab (first in dashboard). Sections: header (name, type, date, status), brief card with CopyButton, brand context, participants grid (moderator/evaluator/DA + creatives with color-coded borders), results (winner/runner-up/stats), media gallery preview (first 5 images with `getMediaUrl()` local preference)
 
 ## Key Design Decisions
 
@@ -462,6 +516,46 @@ Inherited from llm-council. Concepts labeled "Concept A, B, C" — nobody knows 
 ### Backward Compatibility
 Original llm-council endpoints and components stay fully functional. Genesis Chamber is additive, not destructive.
 
+### Persistent Media Archive (V3)
+- fal.ai URLs expire ~24h; images/videos now downloaded immediately after generation
+- Storage: `output/{sim_id}/media/images/*.png`, `output/{sim_id}/media/videos/*.mp4`
+- Backend serves via `FileResponse` at `/api/simulation/{id}/media/{type}/{filename}` with path traversal prevention
+- Migration endpoint `POST /persist-media` for pre-V3 simulations: iterates `generated_images.json` / `generated_videos.json`, downloads items missing `local_path`, re-saves JSON
+- Frontend `getMediaUrl(item)` prefers local path, falls back to fal.ai URL
+- Local/Expires badge on each media item indicates persistence status
+
+### Prompt Engineering Bible (V3)
+- Creative personas write advertising-quality descriptions ("evoking trust", "symbolizing innovation"); image models need concrete visuals
+- `PromptOptimizer` transforms prompts per model's documented strengths and prompt format
+- Research-based strategies sourced from official documentation (Flux 2 docs.bfl.ml, Veo 3.1 Google Cloud, Seedream 4.5 fal.ai, Ideogram V3, Recraft V4)
+- Model-specific builders: image (6-part: Subject + Visual + Style + Camera + Color + Quality), typography (headline in quotes for Ideogram), video (camera movement first for Kling/MiniMax/Luma), JSON (Veo 3.1 — 300%+ better consistency per Google docs)
+- `_clean_advertising_language()` strips abstract phrases that confuse image models (suggesting, evoking, symbolizing, representing, metaphor for)
+- Strategy inheritance: model variants inherit parent strategies via `inherits` key, override specific fields
+- Both original and optimized prompts stored in generation results + displayed in gallery with CopyButton
+
+### Scope-Based Image Generation (V3)
+- Three scopes: `"winner"` (winner only), `"active"` (finalists, default), `"all"` (active + eliminated + merged)
+- `generate_image_prompts()` filters concepts by scope before extracting IMAGE_PROMPT fields
+- OutputPanel exposes scope selector dropdown next to model selector
+- `GenerateImagesRequest.scope` passed through API to `OutputEngine`
+
+### Compare View (V3)
+- Gallery/Compare toggle appears when >1 image exists
+- Compare mode: dense grid with 1:1 aspect ratio images, concept name, persona, status badges (winner/eliminated/active)
+- Designed for side-by-side evaluation of different creative directions across concepts
+
+### Cinematic Presentation (V3)
+- 4-act storytelling structure: Challenge → Battle → Reveal → Production
+- **ACT 1 (Challenge)**: Dramatic title, brief card with brand context, full roster
+- **ACT 2 (Battle)**: Per-round intro + concepts + direction (vertical slide stacks)
+- **ACT 3 (Reveal)**: Winner reveal with gold treatment, runner-up, score evolution bars
+- **ACT 4 (Production)**: Embedded generated images in media gallery, production spec grid, credits
+- Sora display font (Google Fonts) for headings, Inter for body, JetBrains Mono for data
+- CSS variables aligned with frontend `design-tokens.css` (`--gc-void`, `--gc-cyan`, `--gc-gold`, etc.)
+- Score evolution bars with high (green gradient) / mid (gold) / low (red) color coding
+- Winner card: gold gradient background, 2px gold border, radial glow, Sora font headline with cyan text-shadow
+- Legacy slide methods preserved: `_slide_title`, `_slide_round`, `_slide_winner`, `_slide_image_gallery` (used by other callers or as fallback)
+
 ## Important Implementation Details
 
 ### Relative Imports
@@ -513,7 +607,7 @@ All ReactMarkdown components must be wrapped in `<div className="markdown-conten
 5. **Long Simulations**: State saved after every stage — network failures and redeploys are handled
 6. **Elimination Bookkeeping**: Track eliminated concepts + which elements were merged into survivors
 7. **Database Optional**: Everything works without `DATABASE_URL` (file-based fallback), but uploads don't survive redeploys
-8. **fal.ai URLs Expire**: Generated image/video URLs are temporary (~24h). ZIP download is best-effort
+8. **fal.ai URLs Expire**: Generated image/video URLs are temporary (~24h). V3 persistent media archive downloads files locally immediately after generation. Migration endpoint available for pre-V3 simulations. ZIP download still works as fallback
 9. **Thinking Mode Token Scaling**: Deep mode uses 3x base tokens — watch costs with premium models
 10. **Soul Name Mismatch**: If a soul heading doesn't match the canonical name, `clean_soul_name()` fixes it. Add new personas to `_CANONICAL_NAMES` in `main.py`
 11. **DA Defense Stage Numbering**: Uses `stage_name="da_defense"` with `stage_num=2` — NOT a separate stage number. This prevents breaking `RoundProgress.jsx` which indexes stages by `stageNum - 1`
@@ -523,6 +617,12 @@ All ReactMarkdown components must be wrapped in `<div className="markdown-conten
 15. **DA Training Suggestions**: Manual only — no `auto_refine_soul()` function. Human must review suggestions and edit soul documents manually
 16. **SoulInfoCard Custom Fallback**: Custom/uploaded souls without entries in `soulBios.js` get auto-generated bios (title from team name, era "Custom", whyInChamber from soul excerpt). Missing bio fields simply don't render
 17. **TranscriptViewer Dual-Tier Synthesis**: `_add_transcript()` stores synthesis data both as flat keys (backward compat) and nested `synthesis` dict. TranscriptViewer reads `entry.synthesis?.direction_notes` — if only flat keys exist, badges won't render
+18. **Prompt Bible Logging**: `[PromptBible]` console logs during generation show original→optimized transformations. Useful for debugging model-specific prompt issues
+19. **Media Persistence**: Local files in `output/{sim_id}/media/`. Migration endpoint `POST /persist-media` handles pre-V3 data. `generated_images.json` / `generated_videos.json` store both `url` (fal.ai, temporary) and `local_path` (persisted). If local file exists, gallery uses it; otherwise falls back to fal.ai URL
+20. **Presentation Font Loading**: Sora font loaded via Google Fonts CDN — requires internet for first render. Falls back to Inter → system-ui → sans-serif
+21. **Scope "all" Includes Eliminated**: Eliminated concepts may have incomplete data (missing visual_direction, partial scores). `generate_image_prompts()` includes merged concepts too
+22. **CopyButton Parent Class**: CopyButton only appears on hover when its parent has class `.gc-copyable` (CSS: `position: relative` + child `.gc-btn-copy` transitions from `opacity: 0` to `opacity: 1`)
+23. **Compare View Threshold**: Gallery/Compare toggle only renders when `images.length > 1`. Compare view uses 1:1 aspect ratio while gallery uses 280px-wide cards with 240px-tall images
 
 ## Reference Documentation
 
