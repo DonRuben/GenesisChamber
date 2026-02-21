@@ -221,7 +221,7 @@ DEFAULT_PARTICIPANTS = {
     },
     "leo-burnett": {
         "name": "Leo Burnett",
-        "model": "openai/gpt-5.2",
+        "model": "openai/gpt-5.1",
         "soul_document": "souls/leo-burnett.md",
         "role": "participant",
         "team": "marketing",
@@ -262,7 +262,7 @@ DEFAULT_PARTICIPANTS = {
     },
     "paula-scher": {
         "name": "Paula Scher",
-        "model": "openai/gpt-5.2",
+        "model": "openai/gpt-5.1",
         "soul_document": "souls/paula-scher.md",
         "role": "participant",
         "team": "design",
@@ -323,7 +323,7 @@ DEFAULT_PARTICIPANTS = {
     },
     "jeff-bezos": {
         "name": "Jeff Bezos",
-        "model": "google/gemini-3-pro",
+        "model": "anthropic/claude-sonnet-4.6",
         "soul_document": "souls/jeff-bezos.md",
         "role": "participant",
         "team": "business",
@@ -333,7 +333,7 @@ DEFAULT_PARTICIPANTS = {
     },
     "warren-buffett": {
         "name": "Warren Buffett",
-        "model": "anthropic/claude-sonnet-4.6",
+        "model": "google/gemini-3-pro",
         "soul_document": "souls/warren-buffett.md",
         "role": "participant",
         "team": "business",
@@ -343,7 +343,7 @@ DEFAULT_PARTICIPANTS = {
     },
     "richard-branson": {
         "name": "Richard Branson",
-        "model": "openai/gpt-5.2",
+        "model": "meta-llama/llama-4-maverick",
         "soul_document": "souls/richard-branson.md",
         "role": "participant",
         "team": "business",
@@ -353,7 +353,7 @@ DEFAULT_PARTICIPANTS = {
     },
     "dietrich-mateschitz": {
         "name": "Dietrich Mateschitz",
-        "model": "meta-llama/llama-4-maverick",
+        "model": "deepseek/deepseek-v3.2",
         "soul_document": "souls/dietrich-mateschitz.md",
         "role": "participant",
         "team": "business",
@@ -386,7 +386,7 @@ DEFAULT_MODERATOR = {
 
 DEFAULT_EVALUATOR = {
     "name": "Jony Ive",
-    "model": "anthropic/claude-opus-4-6",
+    "model": "anthropic/claude-sonnet-4.6",
     "soul_document": "souls/jony-ive.md",
     "role": "evaluator",
     "team": "leadership",
@@ -404,7 +404,7 @@ DEFAULT_EVALUATOR = {
 # OPTIONAL — activated per simulation via the devils_advocate toggle.
 DEFAULT_DEVILS_ADVOCATE = {
     "name": "Advocatus Diaboli",
-    "model": "anthropic/claude-sonnet-4.6",
+    "model": "x-ai/grok-4",
     "soul_document": "souls/devils-advocate.md",
     "role": "devils_advocate",
     "team": "leadership",

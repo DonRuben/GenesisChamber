@@ -57,32 +57,33 @@ const PRESET_DESCRIPTIONS = {
   assembly_line: 'Efficient 5-round production pipeline for rapid iteration.',
 };
 
-// Default model assignments per persona from the blueprint
+// Default model assignments per persona — V3.5 role-based cost/quality strategy
+// Opus ONLY for Moderator. Sonnet for Evaluator. Grok for DA. Mix for participants.
 const DEFAULT_MODELS = {
   // Marketing & Strategy
-  'david-ogilvy': 'google/gemini-3-pro',
-  'claude-hopkins': 'anthropic/claude-sonnet-4.6',
-  'leo-burnett': 'openai/gpt-5.2',
-  'mary-wells-lawrence': 'meta-llama/llama-4-maverick',
-  'gary-halbert': 'x-ai/grok-4',
+  'david-ogilvy': 'google/gemini-3-pro',           // $1.25/$10 — research king, 2M context
+  'claude-hopkins': 'anthropic/claude-sonnet-4.6',  // $3/$15 — scientific, precise
+  'leo-burnett': 'openai/gpt-5.1',                 // $5/$15 — warm, emotional creative
+  'mary-wells-lawrence': 'meta-llama/llama-4-maverick', // $0.20/$0.60 — bold, direct, budget
+  'gary-halbert': 'x-ai/grok-4',                   // $3/$15 — raw, provocative, urgent
   // Design & Visual
-  'paul-rand': 'google/gemini-3-pro',
-  'paula-scher': 'openai/gpt-5.2',
-  'saul-bass': 'anthropic/claude-sonnet-4.6',
-  'susan-kare': 'meta-llama/llama-4-maverick',
-  'rob-janoff': 'x-ai/grok-4',
-  'tobias-van-schneider': 'google/gemini-3-pro',
+  'paul-rand': 'google/gemini-3-pro',              // $1.25/$10 — systematic, intellectual
+  'paula-scher': 'openai/gpt-5.1',                 // $5/$15 — expressive, bold typography
+  'saul-bass': 'anthropic/claude-sonnet-4.6',       // $3/$15 — precise, iconic reduction
+  'susan-kare': 'meta-llama/llama-4-maverick',      // $0.20/$0.60 — human, accessible, budget
+  'rob-janoff': 'x-ai/grok-4',                     // $3/$15 — unconventional simplicity
+  'tobias-van-schneider': 'google/gemini-3-pro',    // $1.25/$10 — modern, digital-first
   // Business & Strategy
-  'elon-musk': 'x-ai/grok-4',
-  'jeff-bezos': 'google/gemini-3-pro',
-  'warren-buffett': 'anthropic/claude-sonnet-4.6',
-  'richard-branson': 'openai/gpt-5.2',
-  'dietrich-mateschitz': 'meta-llama/llama-4-maverick',
-  // Leadership
-  moderator: 'anthropic/claude-opus-4-6',
-  evaluator: 'anthropic/claude-opus-4-6',
-  // Devil's Advocate
-  'devils-advocate': 'anthropic/claude-sonnet-4.6',
+  'elon-musk': 'x-ai/grok-4',                      // $3/$15 — HIS OWN AI COMPANY
+  'jeff-bezos': 'anthropic/claude-sonnet-4.6',      // $3/$15 — methodical, customer-obsessed
+  'warren-buffett': 'google/gemini-3-pro',          // $1.25/$10 — patient analyst, 2M context
+  'richard-branson': 'meta-llama/llama-4-maverick', // $0.20/$0.60 — gut-instinct, budget
+  'dietrich-mateschitz': 'deepseek/deepseek-v3.2',  // $0.28/$0.42 — silent strategist, budget
+  // Leadership — Opus ONLY for Moderator
+  moderator: 'anthropic/claude-opus-4-6',           // $5/$25 — elimination decisions need depth
+  evaluator: 'anthropic/claude-sonnet-4.6',         // $3/$15 — structured scoring
+  // Devil's Advocate — Grok is naturally adversarial
+  'devils-advocate': 'x-ai/grok-4',                 // $3/$15 — provocative, NOT Claude
 };
 
 // Team display order and metadata
@@ -128,6 +129,9 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
   const [dualRoleActive, setDualRoleActive] = useState({});
   // Devil's Advocate (Advocatus Diaboli) — optional adversarial critic
   const [devilsAdvocateActive, setDevilsAdvocateActive] = useState(false);
+  const [daAggressionLevel, setDaAggressionLevel] = useState('aggressive');
+  const [daAttackFocus, setDaAttackFocus] = useState([]);
+  const [daTrainingSummary, setDaTrainingSummary] = useState(null);
   // AI capabilities
   const [thinkingMode, setThinkingMode] = useState('off'); // 'off', 'thinking', 'deep'
   const [thinkingOverrides, setThinkingOverrides] = useState({}); // per-participant overrides
@@ -200,6 +204,9 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
             assignments.moderator = participantsData.moderator.model;
           }
           setModelAssignments(assignments);
+        }
+        if (participantsData?.da_training_summary) {
+          setDaTrainingSummary(participantsData.da_training_summary);
         }
       } catch {
         // Model endpoints not available — use defaults silently
@@ -439,7 +446,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
         },
         evaluator: {
           display_name: evaluator?.name || 'Jony Ive',
-          model: modelAssignments.evaluator || 'anthropic/claude-opus-4-6',
+          model: modelAssignments.evaluator || 'anthropic/claude-sonnet-4.6',
           soul_document: evaluator?.file || 'souls/jony-ive.md',
           role: 'evaluator',
           temperature: 0.5,
@@ -462,7 +469,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
         ...(devilsAdvocateActive ? {
           devils_advocate: {
             display_name: 'Advocatus Diaboli',
-            model: modelAssignments['devils-advocate'] || 'anthropic/claude-sonnet-4.6',
+            model: modelAssignments['devils-advocate'] || 'x-ai/grok-4',
             soul_document: 'souls/devils-advocate.md',
             role: 'devils_advocate',
             temperature: 0.75,
@@ -471,6 +478,8 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
             enable_web_search: enableWebSearch,
             color: '#DC2626',
           },
+          da_aggression_level: daAggressionLevel,
+          da_attack_focus: daAttackFocus,
         } : {}),
       };
 
@@ -788,7 +797,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
               )}
             </div>
 
-            {/* Devil's Advocate (Advocatus Diaboli) — optional adversarial critic */}
+            {/* Devil's Advocate (Advocatus Diaboli) — DA Command Center */}
             <div className="devils-advocate-header" style={{ marginTop: '12px' }}>
               <div className="moderator-avatar" style={{ borderColor: '#DC2626' }}>
                 <span className="moderator-initial" style={{ color: '#DC2626' }}>
@@ -819,26 +828,161 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
               >
                 {devilsAdvocateActive ? 'Enabled' : 'Disabled'}
               </button>
-              {devilsAdvocateActive && availableModels && (
-                <ModelSelector
-                  value={modelAssignments['devils-advocate'] || 'anthropic/claude-sonnet-4.6'}
-                  onChange={(modelId) => updateModel('devils-advocate', modelId)}
-                  models={availableModels}
-                  compact
-                />
-              )}
-              {devilsAdvocateActive && thinkingMode !== 'off' && (
-                <select
-                  className="thinking-per-participant thinking-leadership"
-                  value={getEffectiveThinking('devils-advocate')}
-                  onChange={(e) => handleThinkingOverride('devils-advocate', e.target.value)}
-                >
-                  <option value="off">Thinking: Off</option>
-                  <option value="thinking">Thinking</option>
-                  <option value="deep">Deep Thinking</option>
-                </select>
-              )}
             </div>
+
+            {/* DA Command Center — expanded config panel */}
+            {devilsAdvocateActive && (
+              <div className="da-command-center" style={{
+                marginTop: '8px',
+                padding: '12px',
+                background: 'rgba(220, 38, 38, 0.04)',
+                borderRadius: '8px',
+                border: '1px solid rgba(220, 38, 38, 0.15)',
+              }}>
+                {/* Soul Profile */}
+                <div style={{ marginBottom: '10px', fontSize: '11px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                  The Promoter of the Faith. Argues AGAINST to ensure only the strongest survive. Based on the Catholic canonization process (Pope Sixtus V, 1587).
+                </div>
+
+                {/* Model + Thinking */}
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '10px' }}>
+                  {availableModels && (
+                    <ModelSelector
+                      value={modelAssignments['devils-advocate'] || 'x-ai/grok-4'}
+                      onChange={(modelId) => updateModel('devils-advocate', modelId)}
+                      models={availableModels}
+                      compact
+                    />
+                  )}
+                  {thinkingMode !== 'off' && (
+                    <select
+                      className="thinking-per-participant thinking-leadership"
+                      value={getEffectiveThinking('devils-advocate')}
+                      onChange={(e) => handleThinkingOverride('devils-advocate', e.target.value)}
+                    >
+                      <option value="off">Thinking: Off</option>
+                      <option value="thinking">Thinking</option>
+                      <option value="deep">Deep Thinking</option>
+                    </select>
+                  )}
+                </div>
+
+                {/* Aggression Level */}
+                <div style={{ marginBottom: '10px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                    Aggression Level
+                  </div>
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    {[
+                      { value: 'analytical', label: 'Analytical', desc: 'Measured, data-driven critique' },
+                      { value: 'aggressive', label: 'Aggressive', desc: 'Strong adversarial challenge' },
+                      { value: 'ruthless', label: 'Ruthless', desc: 'Maximum pressure, no quarter' },
+                    ].map(opt => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        title={opt.desc}
+                        onClick={() => setDaAggressionLevel(opt.value)}
+                        style={{
+                          flex: 1,
+                          padding: '4px 8px',
+                          fontSize: '11px',
+                          fontWeight: daAggressionLevel === opt.value ? 600 : 400,
+                          background: daAggressionLevel === opt.value ? 'rgba(220, 38, 38, 0.15)' : 'var(--surface-2)',
+                          color: daAggressionLevel === opt.value ? '#DC2626' : 'var(--text-secondary)',
+                          border: `1px solid ${daAggressionLevel === opt.value ? 'rgba(220, 38, 38, 0.4)' : 'var(--border-subtle)'}`,
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Training Status */}
+                {daTrainingSummary && (
+                  <div style={{
+                    marginBottom: '10px',
+                    padding: '8px',
+                    background: 'var(--surface-2)',
+                    borderRadius: '6px',
+                    fontSize: '11px',
+                    display: 'flex',
+                    gap: '12px',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                  }}>
+                    <span style={{ color: 'var(--text-muted)' }}>
+                      {daTrainingSummary.total_rated} interactions rated
+                    </span>
+                    <span style={{
+                      padding: '1px 6px',
+                      borderRadius: '3px',
+                      fontSize: '10px',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      background: daTrainingSummary.training_level === 'advanced' ? 'rgba(34, 197, 94, 0.15)' :
+                        daTrainingSummary.training_level === 'intermediate' ? 'rgba(0, 217, 255, 0.15)' :
+                        daTrainingSummary.training_level === 'beginner' ? 'rgba(255, 184, 0, 0.15)' : 'var(--surface-3)',
+                      color: daTrainingSummary.training_level === 'advanced' ? '#22C55E' :
+                        daTrainingSummary.training_level === 'intermediate' ? 'var(--gc-cyan)' :
+                        daTrainingSummary.training_level === 'beginner' ? 'var(--gc-gold)' : 'var(--text-muted)',
+                    }}>
+                      {daTrainingSummary.training_level}
+                    </span>
+                    {daTrainingSummary.last_trained && (
+                      <span style={{ color: 'var(--text-muted)' }}>
+                        Last: {new Date(daTrainingSummary.last_trained).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Attack Focus */}
+                <div>
+                  <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                    Attack Focus <span style={{ fontWeight: 400, textTransform: 'none' }}>(empty = attack everything)</span>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                    {[
+                      { value: 'brand_consistency', label: 'Brand consistency' },
+                      { value: 'market_viability', label: 'Market viability' },
+                      { value: 'creative_originality', label: 'Creative originality' },
+                      { value: 'technical_feasibility', label: 'Technical feasibility' },
+                      { value: 'audience_fit', label: 'Audience fit' },
+                      { value: 'budget_realism', label: 'Budget realism' },
+                    ].map(opt => {
+                      const isActive = daAttackFocus.includes(opt.value);
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setDaAttackFocus(prev =>
+                            isActive ? prev.filter(v => v !== opt.value) : [...prev, opt.value]
+                          )}
+                          style={{
+                            padding: '2px 8px',
+                            fontSize: '10px',
+                            fontWeight: isActive ? 600 : 400,
+                            background: isActive ? 'rgba(220, 38, 38, 0.12)' : 'var(--surface-2)',
+                            color: isActive ? '#DC2626' : 'var(--text-muted)',
+                            border: `1px solid ${isActive ? 'rgba(220, 38, 38, 0.3)' : 'var(--border-subtle)'}`,
+                            borderRadius: '3px',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          {opt.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* AI Capabilities — Thinking + Web Search */}

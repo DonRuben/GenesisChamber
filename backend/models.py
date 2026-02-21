@@ -37,6 +37,8 @@ class SimulationConfig(BaseModel):
     brief: str  # The project brief text
     brand_context: str = ""
     devils_advocate: Optional[ParticipantConfig] = None  # Advocatus Diaboli — optional adversarial critic
+    da_aggression_level: Literal["analytical", "aggressive", "ruthless"] = "aggressive"
+    da_attack_focus: List[str] = []  # empty = attack everything; options: brand_consistency, market_viability, creative_originality, technical_feasibility, audience_fit, budget_realism
 
 
 # --- Concept Lifecycle Models ---
