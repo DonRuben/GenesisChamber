@@ -77,7 +77,7 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - V3: `generate_image_prompts()` scope parameter — `"winner"`, `"active"` (default), `"all"` (including eliminated)
 - V3: `generate_reveal_presentation()` — 4-act storytelling (Challenge → Battle → Reveal → Production)
 - V3: `GENESIS_REVEAL_THEME` cinematic overhaul — Sora/Inter/JetBrains Mono, design-tokens.css alignment
-- V3: 10 new slide methods (`_slide_opening`, `_slide_brief`, `_slide_round_intro`, `_slide_round_concepts`, `_slide_round_direction`, `_slide_winner_reveal`, `_slide_runner_up`, `_slide_evolution`, `_slide_media_gallery`, `_slide_production_spec`) + updated `_slide_credits`
+- V3: 11 new slide methods (`_slide_opening`, `_slide_brief`, `_slide_roster`, `_slide_round_intro`, `_slide_round_concepts`, `_slide_round_direction`, `_slide_winner_reveal`, `_slide_runner_up`, `_slide_evolution`, `_slide_media_gallery`, `_slide_production_spec`) + updated `_slide_credits`
 - V3: Legacy slide methods preserved (`_slide_title`, `_slide_round`, `_slide_winner`, `_slide_image_gallery`)
 
 ## Soul Document Roster (19 Personas)
@@ -237,6 +237,7 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - `generate_markdown_round()`: Per-round export + DA Defense section (defense text, verdict, revised score)
 - `generate_markdown_persona()`: Per-persona export
 - `generate_markdown_devils_advocate()`: Full DA report with critiques, defense results, verdicts, evolution notes fallback
+- `generate_production_package()`: Production-ready winner package with full specs
 - `_concept_to_md()`: Concept rendering with version history chain + previous_version_id lineage
 - `generate_reveal_presentation()`: V3 4-act storytelling structure (Challenge → Battle → Reveal → Production) with Sora/Inter/JetBrains Mono fonts, CSS variables matching design-tokens.css, embedded media gallery, score evolution bars, winner card with gold gradient
 - `generate_image_prompts()`: Extract IMAGE_PROMPT fields for fal.ai. V3: `scope` parameter (`"winner"` | `"active"` | `"all"`) + enriched prompt entries (color_mood, headline, tagline, idea, persona_id)
@@ -320,6 +321,8 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - `GET /api/simulation/{id}/export/winner` — Winner package
 - `GET /api/simulation/{id}/export/round/{n}` — Round markdown
 - `GET /api/simulation/{id}/export/persona/{pid}` — Persona markdown
+- `GET /api/simulation/{id}/export/devils-advocate` — DA-specific report
+- `GET /api/simulation/{id}/export/production` — Production-ready winner package
 - `GET /api/simulation/{id}/presentation` — reveal.js HTML
 
 ### Media
@@ -369,7 +372,7 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 
 ### Core Files
 - `App.jsx` — Main orchestration, manages conversations + simulations
-- `api.js` — API client with all endpoint methods + SSE streaming + DA Arena methods (extract, interactions, rate, training, suggestions)
+- `api.js` — API client with all endpoint methods + SSE streaming + DA Arena methods (extract, interactions, rate, training, suggestions) + export URL helpers (DA report, production package)
 - `main.jsx` — React entry point
 - `design-tokens.css` — OmniPresent brand design system
 - `index.css` — Global styles + markdown content styling
