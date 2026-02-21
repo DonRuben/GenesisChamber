@@ -34,6 +34,7 @@ from .da_training import (
 )
 from .image_generator import ImageGenerator
 from .video_generator import VideoGenerator, VIDEO_QUALITY_TIERS
+from .prompt_bible import get_all_strategies, optimize_prompt as pb_optimize_prompt
 from .database import DatabasePool, UploadDB, is_db_available, ensure_schema
 
 app = FastAPI(title="LLM Council + Genesis Chamber API")
@@ -1057,6 +1058,7 @@ async def get_output_file(sim_id: str, filename: str):
 
 class GenerateImagesRequest(BaseModel):
     model: Optional[str] = None  # Override auto-selection with specific model key
+    scope: Optional[str] = "active"  # V3: 'winner', 'active', 'all'
 
 
 @app.post("/api/simulation/{sim_id}/generate-images")
@@ -1069,7 +1071,8 @@ async def generate_images(sim_id: str, request: Optional[GenerateImagesRequest] 
     engine = OutputEngine()
     sim_dir = Path(SIMULATION_OUTPUT_DIR) / sim_id
     sim_dir.mkdir(parents=True, exist_ok=True)
-    prompts_path = engine.generate_image_prompts(state, sim_dir)
+    scope = request.scope if request and request.scope else "active"
+    prompts_path = engine.generate_image_prompts(state, sim_dir, scope=scope)
 
     with open(prompts_path) as f:
         prompts = json.load(f)
@@ -1210,6 +1213,88 @@ async def get_all_generated(sim_id: str):
         "videos": videos,
         "has_content": len(images) > 0 or len(videos) > 0,
     }
+
+
+@app.get("/api/simulation/{sim_id}/media/{media_type}/{filename}")
+async def serve_media(sim_id: str, media_type: str, filename: str):
+    """Serve locally persisted media files (images/videos)."""
+    if media_type not in ("images", "videos"):
+        raise HTTPException(status_code=400, detail="Invalid media type")
+    # Prevent path traversal
+    if ".." in filename or "/" in filename or "\\" in filename:
+        raise HTTPException(status_code=400, detail="Invalid filename")
+    filepath = Path(SIMULATION_OUTPUT_DIR) / sim_id / "media" / media_type / filename
+    if not filepath.exists():
+        raise HTTPException(status_code=404, detail="Media file not found")
+    content_type = "image/png" if media_type == "images" else "video/mp4"
+    return FileResponse(filepath, media_type=content_type)
+
+
+@app.post("/api/simulation/{sim_id}/persist-media")
+async def persist_media(sim_id: str):
+    """Download and persist any fal.ai media that hasn't been saved locally yet."""
+    sim_dir = Path(SIMULATION_OUTPUT_DIR) / sim_id
+    if not sim_dir.exists():
+        raise HTTPException(status_code=404, detail="Simulation not found")
+
+    results = {"images_saved": 0, "videos_saved": 0, "errors": []}
+
+    for media_file, media_type in [
+        ("generated_images.json", "images"),
+        ("generated_videos.json", "videos"),
+    ]:
+        json_path = sim_dir / media_file
+        if not json_path.exists():
+            continue
+        items = json.loads(json_path.read_text())
+        media_dir = sim_dir / "media" / media_type
+        media_dir.mkdir(parents=True, exist_ok=True)
+
+        for item in items:
+            if item.get("local_path") and (sim_dir.parent / item["local_path"]).exists():
+                continue  # Already persisted
+            if not item.get("url"):
+                continue
+
+            try:
+                safe_name = re.sub(r'[^a-z0-9_-]', '_', item.get("concept_name", "unknown").lower())[:50]
+                ext = "png" if media_type == "images" else "mp4"
+                filename = f"{safe_name}_{item.get('model', 'unknown')}.{ext}"
+                filepath = media_dir / filename
+
+                async with httpx.AsyncClient(timeout=120.0) as client:
+                    response = await client.get(item["url"])
+                    response.raise_for_status()
+                    filepath.write_bytes(response.content)
+
+                item["local_path"] = f"{sim_id}/media/{media_type}/{filename}"
+                item["filename"] = filename
+                item["file_size"] = len(response.content)
+                results[f"{media_type}_saved"] += 1
+            except Exception as e:
+                results["errors"].append(f"{item.get('concept_name')}: {str(e)}")
+
+        # Re-save the updated JSON with local paths
+        json_path.write_text(json.dumps(items, indent=2), encoding="utf-8")
+
+    return results
+
+
+# === PROMPT BIBLE API ===
+
+@app.get("/api/prompt-bible/strategies")
+async def get_prompt_strategies():
+    """Return all model prompt strategies for UI display."""
+    return get_all_strategies()
+
+
+@app.post("/api/prompt-bible/optimize")
+async def optimize_concept_prompt(request: dict):
+    """Preview prompt optimization for a concept."""
+    concept = request.get("concept", {})
+    model_key = request.get("model_key", "nano_banana_pro")
+    optimized = pb_optimize_prompt(concept, model_key)
+    return {"original": concept.get("prompt", ""), "optimized": optimized, "model": model_key}
 
 
 @app.get("/api/simulation/{sim_id}/download/all")

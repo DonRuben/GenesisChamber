@@ -220,20 +220,42 @@ h2 {{ font-size:20px; color:var(--cyan); margin:34px 0 16px; padding-bottom:8px;
         path.write_text(html, encoding="utf-8")
         return path
 
-    def generate_image_prompts(self, state: SimulationState, sim_dir: Path) -> Path:
-        """Extract all image prompts from concepts."""
+    def generate_image_prompts(self, state: SimulationState, sim_dir: Path,
+                               scope: str = "active") -> Path:
+        """Extract image prompts from concepts.
+
+        Args:
+            scope: 'winner' (winner only), 'active' (winner + runner-up + finalists),
+                   'all' (includes eliminated concepts)
+        """
         path = sim_dir / "image_prompts.json"
 
         prompts = []
-        for group in ["active", "eliminated"]:
+
+        if scope == "winner":
+            groups = ["active"]
+        elif scope == "all":
+            groups = ["active", "eliminated", "merged"]
+        else:
+            groups = ["active"]
+
+        for group in groups:
             for concept in state.concepts.get(group, []):
+                # For "winner" scope, only include winner concepts
+                if scope == "winner" and concept.status != "winner":
+                    continue
                 if concept.image_prompt:
                     entry = {
                         "concept_name": concept.name,
                         "persona": concept.persona_name,
+                        "persona_id": concept.persona_id,
                         "status": concept.status,
                         "prompt": concept.image_prompt,
-                        "visual_direction": getattr(concept, "visual_direction", ""),
+                        "visual_direction": getattr(concept, "visual_direction", "") or "",
+                        "color_mood": getattr(concept, "color_mood", "") or "",
+                        "headline": getattr(concept, "headline", "") or "",
+                        "tagline": getattr(concept, "tagline", "") or "",
+                        "idea": getattr(concept, "idea", "") or "",
                     }
                     if concept.video_prompt:
                         entry["video_prompt"] = concept.video_prompt

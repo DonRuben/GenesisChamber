@@ -2,12 +2,15 @@
 
 import asyncio
 import json
+import re
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
 import httpx
 
 from .config import FAL_KEY, SIMULATION_OUTPUT_DIR
+from .prompt_bible import optimize_prompt
 
 
 # fal.ai model endpoints (via queue API) — Updated Feb 2026
@@ -178,24 +181,58 @@ class ImageGenerator:
         """
         results = []
 
+        # V3: Create sim_dir before loop so media download can use it
+        sim_dir = self.output_dir / sim_id
+        sim_dir.mkdir(parents=True, exist_ok=True)
+
         for prompt_data in prompts:
             model_key = model_override if model_override and model_override in FAL_MODELS else self.select_model(prompt_data)
+
+            # ── V3: Optimize prompt for the target model ──
+            optimized_prompt = optimize_prompt(prompt_data, model_key)
+            print(f"[PromptBible] {model_key}: '{prompt_data.get('prompt', '')[:50]}...' → '{optimized_prompt[:50]}...'")
+
             result = await self.generate_with_fallback(
-                prompt=prompt_data["prompt"],
+                prompt=optimized_prompt,
                 preferred_model=model_key,
             )
 
             if result:
                 result["concept_name"] = prompt_data.get("concept_name", "Unknown")
                 result["persona"] = prompt_data.get("persona", "Unknown")
+                result["original_prompt"] = prompt_data.get("prompt", "")
+                result["optimized_prompt"] = optimized_prompt
                 results.append(result)
+
+                # ── V3: Download the actual file to persist it locally ──
+                if result.get("url"):
+                    try:
+                        media_dir = sim_dir / "media" / "images"
+                        media_dir.mkdir(parents=True, exist_ok=True)
+                        safe_name = re.sub(r'[^a-z0-9_-]', '_', result["concept_name"].lower())[:50]
+                        filename = f"{safe_name}_{model_key}.png"
+                        filepath = media_dir / filename
+
+                        async with httpx.AsyncClient(timeout=60.0) as dl_client:
+                            img_response = await dl_client.get(result["url"])
+                            img_response.raise_for_status()
+                            filepath.write_bytes(img_response.content)
+
+                        result["local_path"] = f"{sim_id}/media/images/{filename}"
+                        result["filename"] = filename
+                        result["file_size"] = len(img_response.content)
+                        result["generated_at"] = datetime.utcnow().isoformat()
+                        result["concept_status"] = prompt_data.get("status", "unknown")
+                        result["visual_direction"] = prompt_data.get("visual_direction", "")
+                        print(f"[Media] Downloaded {filename} ({len(img_response.content)} bytes)")
+                    except Exception as e:
+                        print(f"[Media] Warning: Failed to download image for {result.get('concept_name', '?')}: {e}")
+                        result["local_path"] = None
 
             # Brief delay to avoid rate limiting
             await asyncio.sleep(1.0)
 
         # Save results
-        sim_dir = self.output_dir / sim_id
-        sim_dir.mkdir(parents=True, exist_ok=True)
         results_path = sim_dir / "generated_images.json"
         results_path.write_text(json.dumps(results, indent=2), encoding="utf-8")
 

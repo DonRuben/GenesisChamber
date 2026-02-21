@@ -439,6 +439,12 @@ export const IconMore = (props) => (
   </Icon>
 );
 
+export const IconStar = (props) => (
+  <Icon {...props}>
+    <polygon points="10,2 12.5,7.5 18,8 14,12 15,17.5 10,14.5 5,17.5 6,12 2,8 7.5,7.5" />
+  </Icon>
+);
+
 // ─── Convenience lookup object ──────────────────────────────────────────────
 
 export const Icons = {
@@ -502,4 +508,5 @@ export const Icons = {
   IconPencil,
   IconArchive,
   IconMore,
+  IconStar,
 };

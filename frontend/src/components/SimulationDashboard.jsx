@@ -14,13 +14,15 @@ import GeneratedGallery from './GeneratedGallery';
 import DAArena from './DAArena';
 import LiveFeed from './LiveFeed';
 import ChamberAnimation from './ChamberAnimation';
+import SimulationOverview from './SimulationOverview';
 import HelpTooltip from './HelpTooltip';
 import { helpContent } from './helpContent';
 import { SkeletonGrid } from './Skeleton';
-import { IconDiamond, IconGrid, IconEye, IconCompass, IconScroll, IconPackage, IconImage, IconSpark, IconError, IconScale } from './Icons';
+import { IconDiamond, IconGrid, IconEye, IconCompass, IconScroll, IconPackage, IconImage, IconSpark, IconError, IconScale, IconInfo } from './Icons';
 import './SimulationDashboard.css';
 
 const VIEW_TABS = [
+  { key: 'overview', label: 'Overview', icon: <IconInfo size={14} /> },
   { key: 'concepts', label: 'Concepts', icon: <IconDiamond size={14} /> },
   { key: 'gallery', label: 'Gallery', icon: <IconGrid size={14} /> },
   { key: 'critiques', label: 'Critiques', icon: <IconEye size={14} /> },
@@ -264,6 +266,12 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
 
       {/* Content */}
       <div className="dashboard-content">
+        {activeView === 'overview' && (
+          <div className="dashboard-view-animate">
+            <SimulationOverview simState={simState} simId={currentSimId} />
+          </div>
+        )}
+
         {activeView === 'concepts' && (
           <div className="dashboard-concepts dashboard-view-animate">
             {/* Live Activity Panel — always visible when simulation is running */}

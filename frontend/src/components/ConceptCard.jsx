@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { IconCopy, IconCheck } from './Icons';
 import { conceptToMarkdown, copyToClipboard } from '../utils/clipboard';
+import CopyButton from './CopyButton';
 import './ConceptCard.css';
 
 const STATUS_MAP = {
@@ -145,14 +146,20 @@ export default function ConceptCard({ concept, showDetails = false }) {
             {concept.image_prompt && (
               <div className="cc-section">
                 <div className="cc-section-label">Image Prompt</div>
-                <div className="cc-prompt-text">{concept.image_prompt}</div>
+                <div className="cc-prompt-text gc-copyable">
+                  {concept.image_prompt}
+                  <CopyButton text={concept.image_prompt} />
+                </div>
               </div>
             )}
 
             {concept.video_prompt && (
               <div className="cc-section">
                 <div className="cc-section-label">Video Prompt</div>
-                <div className="cc-prompt-text">{concept.video_prompt}</div>
+                <div className="cc-prompt-text gc-copyable">
+                  {concept.video_prompt}
+                  <CopyButton text={concept.video_prompt} />
+                </div>
               </div>
             )}
 

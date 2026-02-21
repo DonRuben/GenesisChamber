@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { IconPlus, IconMessage, IconSpark, IconCrystalBall, IconCollapse, IconExpand, IconImage, IconVideo, IconPresentation, IconMore, IconPencil, IconArchive, IconTrash } from './Icons';
+import { IconPlus, IconMessage, IconSpark, IconCrystalBall, IconCollapse, IconExpand, IconImage, IconVideo, IconPresentation, IconMore, IconPencil, IconArchive, IconTrash, IconStar } from './Icons';
 import './Sidebar.css';
 
 const STATUS_COLORS = {
@@ -45,6 +45,22 @@ export default function Sidebar({
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const menuRef = useRef(null);
   const editRef = useRef(null);
+
+  // V3: Simulation starring
+  const [starredSims, setStarredSims] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('gc-starred-sims') || '[]'); }
+    catch { return []; }
+  });
+  const [showStarredOnly, setShowStarredOnly] = useState(false);
+
+  const toggleStar = (e, simId) => {
+    e.stopPropagation();
+    const updated = starredSims.includes(simId)
+      ? starredSims.filter(id => id !== simId)
+      : [...starredSims, simId];
+    setStarredSims(updated);
+    localStorage.setItem('gc-starred-sims', JSON.stringify(updated));
+  };
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -130,7 +146,14 @@ export default function Sidebar({
 
   // Filter archived items
   const filteredConversations = conversations.filter(c => showArchived || !c.archived);
-  const filteredSimulations = (simulations || []).filter(s => showArchived || !s.archived);
+  const filteredSimulations = (simulations || [])
+    .filter(s => showArchived || !s.archived)
+    .filter(s => !showStarredOnly || starredSims.includes(s.id))
+    .sort((a, b) => {
+      const aStarred = starredSims.includes(a.id) ? 1 : 0;
+      const bStarred = starredSims.includes(b.id) ? 1 : 0;
+      return bStarred - aStarred;
+    });
   const hasArchivedConversations = conversations.some(c => c.archived);
   const hasArchivedSimulations = (simulations || []).some(s => s.archived);
 
@@ -195,6 +218,18 @@ export default function Sidebar({
           <label>
             <input type="checkbox" checked={showArchived} onChange={onToggleArchived} />
             <span>Show archived</span>
+          </label>
+        </div>
+      )}
+
+      {/* Star Filter */}
+      {mode === 'genesis' && starredSims.length > 0 && (
+        <div className="sidebar-archive-toggle">
+          <label>
+            <input type="checkbox" checked={showStarredOnly} onChange={() => setShowStarredOnly(!showStarredOnly)} />
+            <span style={{ color: showStarredOnly ? 'var(--gc-gold)' : undefined }}>
+              <IconStar size={10} /> Starred only
+            </span>
           </label>
         </div>
       )}
@@ -274,6 +309,14 @@ export default function Sidebar({
                   </div>
                 ) : (
                   <>
+                    <button
+                      className="sidebar-star-btn"
+                      onClick={(e) => toggleStar(e, sim.id)}
+                      title={starredSims.includes(sim.id) ? 'Unstar' : 'Star'}
+                      style={{ color: starredSims.includes(sim.id) ? 'var(--gc-gold)' : 'var(--text-muted)' }}
+                    >
+                      <IconStar size={12} />
+                    </button>
                     <div className="sidebar-item-title">{sim.name || 'Unnamed'}</div>
                     <div className="sidebar-item-meta">
                       <span

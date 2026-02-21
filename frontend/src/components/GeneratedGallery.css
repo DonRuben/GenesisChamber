@@ -346,3 +346,118 @@
     align-items: flex-start;
   }
 }
+
+/* V3: Prompt labels */
+.gg-prompt-label {
+  font-size: 0.7em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+/* ── V3: View Toggle ── */
+.gg-bulk-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.gg-view-toggle {
+  display: flex;
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.gg-view-btn {
+  font-size: 12px !important;
+  padding: 4px 12px !important;
+  border-radius: 0 !important;
+  border: none !important;
+  color: var(--text-muted) !important;
+}
+
+.gg-view-btn.active {
+  background: var(--gc-cyan) !important;
+  color: var(--surface-0) !important;
+}
+
+/* ── V3: Compare Grid ── */
+.gg-compare-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-xs);
+}
+
+.gg-compare-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.gg-compare-card:hover {
+  border-color: var(--gc-cyan);
+  transform: translateY(-2px);
+}
+
+.gg-compare-img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  display: block;
+}
+
+.gg-compare-info {
+  padding: var(--space-xs) var(--space-sm);
+}
+
+.gg-compare-name {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gg-compare-persona {
+  font-family: var(--font-data);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.gg-compare-badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.gg-compare-badges .gc-badge {
+  font-size: 0.6em;
+}
+
+.gg-compare-badges .gg-card-model {
+  margin-top: 0;
+}
+
+@media (max-width: 768px) {
+  .gg-compare-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gg-bulk-right {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
