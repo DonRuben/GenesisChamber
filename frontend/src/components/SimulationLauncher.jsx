@@ -886,7 +886,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
 
                 {/* Aggression Level */}
                 <div style={{ marginBottom: '10px' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-secondary)', marginBottom: '4px' }}>
                     Aggression Level
                   </div>
                   <div style={{ display: 'flex', gap: '4px' }}>
@@ -960,7 +960,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
 
                 {/* Attack Focus */}
                 <div>
-                  <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-secondary)', marginBottom: '4px' }}>
                     Attack Focus <span style={{ fontWeight: 400, textTransform: 'none' }}>(empty = attack everything)</span>
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
@@ -982,14 +982,15 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
                           )}
                           style={{
                             padding: '2px 8px',
-                            fontSize: '10px',
+                            fontSize: '11px',
                             fontWeight: isActive ? 600 : 400,
                             background: isActive ? 'rgba(220, 38, 38, 0.12)' : 'var(--surface-2)',
-                            color: isActive ? '#DC2626' : 'var(--text-muted)',
+                            color: isActive ? '#DC2626' : 'var(--text-secondary)',
                             border: `1px solid ${isActive ? 'rgba(220, 38, 38, 0.3)' : 'var(--border-subtle)'}`,
                             borderRadius: '3px',
                             cursor: 'pointer',
                             transition: 'all 0.15s ease',
+                            letterSpacing: '0.02em',
                           }}
                         >
                           {opt.label}
@@ -1005,7 +1006,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
           {/* AI Capabilities — Thinking + Web Search */}
           <div className="ai-capabilities-section" style={{ marginTop: '16px' }}>
             <div className="ai-cap-header">
-              <span className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)' }}>AI Capabilities</span>
+              <span className="section-label" style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-secondary)' }}>AI Capabilities</span>
             </div>
             <div className="ai-cap-toggles">
               <div className="ai-cap-toggle">

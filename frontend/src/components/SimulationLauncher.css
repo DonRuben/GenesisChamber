@@ -484,8 +484,9 @@
 
 .participant-model-label {
   font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-muted);
+  font-size: max(11px, 0.7rem);
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
 }
 
 .participant-info-btn {

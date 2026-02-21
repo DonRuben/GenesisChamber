@@ -167,11 +167,11 @@
 
 .model-option-provider {
   font-family: var(--font-data);
-  font-size: 10px;
+  font-size: max(11px, 0.7rem);
   font-weight: 500;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.02em;
 }
 
 .model-option.selected .model-option-provider {
@@ -197,9 +197,10 @@
 
 .model-option-context {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: max(11px, 0.7rem);
   color: var(--text-muted);
   white-space: nowrap;
+  letter-spacing: 0.02em;
 }
 
 /* Checkmark for selected */
