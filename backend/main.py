@@ -760,15 +760,18 @@ async def get_available_models():
                 "models": [
                     {"id": "anthropic/claude-opus-4-6", "cost_per_1m_tokens": 15.0, "context": "200K", "best_for": "Deepest reasoning, synthesis"},
                     {"id": "openai/gpt-5.2", "cost_per_1m_tokens": 15.0, "context": "128K", "best_for": "Creative reasoning"},
+                    {"id": "openai/gpt-5.1", "cost_per_1m_tokens": 5.0, "context": "128K", "best_for": "Strong creative reasoning"},
                     {"id": "google/gemini-3-pro", "cost_per_1m_tokens": 7.0, "context": "2M", "best_for": "Long context"}
                 ]
             },
             "tier_2_balanced": {
                 "description": "Great quality, reasonable cost",
                 "models": [
-                    {"id": "anthropic/claude-sonnet-4.6", "cost_per_1m_tokens": 3.0, "context": "200K", "best_for": "Detail, precision"},
+                    {"id": "anthropic/claude-sonnet-4.6", "cost_per_1m_tokens": 3.0, "context": "1M", "best_for": "Detail, precision"},
                     {"id": "google/gemini-2.5-pro", "cost_per_1m_tokens": 2.5, "context": "1M", "best_for": "Research-heavy"},
-                    {"id": "x-ai/grok-4", "cost_per_1m_tokens": 3.0, "context": "128K", "best_for": "Bold, provocative"}
+                    {"id": "x-ai/grok-4", "cost_per_1m_tokens": 3.0, "context": "128K", "best_for": "Bold, provocative"},
+                    {"id": "x-ai/grok-4.1", "cost_per_1m_tokens": 3.0, "context": "128K", "best_for": "Latest Grok, improved reasoning"},
+                    {"id": "mistralai/mistral-large", "cost_per_1m_tokens": 2.0, "context": "128K", "best_for": "EU alternative, strong reasoning"}
                 ]
             },
             "tier_3_efficient": {
@@ -776,7 +779,19 @@ async def get_available_models():
                 "models": [
                     {"id": "meta-llama/llama-4-maverick", "cost_per_1m_tokens": 0.5, "context": "128K", "best_for": "Direct, efficient"},
                     {"id": "anthropic/claude-haiku-4.5", "cost_per_1m_tokens": 0.25, "context": "200K", "best_for": "Quick, testing"},
-                    {"id": "google/gemini-2.5-flash", "cost_per_1m_tokens": 0.15, "context": "1M", "best_for": "Bulk operations"}
+                    {"id": "google/gemini-2.5-flash", "cost_per_1m_tokens": 0.15, "context": "1M", "best_for": "Bulk operations"},
+                    {"id": "deepseek/deepseek-v3.2", "cost_per_1m_tokens": 0.28, "context": "128K", "best_for": "Frontier-killer value"},
+                    {"id": "deepseek/deepseek-r1", "cost_per_1m_tokens": 0.55, "context": "128K", "best_for": "Reasoning chain"},
+                    {"id": "google/gemini-3-flash", "cost_per_1m_tokens": 0.10, "context": "1M", "best_for": "Ultra fast, huge context"},
+                    {"id": "qwen/qwen-3-235b", "cost_per_1m_tokens": 0.30, "context": "128K", "best_for": "Strong open source"}
+                ]
+            },
+            "tier_4_budget": {
+                "description": "Experimental, ultra-low cost",
+                "models": [
+                    {"id": "moonshot/kimi-k2.5", "cost_per_1m_tokens": 0.10, "context": "128K", "best_for": "Ultra budget"},
+                    {"id": "minimax/minimax-m2.5", "cost_per_1m_tokens": 0.15, "context": "128K", "best_for": "Budget alternative"},
+                    {"id": "nvidia/llama-3.3-nemotron", "cost_per_1m_tokens": 0.0, "context": "128K", "best_for": "Free tier, testing"}
                 ]
             }
         }

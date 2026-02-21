@@ -13,8 +13,17 @@ const DISPLAY_NAMES = {
   'gemini-3-pro':                'Gemini 3 Pro',
   'gemini-2.5-pro':              'Gemini 2.5 Pro',
   'gemini-2.5-flash':            'Gemini 2.5 Flash',
+  'gemini-3-flash':              'Gemini 3 Flash',
   'grok-4':                      'Grok 4',
+  'grok-4.1':                    'Grok 4.1',
   'llama-4-maverick':            'Llama 4 Maverick',
+  'mistral-large':               'Mistral Large',
+  'deepseek-v3.2':               'DeepSeek V3.2',
+  'deepseek-r1':                 'DeepSeek R1',
+  'qwen-3-235b':                 'Qwen 3 235B',
+  'kimi-k2.5':                   'Kimi K2.5',
+  'minimax-m2.5':                'MiniMax M2.5',
+  'llama-3.3-nemotron':          'Nemotron 70B',
 };
 
 const PROVIDER_DISPLAY = {
@@ -24,12 +33,19 @@ const PROVIDER_DISPLAY = {
   'x-ai':       'xAI',
   'meta-llama': 'Meta',
   meta:         'Meta',
+  deepseek:     'DeepSeek',
+  mistralai:    'Mistral',
+  moonshot:     'Moonshot',
+  minimax:      'MiniMax',
+  nvidia:       'NVIDIA',
+  qwen:         'Alibaba',
 };
 
 export const TIER_CONFIG = {
   tier_1_premium:   { label: 'Premium',   color: 'var(--gc-gold)' },
   tier_2_balanced:  { label: 'Balanced',  color: 'var(--gc-cyan)' },
   tier_3_efficient: { label: 'Efficient', color: 'var(--status-success)' },
+  tier_4_budget:    { label: 'Budget',    color: 'var(--text-muted)' },
 };
 
 export function getModelSlug(modelId) {
