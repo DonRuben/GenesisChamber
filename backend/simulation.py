@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from .models import (
-    Concept, Critique, EvaluatorAssessment, ModeratorDirection,
+    Concept, ConceptVersion, Critique, EvaluatorAssessment, ModeratorDirection,
     RoundResult, SimulationConfig, SimulationState, StageResult,
 )
 from .soul_engine import SoulEngine
@@ -636,6 +636,12 @@ class GenesisRound:
             print(f"[SimError] Stage 4 Refinement — OpenRouter timeout after 5 min")
             responses = [None] * len(queries)
 
+        # Build map of existing concepts by persona for version chaining
+        existing_by_persona = {}
+        for c in concepts:
+            if c.persona_id not in existing_by_persona and c.status == "active":
+                existing_by_persona[c.persona_id] = c
+
         refined_concepts = []
         for pid, response in zip(participant_ids, responses):
             pconfig = self.config.participants[pid]
@@ -643,6 +649,28 @@ class GenesisRound:
                 concepts_parsed = OutputParser.parse_concept(
                     response["content"], pid, pconfig.display_name, self.round_num
                 )
+                # Chain new concepts to their previous versions
+                old_concept = existing_by_persona.get(pid)
+                for new_concept in concepts_parsed:
+                    if old_concept:
+                        # Snapshot old concept as a version entry
+                        snapshot = ConceptVersion(
+                            round_num=old_concept.round_created,
+                            stage="pre_refinement",
+                            name=old_concept.name,
+                            headline=old_concept.headline,
+                            tagline=old_concept.tagline,
+                            idea=old_concept.idea,
+                            visual_direction=old_concept.visual_direction,
+                            evolution_notes=old_concept.evolution_notes,
+                            score=max(old_concept.scores.values()) if old_concept.scores else None,
+                            timestamp=datetime.utcnow().isoformat(),
+                        )
+                        # Copy version chain from old concept + add new snapshot
+                        new_concept.versions = list(old_concept.versions) + [snapshot]
+                        new_concept.previous_version_id = old_concept.id
+                        # Copy accumulated scores from old concept
+                        new_concept.scores = dict(old_concept.scores)
                 refined_concepts.extend(concepts_parsed)
 
         stage.outputs = refined_concepts

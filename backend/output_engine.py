@@ -537,6 +537,22 @@ h2 {{ font-size:20px; color:var(--cyan); margin:34px 0 16px; padding-bottom:8px;
             lines.extend(["### Video Prompt", "```", c.video_prompt, "```", ""])
         if c.evolution_notes:
             lines.extend(["### Evolution", c.evolution_notes, ""])
+        if hasattr(c, 'versions') and c.versions:
+            lines.append("### Version History")
+            for v in sorted(c.versions, key=lambda x: x.round_num):
+                lines.append(f"**Round {v.round_num}** ({v.stage})")
+                if v.headline:
+                    lines.append(f"- Headline: {v.headline}")
+                if v.name and v.name != c.name:
+                    lines.append(f"- Name: {v.name}")
+                if v.evolution_notes:
+                    lines.append(f"- Changes: {v.evolution_notes}")
+                if v.score is not None:
+                    lines.append(f"- Score: {v.score}/10")
+                lines.append("")
+        if hasattr(c, 'previous_version_id') and c.previous_version_id:
+            lines.append(f"*Evolved from concept `{c.previous_version_id}`*")
+            lines.append("")
         if c.scores:
             lines.append("### Scores")
             for rnd, score in sorted(c.scores.items(), key=lambda x: int(x[0])):

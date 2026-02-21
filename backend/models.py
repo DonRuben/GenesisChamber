@@ -41,6 +41,20 @@ class SimulationConfig(BaseModel):
 
 # --- Concept Lifecycle Models ---
 
+class ConceptVersion(BaseModel):
+    """Snapshot of a concept at a specific round/stage before refinement."""
+    round_num: int
+    stage: str = ""  # "creation", "refinement"
+    name: str = ""
+    headline: str = ""
+    tagline: str = ""
+    idea: str = ""
+    visual_direction: str = ""
+    evolution_notes: str = ""
+    score: Optional[float] = None
+    timestamp: str = ""
+
+
 class Concept(BaseModel):
     """A single creative concept produced by a participant."""
     id: str
@@ -63,6 +77,8 @@ class Concept(BaseModel):
     status: Literal["active", "eliminated", "merged", "winner", "runner_up"] = "active"
     scores: Dict[int, float] = {}  # round_num -> avg score
     raw_text: str = ""  # Full LLM output for fallback
+    versions: List[ConceptVersion] = []  # Version history (snapshots before each refinement)
+    previous_version_id: Optional[str] = None  # Links to prior version's concept ID
 
 
 class Critique(BaseModel):
