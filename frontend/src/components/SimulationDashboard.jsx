@@ -30,6 +30,177 @@ const VIEW_TABS = [
   { key: 'transcript', label: 'Transcript', icon: <IconScroll size={14} /> },
 ];
 
+/**
+ * DAOverview — Devil's Advocate overview tab showing all DA interactions per round.
+ * Extracts DA critiques and defense results from transcript entries.
+ */
+function DAOverview({ simState, simId }) {
+  const [interactions, setInteractions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!simId || !simState) return;
+    // Extract DA interactions from transcript entries
+    const daInteractions = [];
+    for (const entry of (simState.transcript_entries || [])) {
+      if (entry.stage_name === 'critique' && entry.critiques) {
+        for (const critique of entry.critiques) {
+          if (critique.is_devils_advocate) {
+            daInteractions.push({
+              round: entry.round,
+              type: 'attack',
+              concept_name: critique.concept_name || `Concept ${critique.concept_id?.slice(0, 6) || '?'}`,
+              score: critique.score,
+              fatal_flaw: critique.fatal_flaw || '',
+              weaknesses: critique.weaknesses || [],
+              strengths: critique.strengths || [],
+              one_change: critique.one_change || critique.demanded_change || '',
+            });
+          }
+        }
+      }
+      if (entry.stage_name === 'da_defense' && entry.da_defense_results) {
+        for (const defense of entry.da_defense_results) {
+          daInteractions.push({
+            round: entry.round,
+            type: 'defense',
+            concept_name: defense.concept_name || '',
+            persona_name: defense.persona_name || '',
+            defense_text: defense.defense_text || '',
+            verdict: defense.verdict || '',
+            verdict_details: defense.verdict_details || '',
+            revised_score: defense.revised_score,
+          });
+        }
+      }
+    }
+    setInteractions(daInteractions);
+    setLoading(false);
+  }, [simId, simState]);
+
+  if (loading) return <div className="dashboard-view-animate" style={{ padding: '24px', color: 'var(--text-muted)' }}>Loading DA data...</div>;
+
+  const attacks = interactions.filter(i => i.type === 'attack');
+  const defenses = interactions.filter(i => i.type === 'defense');
+  const accepted = defenses.filter(d => d.verdict?.toLowerCase().includes('accepted')).length;
+  const insufficient = defenses.filter(d => d.verdict && !d.verdict.toLowerCase().includes('accepted')).length;
+  const rounds = [...new Set(attacks.map(a => a.round))].sort();
+
+  return (
+    <div className="dashboard-view-animate" style={{ padding: '0' }}>
+      {/* DA Summary Stats */}
+      <div style={{
+        display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '16px',
+        padding: '12px', background: 'rgba(220, 38, 38, 0.04)', borderRadius: '8px',
+        border: '1px solid rgba(220, 38, 38, 0.12)',
+      }}>
+        <div style={{ textAlign: 'center', flex: 1, minWidth: '80px' }}>
+          <div style={{ fontSize: '20px', fontWeight: 700, color: '#DC2626' }}>{attacks.length}</div>
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Attacks</div>
+        </div>
+        <div style={{ textAlign: 'center', flex: 1, minWidth: '80px' }}>
+          <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--gc-cyan)' }}>{defenses.length}</div>
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Defenses</div>
+        </div>
+        <div style={{ textAlign: 'center', flex: 1, minWidth: '80px' }}>
+          <div style={{ fontSize: '20px', fontWeight: 700, color: '#22C55E' }}>{accepted}</div>
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Survived</div>
+        </div>
+        <div style={{ textAlign: 'center', flex: 1, minWidth: '80px' }}>
+          <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--status-error)' }}>{insufficient}</div>
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Fell</div>
+        </div>
+      </div>
+
+      {interactions.length === 0 ? (
+        <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
+          No DA interactions yet. The Devil's Advocate will attack during the Critique stage.
+        </div>
+      ) : (
+        rounds.map(roundNum => {
+          const roundAttacks = attacks.filter(a => a.round === roundNum);
+          const roundDefenses = defenses.filter(d => d.round === roundNum);
+          return (
+            <div key={roundNum} style={{ marginBottom: '16px' }}>
+              <div style={{
+                fontSize: '11px', fontWeight: 700, textTransform: 'uppercase',
+                letterSpacing: '0.5px', color: 'var(--text-muted)',
+                padding: '6px 0', borderBottom: '1px solid var(--border-subtle)', marginBottom: '8px',
+              }}>
+                Round {roundNum}
+              </div>
+              {roundAttacks.map((atk, i) => {
+                const defense = roundDefenses.find(d => d.concept_name === atk.concept_name);
+                return (
+                  <div key={i} style={{
+                    marginBottom: '8px', padding: '10px', borderRadius: '6px',
+                    background: 'var(--surface-2)', border: '1px solid var(--border-subtle)',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <span style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text-primary)' }}>
+                        {atk.concept_name}
+                      </span>
+                      <span style={{
+                        fontSize: '11px', fontWeight: 600,
+                        color: atk.score >= 7 ? '#22C55E' : atk.score >= 5 ? 'var(--gc-gold)' : '#DC2626',
+                      }}>
+                        DA Score: {atk.score}/10
+                      </span>
+                    </div>
+                    {atk.fatal_flaw && (
+                      <div style={{ fontSize: '12px', color: '#DC2626', marginBottom: '4px' }}>
+                        <strong>Fatal Flaw:</strong> {atk.fatal_flaw}
+                      </div>
+                    )}
+                    {atk.one_change && (
+                      <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px' }}>
+                        <strong>Demanded Change:</strong> {atk.one_change}
+                      </div>
+                    )}
+                    {defense && (
+                      <div style={{
+                        marginTop: '6px', paddingTop: '6px',
+                        borderTop: '1px solid var(--border-subtle)',
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--gc-cyan)' }}>
+                            Defense by {defense.persona_name}
+                          </span>
+                          <span style={{
+                            fontSize: '10px', fontWeight: 600, padding: '1px 6px', borderRadius: '3px',
+                            background: defense.verdict?.toLowerCase().includes('accepted')
+                              ? 'rgba(34, 197, 94, 0.15)' : 'rgba(220, 38, 38, 0.15)',
+                            color: defense.verdict?.toLowerCase().includes('accepted')
+                              ? '#22C55E' : '#DC2626',
+                          }}>
+                            {defense.verdict || 'Pending'}
+                          </span>
+                        </div>
+                        {defense.defense_text && (
+                          <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                            {defense.defense_text.length > 200 ? defense.defense_text.slice(0, 200) + '...' : defense.defense_text}
+                          </div>
+                        )}
+                        {defense.revised_score != null && (
+                          <div style={{ fontSize: '11px', marginTop: '3px', color: 'var(--text-muted)' }}>
+                            Revised Score: <strong style={{
+                              color: defense.revised_score >= 7 ? '#22C55E' : defense.revised_score >= 5 ? 'var(--gc-gold)' : '#DC2626',
+                            }}>{defense.revised_score}/10</strong>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+}
+
 export default function SimulationDashboard({ simulations, currentSimId, onSelectSim, onRefreshList }) {
   const [simState, setSimState] = useState(null);
   const [activeView, setActiveView] = useState('concepts');
@@ -208,16 +379,23 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
     }
   }
 
-  // Build tabs — add Generated + Output + DA Arena tabs for completed sims
+  // Build tabs — add DA overview (when DA enabled), Generated + Output + DA Arena (when completed)
   const hasDA = !!simState.config?.devils_advocate;
+  const baseTabs = hasDA
+    ? [
+        ...VIEW_TABS.slice(0, 5), // overview, concepts, gallery, critiques, direction
+        { key: 'devils_advocate', label: "Devil's Advocate", icon: <IconScale size={14} /> },
+        ...VIEW_TABS.slice(5),    // transcript
+      ]
+    : VIEW_TABS;
   const tabs = simState.status === 'completed'
     ? [
-        ...VIEW_TABS,
+        ...baseTabs,
         ...(hasDA ? [{ key: 'da_arena', label: 'DA Arena', icon: <IconScale size={14} /> }] : []),
         { key: 'generated', label: 'Generated', icon: <IconImage size={14} /> },
         { key: 'output', label: 'Output', icon: <IconPackage size={14} /> },
       ]
-    : VIEW_TABS;
+    : baseTabs;
 
   // Extract critiques from round data
   const extractCritiques = () => {
@@ -388,6 +566,10 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
               );
             })}
           </div>
+        )}
+
+        {activeView === 'devils_advocate' && hasDA && (
+          <DAOverview simState={simState} simId={currentSimId} />
         )}
 
         {activeView === 'transcript' && (
