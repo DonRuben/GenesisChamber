@@ -38,14 +38,23 @@ export default function TranscriptViewer({ entries, eventLog }) {
   // Extract unique rounds and personas for filter chips
   const uniqueRounds = [...new Set(allEntries.map(e => e.round).filter(Boolean))].sort((a, b) => a - b);
   const uniquePersonas = [...new Set(
-    allEntries.flatMap(e => (e.concepts || []).map(c => c.persona).filter(Boolean))
+    allEntries.flatMap(e => [
+      ...(e.concepts || []).map(c => c.persona),
+      ...(e.refined_concepts || []).map(c => c.persona),
+      ...(e.presentations || []).map(p => p.persona),
+      ...(e.critiques || []).map(c => c.critic_name),
+    ].filter(Boolean))
   )].sort();
 
   const filtered = allEntries.filter(e => {
     if (filter !== 'all' && e.stage_name !== filter) return false;
     if (filterRound !== 'all' && e.round !== parseInt(filterRound)) return false;
     if (filterPersona !== 'all') {
-      const hasPersona = e.concepts?.some(c => c.persona === filterPersona);
+      const hasPersona =
+        e.concepts?.some(c => c.persona === filterPersona) ||
+        e.refined_concepts?.some(c => c.persona === filterPersona) ||
+        e.presentations?.some(p => p.persona === filterPersona) ||
+        e.critiques?.some(c => c.critic_name === filterPersona);
       if (!hasPersona) return false;
     }
     if (search) {
@@ -170,13 +179,21 @@ export default function TranscriptViewer({ entries, eventLog }) {
                             )}
                           </div>
                           {crit.strengths && crit.strengths.length > 0 && (
-                            <div className="tv-critique-strengths">{crit.strengths.join(', ')}</div>
+                            <div className="tv-critique-strengths">
+                              <span className="tv-section-label tv-label-strengths">Strengths</span>
+                              <ul>{crit.strengths.map((s, si) => <li key={si}>{s}</li>)}</ul>
+                            </div>
                           )}
                           {crit.weaknesses && crit.weaknesses.length > 0 && (
-                            <div className="tv-critique-weaknesses">{crit.weaknesses.join(', ')}</div>
+                            <div className="tv-critique-weaknesses">
+                              <span className="tv-section-label tv-label-weaknesses">Weaknesses</span>
+                              <ul>{crit.weaknesses.map((w, wi) => <li key={wi}>{w}</li>)}</ul>
+                            </div>
                           )}
-                          {crit.fatal_flaw && (
-                            <div className="tv-critique-fatal">Fatal: {crit.fatal_flaw}</div>
+                          {crit.fatal_flaw && crit.fatal_flaw.toUpperCase() !== 'NONE' && (
+                            <div className="tv-critique-fatal">
+                              <span className="tv-fatal-label">Fatal Flaw:</span> {crit.fatal_flaw}
+                            </div>
                           )}
                         </div>
                       ))}
@@ -194,9 +211,9 @@ export default function TranscriptViewer({ entries, eventLog }) {
                       {entry.synthesis.surviving_concepts?.length > 0 && (
                         <div className="tv-surviving">
                           <span className="tv-badge-label">Surviving:</span>
-                          {entry.synthesis.surviving_concepts.map((s, i) => (
-                            <span key={i} className="gc-badge gc-badge-active">
-                              {typeof s === 'string' ? s : s.name}
+                          {entry.synthesis.surviving_concepts.map((s, si) => (
+                            <span key={si} className="gc-badge gc-badge-active">
+                              {typeof s === 'string' ? s : s.name}{s.reason ? ` — ${s.reason}` : ''}
                             </span>
                           ))}
                         </div>
@@ -204,15 +221,17 @@ export default function TranscriptViewer({ entries, eventLog }) {
                       {entry.synthesis.eliminated_concepts?.length > 0 && (
                         <div className="tv-eliminated-list">
                           <span className="tv-badge-label">Eliminated:</span>
-                          {entry.synthesis.eliminated_concepts.map((e, i) => (
-                            <span key={i} className="gc-badge gc-badge-eliminated">
-                              {typeof e === 'string' ? e : e.name}
+                          {entry.synthesis.eliminated_concepts.map((el, ei) => (
+                            <span key={ei} className="gc-badge gc-badge-eliminated">
+                              {typeof el === 'string' ? el : el.name}{el.reason ? ` — ${el.reason}` : ''}
                             </span>
                           ))}
                         </div>
                       )}
-                      {entry.synthesis.one_more_thing && entry.synthesis.one_more_thing !== "NONE" && (
-                        <div className="tv-one-more">"One more thing..." {entry.synthesis.one_more_thing}</div>
+                      {entry.synthesis.one_more_thing && entry.synthesis.one_more_thing.toUpperCase() !== 'NONE' && (
+                        <div className="tv-one-more">
+                          <strong>One more thing:</strong> {entry.synthesis.one_more_thing}
+                        </div>
                       )}
                     </div>
                   ) : entry.direction ? (
@@ -222,11 +241,15 @@ export default function TranscriptViewer({ entries, eventLog }) {
                   {/* Refined concepts */}
                   {entry.refined_concepts && (
                     <div className="tv-refined">
-                      <div className="tv-section-label">Refined Concepts</div>
+                      <div className="tv-section-label tv-label-refine">Refined Concepts</div>
                       {entry.refined_concepts.map((rc, ri) => (
                         <div key={ri} className="tv-refined-item">
                           <strong>{rc.name}</strong> <span className="tv-refined-persona">({rc.persona})</span>
-                          {rc.evolution_notes && <div className="tv-evolution">{rc.evolution_notes}</div>}
+                          {(rc.evolution_notes || rc.evolution) && (
+                            <div className="tv-evolution">
+                              <span className="tv-evolution-label">Evolution:</span> {rc.evolution_notes || rc.evolution}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -235,7 +258,7 @@ export default function TranscriptViewer({ entries, eventLog }) {
                   {/* Presentations */}
                   {entry.presentations && (
                     <div className="tv-presentations">
-                      <div className="tv-section-label">Presentations</div>
+                      <div className="tv-section-label tv-label-present">Presentations</div>
                       {entry.presentations.map((p, pi) => (
                         <div key={pi} className="tv-presentation-item">
                           <strong>{p.concept_name}</strong> <span className="tv-presentation-persona">({p.persona})</span>

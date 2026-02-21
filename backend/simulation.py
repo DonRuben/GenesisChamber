@@ -657,6 +657,7 @@ class GenesisRound:
 
         queries = []
         participant_ids = []
+        concept_info = []  # parallel: (display_name, concept_name)
         for concept in concepts:
             if concept.status != "active":
                 continue
@@ -693,6 +694,7 @@ class GenesisRound:
             }
             queries.append(query)
             participant_ids.append(pid)
+            concept_info.append((pconfig.display_name, concept.name))
 
         try:
             responses = await asyncio.wait_for(query_with_soul_parallel(queries), timeout=300)
@@ -701,10 +703,13 @@ class GenesisRound:
             responses = [None] * len(queries)
 
         presentations = []
-        for pid, response in zip(participant_ids, responses):
+        for i, (pid, response) in enumerate(zip(participant_ids, responses)):
             if response and response.get("content"):
+                persona_name, concept_name = concept_info[i] if i < len(concept_info) else ("", "")
                 presentations.append({
                     "persona_id": pid,
+                    "persona_name": persona_name,
+                    "concept_name": concept_name,
                     "content": response["content"],
                 })
 
@@ -1025,14 +1030,14 @@ class GenesisSimulation:
         elif stage_name == "presentation" and result.outputs:
             outputs = result.outputs if isinstance(result.outputs, list) else [result.outputs]
             entry["presentation"] = str(result.outputs)[:3000] if result.outputs else ""
-            entry["presentations"] = [
-                {
-                    "concept_name": getattr(p, 'concept_name', '') or getattr(p, 'name', ''),
-                    "persona": getattr(p, 'persona_name', ''),
-                    "content": getattr(p, 'content', '') or getattr(p, 'presentation', ''),
-                }
-                for p in outputs
-            ]
+            entry["presentations"] = []
+            for p in outputs:
+                if isinstance(p, dict):
+                    entry["presentations"].append({
+                        "concept_name": p.get("concept_name", ""),
+                        "persona": p.get("persona_name", p.get("persona_id", "")),
+                        "content": p.get("content", ""),
+                    })
 
         self.state.transcript_entries.append(entry)
 
