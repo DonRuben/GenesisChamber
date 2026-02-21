@@ -552,6 +552,36 @@
   color: var(--text-primary);
 }
 
+/* ── Footer Actions Group ── */
+.sidebar-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Theme Toggle ── */
+.theme-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.theme-toggle-btn:hover {
+  background: var(--surface-2);
+  color: var(--gc-gold);
+}
+
+.sidebar.collapsed .theme-toggle-btn {
+  display: none;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .sidebar {

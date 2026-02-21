@@ -1,6 +1,6 @@
 # CLAUDE.md - Technical Notes for Genesis Chamber
 
-This file contains technical details, architectural decisions, and important implementation notes for future development sessions. **Last updated: 2026-02-21. V3.5 Model Strategy + DA Dashboard.**
+This file contains technical details, architectural decisions, and important implementation notes for future development sessions. **Last updated: 2026-02-21. V3.8 Pre-Test Fixes — Upload Expansion.**
 
 ## Project Overview
 
@@ -19,7 +19,7 @@ A 5-stage (+ optional DA Defense), multi-round simulation engine with:
 - Real-time SSE streaming with per-participant events
 - Thinking mode (off/thinking/deep) with per-participant overrides
 - Web search integration via OpenRouter plugins
-- Reference file uploads (images, HTML, PDF, ZIP) with text extraction
+- Reference file uploads (images, HTML, PDF, documents, ZIP) with text extraction
 - Image generation (fal.ai — Recraft V4, Flux 2, Seedream 4.5, Ideogram V3)
 - Video generation (fal.ai — Kling 3.0, Veo 3.1, MiniMax Hailuo, Luma Ray 2)
 - Markdown export + reveal.js presentations
@@ -146,7 +146,9 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - Simulation management: start, stream, status, state, rounds, gates, transcript
 - Soul management API: list, read content, update content, download, upload
 - Config API: models, participants, teams
-- Reference file uploads: images, HTML, text, PDF, ZIP with text extraction
+- Reference file uploads: images, HTML, text, documents (.docx, .xlsx, .csv), PDF, ZIP with text extraction
+- V3.8: `_OFFICE_EXTS = {"docx", "doc", "xlsx"}`, `_extract_text_from_docx()`, `_extract_text_from_xlsx()`, `_extract_text_from_csv()`
+- V3.8: `POST /api/debug/preview-context` — preview LLM prompt without calling any API
 - Markdown export: summary, winner, per-round, per-persona
 - Media generation: images, videos, combined gallery, ZIP download
 - DA Arena API: 5 endpoints for interaction extraction, rating, training, and suggestions
@@ -354,7 +356,8 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - `GET /api/simulation/{id}/da/suggestions` — Get soul refinement suggestions (manual review only)
 
 ### Reference Uploads
-- `POST /api/upload/reference` — Upload file (image, HTML, text, PDF, ZIP)
+- `POST /api/upload/reference` — Upload file (image, HTML, text, documents, PDF, ZIP)
+- `POST /api/debug/preview-context` — Debug: preview LLM prompt with brief + brand_context (no API calls)
 - `GET /api/uploads/{id}/{path}` — Serve uploaded files
 
 ## Frontend Structure (`frontend/src/`)
@@ -395,7 +398,7 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 ### Components — Genesis Chamber
 
 **Launcher & Config:**
-- `SimulationLauncher.jsx` — Full 3-step config wizard (type/participants/brief). Jobs/Ive appear in functional team sections via `cross_teams` (Jobs in Marketing, Ive in Design+Marketing) with "Moderator"/"Evaluator" badges. Dual-role toggle lets leadership also participate as creative contributors
+- `SimulationLauncher.jsx` — Full 3-step config wizard (type/participants/brief). Jobs/Ive appear in functional team sections via `cross_teams` (Jobs in Marketing, Ive in Design+Marketing) with "Moderator"/"Evaluator" badges. Dual-role toggle lets leadership also participate as creative contributors. V3.8: .docx brief auto-fill via server extraction, context token counter (green/yellow/red), expanded file accept (.docx, .xlsx, .csv)
 - `StepIndicator.jsx` — 3-step progress indicator
 - `ConfigSummary.jsx` — Right sidebar with preset, participant count, costs
 - `ModelSelector.jsx` — Dropdown for OpenRouter models (grouped by tier)
@@ -618,12 +621,13 @@ Soul documents (.md files) live in `souls/` at project root. 19 documents, ~17K 
 3. Title-case conversion for ALL CAPS names (with "Van" -> "van" fix)
 
 ### Reference File Upload Pipeline
-1. Accept file (image, HTML, text, PDF, ZIP — up to 50MB)
-2. Extract text for LLM context: HTML stripping, PDF extraction (pdfplumber -> pypdf -> regex), image dimensions
+1. Accept file (image, HTML, text, documents, PDF, ZIP — up to 50MB)
+2. Extract text for LLM context: HTML stripping, PDF extraction (pdfplumber -> pypdf -> regex), image dimensions, .docx paragraphs+tables (python-docx), .xlsx sheets (openpyxl, 200-row cap), .csv rows (200-row cap)
 3. Save to filesystem (`output/uploads/{id}/`)
 4. Persist to database (non-blocking) for cross-deploy survival
 5. Return extraction quality indicator (full/partial/none)
 6. Frontend sends `extracted_text` as `brand_context` in simulation config
+7. V3.8: Context token counter in launcher shows estimated tokens (color-coded green/yellow/red)
 
 ### Prompt Templates
 - Stage prompt templates defined in `soul_engine.py` (`STAGE_TASKS` dict)

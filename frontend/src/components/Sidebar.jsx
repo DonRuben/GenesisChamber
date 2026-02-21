@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { IconPlus, IconMessage, IconSpark, IconCrystalBall, IconCollapse, IconExpand, IconImage, IconVideo, IconPresentation, IconMore, IconPencil, IconArchive, IconTrash, IconStar } from './Icons';
+import { IconPlus, IconMessage, IconSpark, IconCrystalBall, IconCollapse, IconExpand, IconImage, IconVideo, IconPresentation, IconMore, IconPencil, IconArchive, IconTrash, IconStar, IconSun, IconMoon } from './Icons';
 import './Sidebar.css';
 
 const STATUS_COLORS = {
@@ -52,6 +52,14 @@ export default function Sidebar({
     catch { return []; }
   });
   const [showStarredOnly, setShowStarredOnly] = useState(false);
+
+  // V3.8: Light/Dark mode toggle
+  const [theme, setTheme] = useState(() => localStorage.getItem('gc-theme') || 'dark');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('gc-theme', theme);
+  }, [theme]);
 
   const toggleStar = (e, simId) => {
     e.stopPropagation();
@@ -370,18 +378,27 @@ export default function Sidebar({
         </div>
       )}
 
-      {/* Footer with collapse toggle */}
+      {/* Footer with theme toggle + collapse */}
       <div className="sidebar-footer">
         <span className="sidebar-footer-text">OmniPresent Group</span>
-        {onToggleCollapse && (
+        <div className="sidebar-footer-actions">
           <button
-            className="sidebar-collapse-btn"
-            onClick={onToggleCollapse}
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className="theme-toggle-btn"
+            onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
           >
-            {collapsed ? <IconExpand size={16} /> : <IconCollapse size={16} />}
+            {theme === 'dark' ? <IconSun size={14} /> : <IconMoon size={14} />}
           </button>
-        )}
+          {onToggleCollapse && (
+            <button
+              className="sidebar-collapse-btn"
+              onClick={onToggleCollapse}
+              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {collapsed ? <IconExpand size={16} /> : <IconCollapse size={16} />}
+            </button>
+          )}
+        </div>
       </div>
     </aside>
   );
