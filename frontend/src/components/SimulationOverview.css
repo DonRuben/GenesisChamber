@@ -1,0 +1,215 @@
+.so-container {
+  padding: var(--space-md);
+  max-width: 900px;
+}
+
+.so-header {
+  margin-bottom: var(--space-lg);
+}
+
+.so-title {
+  font-family: var(--font-display);
+  font-size: 1.5em;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.so-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  color: var(--text-muted);
+  font-size: 0.8em;
+}
+
+.so-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Brief Section */
+.so-section {
+  margin-bottom: var(--space-lg);
+}
+
+.so-section-title {
+  font-size: 0.7em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: var(--space-xs);
+  font-weight: 600;
+}
+
+.so-brief-card {
+  background: var(--surface-1);
+  border-left: 4px solid var(--gc-cyan);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  font-size: 0.95em;
+  line-height: 1.8;
+  color: var(--text-primary);
+  font-style: italic;
+  position: relative;
+}
+
+.so-brand-context {
+  background: var(--surface-1);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  margin-top: var(--space-xs);
+  font-size: 0.8em;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+/* Participants Grid */
+.so-participants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.so-participant {
+  background: var(--surface-1);
+  border-left: 4px solid var(--text-muted);
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs) var(--space-sm);
+  min-width: 140px;
+  flex: 1;
+}
+
+.so-participant-name {
+  font-weight: 700;
+  font-size: 0.9em;
+  margin-bottom: 2px;
+}
+
+.so-participant-role {
+  font-size: 0.65em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.so-participant-model {
+  font-family: var(--font-mono);
+  font-size: 0.6em;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Results Section */
+.so-results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.so-winner-card {
+  background: linear-gradient(135deg, var(--surface-1) 0%, rgba(255, 184, 0, 0.06) 100%);
+  border: 1px solid rgba(255, 184, 0, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+}
+
+.so-winner-label {
+  font-size: 0.7em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gc-gold);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.so-winner-name {
+  font-family: var(--font-display);
+  font-size: 1.2em;
+  font-weight: 700;
+  color: var(--gc-gold);
+}
+
+.so-winner-by {
+  font-size: 0.8em;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.so-winner-idea {
+  font-size: 0.85em;
+  color: var(--text-secondary);
+  margin-top: var(--space-xs);
+  line-height: 1.6;
+}
+
+.so-runner-card {
+  background: var(--surface-1);
+  border-left: 4px solid var(--gc-cyan);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.so-stats {
+  display: flex;
+  gap: var(--space-md);
+  margin-top: var(--space-xs);
+}
+
+.so-stat {
+  text-align: center;
+}
+
+.so-stat-value {
+  font-size: 1.4em;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.so-stat-label {
+  font-size: 0.65em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Media Preview */
+.so-media-preview {
+  display: flex;
+  gap: var(--space-xs);
+  overflow-x: auto;
+  padding-bottom: var(--space-xs);
+}
+
+.so-media-thumb {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--border-subtle);
+}
+
+.so-media-more {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.8em;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.so-media-more:hover {
+  border-color: var(--gc-cyan);
+  color: var(--gc-cyan);
+}

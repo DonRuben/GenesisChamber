@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { api } from '../api';
 import { IconImage, IconVideo, IconDownload, IconClose } from './Icons';
+import CopyButton from './CopyButton';
 import './GeneratedGallery.css';
 
 // Model display names (mirrors backend FAL_MODEL_NAMES / FAL_VIDEO_MODEL_NAMES)
@@ -162,7 +163,10 @@ export default function GeneratedGallery({ simId }) {
                       {expandedPrompts[`img-${i}`] ? 'Hide prompt' : 'Show prompt'}
                     </button>
                     {expandedPrompts[`img-${i}`] && (
-                      <div className="gg-card-prompt">{img.prompt}</div>
+                      <div className="gg-card-prompt gc-copyable">
+                        {img.prompt}
+                        <CopyButton text={img.prompt} />
+                      </div>
                     )}
                   </div>
                 )}
@@ -235,7 +239,10 @@ export default function GeneratedGallery({ simId }) {
                       {expandedPrompts[`vid-${i}`] ? 'Hide prompt' : 'Show prompt'}
                     </button>
                     {expandedPrompts[`vid-${i}`] && (
-                      <div className="gg-card-prompt">{vid.prompt}</div>
+                      <div className="gg-card-prompt gc-copyable">
+                        {vid.prompt}
+                        <CopyButton text={vid.prompt} />
+                      </div>
                     )}
                   </div>
                 )}

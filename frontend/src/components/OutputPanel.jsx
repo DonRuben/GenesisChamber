@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api';
 import { IconImage, IconVideo, IconPresentation, IconScroll, IconCheck, IconDownload, IconExport } from './Icons';
+import CopyButton from './CopyButton';
 import './OutputPanel.css';
 
 // Image model options for user selection
@@ -285,15 +286,20 @@ export default function OutputPanel({ simId, simState }) {
         <div className="op-gallery">
           <h4 className="op-gallery-title">Generated Images ({images.length})</h4>
           <div className="op-gallery-grid">
-            {images.map((img, i) => (
-              <div key={i} className="op-gallery-item">
-                <img src={img.url} alt={img.concept_name || `Concept ${i + 1}`} className="op-gallery-img" />
-                <div className="op-gallery-caption">
-                  {img.concept_name || img.caption || `Concept ${i + 1}`}
-                  {img.model && <span className="op-gallery-model">{img.model}</span>}
+            {images.map((img, i) => {
+              const imgUrl = (img.local_path && img.filename)
+                ? `/api/simulation/${simId}/media/images/${img.filename}`
+                : img.url;
+              return (
+                <div key={i} className="op-gallery-item">
+                  <img src={imgUrl} alt={img.concept_name || `Concept ${i + 1}`} className="op-gallery-img" />
+                  <div className="op-gallery-caption">
+                    {img.concept_name || img.caption || `Concept ${i + 1}`}
+                    {img.model && <span className="op-gallery-model">{img.model}</span>}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -302,16 +308,21 @@ export default function OutputPanel({ simId, simState }) {
       {videos.length > 0 && (
         <div className="op-video-results">
           <h4 className="op-gallery-title">Generated Videos ({videos.length})</h4>
-          {videos.map((vid, i) => (
-            <div key={i} className="op-video-item">
-              <IconVideo size={16} />
-              <span className="op-video-name">{vid.concept_name || vid.name || `Video ${i + 1}`}</span>
-              {vid.model && <span className="op-video-model">{vid.model}</span>}
-              <a href={vid.url} target="_blank" rel="noopener noreferrer" className="gc-btn gc-btn-ghost">
-                <IconDownload size={14} /> Download
-              </a>
-            </div>
-          ))}
+          {videos.map((vid, i) => {
+            const vidUrl = (vid.local_path && vid.filename)
+              ? `/api/simulation/${simId}/media/videos/${vid.filename}`
+              : vid.url;
+            return (
+              <div key={i} className="op-video-item">
+                <IconVideo size={16} />
+                <span className="op-video-name">{vid.concept_name || vid.name || `Video ${i + 1}`}</span>
+                {vid.model && <span className="op-video-model">{vid.model}</span>}
+                <a href={vidUrl} target="_blank" rel="noopener noreferrer" className="gc-btn gc-btn-ghost">
+                  <IconDownload size={14} /> Download
+                </a>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
