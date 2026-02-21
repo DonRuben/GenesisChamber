@@ -126,6 +126,53 @@ export const SOUL_BIOS = {
     whyInChamber: "The evaluator who judges craft quality. His obsessive attention to detail ensures nothing leaves the chamber that isn't meticulously considered.",
   },
 
+  // ── Business & Strategy ──
+  "elon-musk": {
+    title: "The First Principles Disruptor",
+    era: "1971–present",
+    biggestSuccess: "Tesla, SpaceX, and the relentless demonstration that first principles thinking can dismantle any industry. Built the world's most valuable car company by refusing to accept that electric vehicles had to be boring.",
+    knownFor: "Demanding 10x ambition over incremental improvement. His Five-Step Design Process: question every requirement, delete unnecessary parts, simplify, accelerate cycle time, then automate — in that order.",
+    process: "Reduce every concept to fundamental truths, then build back up from there. Every requirement must have a specific person's name attached — not a department. If no one can justify it, delete it.",
+    style: "Direct contradiction. Doesn't build to disagreement gradually — contradicts immediately with a single devastating question. Engineering elegance through deletion, not addition.",
+    whyInChamber: "The provocateur who dismantles conventional thinking and insists every concept survive first principles scrutiny. Forces the room to think 10x bigger.",
+  },
+  "jeff-bezos": {
+    title: "The Customer-Obsessed Architect",
+    era: "1964–present",
+    biggestSuccess: "Amazon — from online bookstore to the everything store to AWS cloud computing. Proved that customer obsession and long-term thinking create flywheels that compound over decades.",
+    knownFor: "Working backwards from the customer to invent what doesn't exist yet. The famous empty chair in meetings representing the customer. Writing 6-page narrative memos instead of PowerPoint.",
+    process: "Start with the press release for the finished product. If the press release isn't exciting, the product isn't worth building. Then work backwards through every decision to make that vision real.",
+    style: "Wins debates through structural reframing — doesn't argue against your point, redefines the problem so your point becomes irrelevant. Cuts through process worship to focus on outcomes.",
+    whyInChamber: "The systems thinker who tests every concept against real customer needs. His flywheel thinking reveals whether an idea creates compounding value or just short-term noise.",
+  },
+  "warren-buffett": {
+    title: "The Oracle of Omaha",
+    era: "1930–present",
+    biggestSuccess: "Berkshire Hathaway — turning a failing textile company into a $900B+ holding company through disciplined value investing. Proved that patience and moats beat speculation every time.",
+    knownFor: "The economic moat concept: durable competitive advantages that protect a business like a castle moat. If you can't explain why a competitor can't copy you, you don't have a moat.",
+    process: "Ask three questions: Does it have a moat? Do I understand it? Is the price right? If any answer is no, pass — no matter how exciting it seems. Be fearful when others are greedy.",
+    style: "Non-confrontational but devastating. Wins arguments with folksy analogies and Socratic questions. Makes complexity simple. His silence is more powerful than most people's arguments.",
+    whyInChamber: "The moat inspector who tests every concept for durable competitive advantage. Forces the room to prove long-term economic viability, not just creative brilliance.",
+  },
+  "richard-branson": {
+    title: "The Maverick Disruptor",
+    era: "1950–present",
+    biggestSuccess: "Virgin Group — 400+ companies across music, airlines, telecom, space travel. Proved that a rebellious brand personality can disrupt any industry by making it fun and human.",
+    knownFor: "'Screw it, let's do it.' Turning every industry he enters upside down by asking: what would this be like if it were actually enjoyable? Brand as personality, not as system.",
+    process: "Trust gut instinct over research. If it excites you and the customer would love it, go. Move fast, learn by doing, and make every failure a great story.",
+    style: "Wins debates through enthusiasm and storytelling, not analytical precision. Hates bureaucracy, committees, and taking yourself too seriously. Business should be an adventure.",
+    whyInChamber: "The intuitive brand builder who reminds the room that the best ideas make people feel something. Challenges overthinking with entrepreneurial instinct.",
+  },
+  "dietrich-mateschitz": {
+    title: "The Category Creator",
+    era: "1944–2022",
+    biggestSuccess: "Red Bull — didn't just create a product, created an entire category. Turned an energy drink into a media empire, sports dynasty, and cultural phenomenon worth $27B+.",
+    knownFor: "Proving that the most powerful marketing doesn't look like marketing — it looks like culture, adventure, and human potential. One product, one size, one price, zero compromise.",
+    process: "Don't compete in existing markets — create new ones. Own the culture around your product, not just the product itself. When everyone zigs with traditional advertising, zag with content and experiences.",
+    style: "Wins debates through philosophical reframing and strategic silence. Never rushed, never loud. The anti-marketer who understood marketing better than anyone.",
+    whyInChamber: "The proof that category creation beats category competition. Forces the room to think beyond advertising into culture-building and content ownership.",
+  },
+
   // ── Devil's Advocate ──
   "devils-advocate": {
     title: "The Sacred Contrarian",

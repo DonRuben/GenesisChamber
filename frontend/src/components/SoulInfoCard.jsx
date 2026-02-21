@@ -13,8 +13,6 @@ const SECTIONS = [
 
 export default function SoulInfoCard({ soul, onClose }) {
   const panelRef = useRef(null);
-  const bio = SOUL_BIOS[soul?.id];
-
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (panelRef.current && !panelRef.current.contains(e.target)) {
@@ -32,7 +30,14 @@ export default function SoulInfoCard({ soul, onClose }) {
     };
   }, [onClose]);
 
-  if (!soul || !bio) return null;
+  if (!soul) return null;
+
+  // Fallback bio for custom/uploaded souls not in the hardcoded bios
+  const bio = SOUL_BIOS[soul.id] || {
+    title: soul.team ? `${soul.team.charAt(0).toUpperCase() + soul.team.slice(1)} Team Member` : 'Custom Soul',
+    era: 'Custom',
+    whyInChamber: soul.excerpt || 'A custom soul document uploaded for this simulation. Click the soul\'s name to learn more about their role and perspective.',
+  };
 
   return (
     <div className="soul-info-overlay">
