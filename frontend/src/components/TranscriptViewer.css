@@ -416,6 +416,100 @@
   font-style: normal;
 }
 
+/* ── DA Defense section ── */
+.tv-label-da { color: var(--stage-da-defense, #DC2626); }
+
+.tv-da-defenses {
+  margin-top: 6px;
+}
+
+.tv-da-defense-card {
+  background: var(--surface-1);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm);
+  margin-bottom: 6px;
+  border-left: 3px solid #DC2626;
+}
+
+.tv-da-defense-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-bottom: 6px;
+}
+
+.tv-da-persona {
+  font-family: var(--font-data);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.tv-da-defending {
+  font-family: var(--font-data);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.tv-da-concept {
+  font-family: var(--font-data);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gc-cyan);
+}
+
+.tv-da-challenge {
+  font-family: var(--font-data);
+  font-size: 13px;
+  color: var(--text-primary);
+  background: rgba(220, 38, 38, 0.06);
+  border-left: 2px solid #DC2626;
+  padding: 4px var(--space-sm);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-bottom: 6px;
+}
+
+.tv-da-defense-text {
+  font-family: var(--font-data);
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  padding: 4px 0;
+  white-space: pre-wrap;
+}
+
+.tv-da-verdict {
+  font-family: var(--font-data);
+  font-size: 13px;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  margin-top: 6px;
+}
+
+.tv-verdict-accepted {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: #22C55E;
+}
+
+.tv-verdict-insufficient {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #EF4444;
+}
+
+.tv-verdict-details {
+  color: var(--text-secondary);
+}
+
+.tv-revised-score {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  margin-left: var(--space-sm);
+}
+
 /* ── Refinement + Presentation sections ── */
 .tv-label-refine { color: var(--stage-refine, #3B82F6); }
 .tv-label-present { color: var(--stage-present, #8B5CF6); }

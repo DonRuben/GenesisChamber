@@ -118,6 +118,19 @@ class EvaluatorAssessment(BaseModel):
     raw_text: str = ""
 
 
+class DADefenseResult(BaseModel):
+    """Result of a creative's defense against a Devil's Advocate challenge."""
+    concept_id: str
+    concept_name: str
+    persona_id: str
+    persona_name: str
+    defense_text: str = ""
+    da_challenge: Dict[str, Any] = {}  # The original DA critique data
+    verdict: str = ""  # "defense accepted" or "defense insufficient"
+    verdict_details: str = ""
+    revised_score: Optional[int] = None
+
+
 # --- Round & Stage Models ---
 
 class StageResult(BaseModel):

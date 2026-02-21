@@ -759,6 +759,31 @@ h2 {{ font-size:20px; color:var(--cyan); margin:34px 0 16px; padding-bottom:8px;
                         lines.append(f"**Demanded Change:** {crit['one_change']}")
                     lines.append("")
 
+        # --- DA DEFENSE ---
+        for entry in state.transcript_entries:
+            if entry.get("round") == round_num and entry.get("da_defenses"):
+                lines.append("## DA Defense Round")
+                lines.append("")
+                for d in entry["da_defenses"]:
+                    lines.append(f"### {d.get('persona_name', '?')} defends '{d.get('concept_name', '?')}'")
+                    challenge = d.get("da_challenge", {})
+                    if challenge.get("fatal_flaw"):
+                        lines.append(f"**DA's Fatal Flaw:** {challenge['fatal_flaw']}")
+                    if challenge.get("one_change"):
+                        lines.append(f"**DA's Demand:** {challenge['one_change']}")
+                    if d.get("defense_text"):
+                        lines.append(f"**Defense:** {d['defense_text']}")
+                    if d.get("verdict"):
+                        verdict_icon = "+" if "accepted" in d["verdict"].lower() else "-"
+                        lines.append(f"**DA Verdict:** [{verdict_icon}] {d['verdict']}")
+                    if d.get("verdict_details"):
+                        lines.append(f"**Details:** {d['verdict_details']}")
+                    if d.get("revised_score") is not None:
+                        lines.append(f"**Revised Score:** {d['revised_score']}/10")
+                    lines.append("")
+                    lines.append("---")
+                    lines.append("")
+
         # --- STAGE 3: MODERATOR DIRECTION ---
         for entry in state.transcript_entries:
             if entry.get("round") == round_num and entry.get("direction"):
@@ -837,8 +862,26 @@ h2 {{ font-size:20px; color:var(--cyan); margin:34px 0 16px; padding-bottom:8px;
                 if crit.get("one_change"):
                     lines.append(f"**Demanded:** {crit['one_change']}")
 
-                # Check if creative addressed DA in evolution notes
-                if concept and concept.evolution_notes:
+                # Check for DA Defense results (attack/defense/verdict dialog)
+                da_defense_found = False
+                for entry in state.transcript_entries:
+                    if entry.get("round") == round_num and entry.get("da_defenses"):
+                        for d in entry["da_defenses"]:
+                            if d.get("concept_id") == crit.get("concept_id"):
+                                da_defense_found = True
+                                lines.append("")
+                                lines.append(f"**Defense by {d.get('persona_name', '?')}:**")
+                                lines.append(f"> {d.get('defense_text', '')[:500]}")
+                                lines.append("")
+                                if d.get("verdict"):
+                                    lines.append(f"**DA Verdict:** {d['verdict']}")
+                                if d.get("verdict_details"):
+                                    lines.append(f"**Details:** {d['verdict_details']}")
+                                if d.get("revised_score") is not None:
+                                    lines.append(f"**Revised Score:** {d['revised_score']}/10")
+
+                # Fallback: check evolution notes if no DA Defense stage ran
+                if not da_defense_found and concept and concept.evolution_notes:
                     evo = concept.evolution_notes.lower()
                     if any(kw in evo for kw in ["devil", "advocate", "advocat", "diaboli"]):
                         lines.append("")
