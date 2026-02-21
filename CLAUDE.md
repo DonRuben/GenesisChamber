@@ -141,7 +141,7 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - `_stage_da_defense()`: Two-phase adversarial dialog — Phase 1: creatives defend in parallel, Phase 2: DA issues individual verdicts per concept (avoids position bias)
 - `_stage_refinement()` with concept version chaining: snapshots old concept as `ConceptVersion`, links via `previous_version_id`, copies accumulated scores
 - `_stage_synthesis()` accepts optional `da_defense_results` to include defense/verdict context in moderator summary
-- `_add_transcript()` handles `da_defense` entries with full challenge/defense/verdict data
+- `_add_transcript()` stores comprehensive per-stage data — V1 fix stopped ~60% data loss by adding: full critique arrays (strengths/weaknesses lists, fatal_flaw, is_devils_advocate flag), dual-tier synthesis (flat keys for backward compat + nested `synthesis` dict for TranscriptViewer), refined concept arrays (evolution_notes), presentation arrays (concept_name, persona, content), and DA defense arrays (challenge, defense_text, verdict, revised_score)
 - 3-tier fuzzy elimination matching (exact -> normalized -> fuzzy ratio with 70% threshold)
 - 5-minute timeout per stage with graceful degradation
 
@@ -318,6 +318,9 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - `clipboard.js` — Clipboard copy helper
 - `modelDisplayNames.js` — Maps OpenRouter model IDs to display labels
 
+### Data (`data/`)
+- `soulBios.js` — Biographical data for all 20 personas (19 souls + Advocatus Diaboli). Each entry keyed by soul ID (e.g., `david-ogilvy`, `elon-musk`, `devils-advocate`) with fields: `title`, `era`, `biggestSuccess`, `process`, `knownFor`, `style`, `whyInChamber`. Used by `SoulInfoCard.jsx` for info modals. Custom uploads that aren't in this file get auto-generated fallback bios
+
 ### Components — llm-council (preserved)
 - `ChatInterface.jsx` — Chat mode UI
 - `Stage1.jsx` — Tab view of model responses
@@ -328,11 +331,11 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 ### Components — Genesis Chamber
 
 **Launcher & Config:**
-- `SimulationLauncher.jsx` — Full 3-step config wizard (type/participants/brief)
+- `SimulationLauncher.jsx` — Full 3-step config wizard (type/participants/brief). Jobs/Ive appear in functional team sections via `cross_teams` (Jobs in Marketing, Ive in Design+Marketing) with "Moderator"/"Evaluator" badges. Dual-role toggle lets leadership also participate as creative contributors
 - `StepIndicator.jsx` — 3-step progress indicator
 - `ConfigSummary.jsx` — Right sidebar with preset, participant count, costs
 - `ModelSelector.jsx` — Dropdown for OpenRouter models (grouped by tier)
-- `SoulInfoCard.jsx` — Modal showing soul document preview + metadata
+- `SoulInfoCard.jsx` — Modal showing soul document preview + metadata. Loads bios from `soulBios.js`; for custom/uploaded souls without a hardcoded bio, generates fallback: title from team name (e.g., "Marketing Team Member"), era "Custom", and `whyInChamber` from soul excerpt
 - `HelpTooltip.jsx` + `helpContent.js` — Contextual help popovers
 
 **Dashboard & Live:**
@@ -352,8 +355,8 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 
 **Output & Export:**
 - `PresentationGallery.jsx` — Browse concepts across rounds
-- `TranscriptViewer.jsx` — Interactive full transcript + DA Defense filter/color/label + defense cards with challenge, defense text, verdict (accepted/insufficient styling)
-- `TranscriptViewer.css` — Transcript styles including ~90 lines of DA defense card styles
+- `TranscriptViewer.jsx` — Interactive full transcript with V1 enrichment: bulleted critique strengths/weaknesses lists, DA badge on devil's advocate critiques, score color-coding (high/mid/low), synthesis badges showing surviving (green) and eliminated (red) concepts with reasons, moderator direction_notes, DA Defense cards (challenge + defense text + verdict with accepted/insufficient styling + revised score), evolution labels on refined concepts, and presentation cards with concept name + persona. All stage types fully rendered
+- `TranscriptViewer.css` — Transcript styles including ~90 lines of DA defense card styles + critique cards + synthesis badges + evolution labels + presentation items
 - `GeneratedGallery.jsx` — Image + video gallery with download
 - `OutputPanel.jsx` — Export buttons (markdown, presentation, media)
 
@@ -518,6 +521,8 @@ All ReactMarkdown components must be wrapped in `<div className="markdown-conten
 13. **Concept Version Chaining**: `_stage_refinement()` creates new `Concept` objects with new UUIDs. Versions are COPIED (not referenced) — each concept carries its full history. `previous_version_id` links the chain
 14. **DA Arena Tab Visibility**: Only appears when `simState.config.devils_advocate` is truthy AND `simState.status === 'completed'`
 15. **DA Training Suggestions**: Manual only — no `auto_refine_soul()` function. Human must review suggestions and edit soul documents manually
+16. **SoulInfoCard Custom Fallback**: Custom/uploaded souls without entries in `soulBios.js` get auto-generated bios (title from team name, era "Custom", whyInChamber from soul excerpt). Missing bio fields simply don't render
+17. **TranscriptViewer Dual-Tier Synthesis**: `_add_transcript()` stores synthesis data both as flat keys (backward compat) and nested `synthesis` dict. TranscriptViewer reads `entry.synthesis?.direction_notes` — if only flat keys exist, badges won't render
 
 ## Reference Documentation
 
