@@ -1,6 +1,6 @@
 # CLAUDE.md - Technical Notes for Genesis Chamber
 
-This file contains technical details, architectural decisions, and important implementation notes for future development sessions. **Last updated: 2026-02-21. V3.8 Pre-Test Fixes — Upload Expansion.**
+This file contains technical details, architectural decisions, and important implementation notes for future development sessions. **Last updated: 2026-02-21. V3.8 Pre-Test Fixes — Upload + Light Mode + Typography.**
 
 ## Project Overview
 
@@ -41,6 +41,13 @@ A 5-stage (+ optional DA Defense), multi-round simulation engine with:
   - DA Overview dashboard tab — per-round attack/defense/verdict display with summary stats
   - Enriched DA soul bio ("The Promoter of the Faith")
   - ~50% cost savings per simulation via optimized model assignments
+- **V3.8 Pre-Test Fixes:**
+  - Upload expansion: .docx (python-docx), .xlsx (openpyxl), .csv text extraction
+  - Debug endpoint: `/api/debug/preview-context` — verify brand_context reaches LLM prompt
+  - Context token counter in launcher (color-coded: green <50K, yellow <100K, red >100K)
+  - .docx drag-and-drop brief auto-fill via server-side extraction
+  - Light/dark mode toggle — `[data-theme="light"]` CSS variable overrides, localStorage persistence
+  - Typography readability fixes — minimum font sizes, contrast bumps, letter-spacing
 
 ## Architecture: Three Engines
 
@@ -372,6 +379,8 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - **Surfaces**: 4-tier dark surface system (#1B1D22 -> #33363E)
 - **Utility Classes**: `.gc-btn`, `.gc-badge`, `.gc-status`, `.gc-card`, `.gc-input`, `.gc-spinner`
 - V3: `.gc-btn-copy` (absolute-positioned copy button, appears on hover) + `.gc-copyable` (parent class that triggers copy button visibility)
+- V3.8: `[data-theme="light"]` block overrides surface, text, border, shadow variables for light mode. Brand accents (cyan, gold, magenta, stage/status colors) stay unchanged. Scrollbar overrides included
+- V3.8: Readability fixes section — `.gc-badge` min size, `max()` font-sizes on small text classes
 
 ### Core Files
 - `App.jsx` — Main orchestration, manages conversations + simulations
@@ -393,7 +402,7 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - `Stage1.jsx` — Tab view of model responses
 - `Stage2.jsx` — Anonymized critique display with de-anonymization
 - `Stage3.jsx` — Chairman synthesis (green-tinted)
-- `Sidebar.jsx` — Conversation/simulation list with rename/archive/delete. V3: simulation starring via `localStorage('gc-starred-sims')`, starred sort to top, optional filter
+- `Sidebar.jsx` — Conversation/simulation list with rename/archive/delete. V3: simulation starring via `localStorage('gc-starred-sims')`, starred sort to top, optional filter. V3.8: Light/dark mode toggle in footer (sun/moon icon), persists via `localStorage('gc-theme')`, default dark
 
 ### Components — Genesis Chamber
 
@@ -437,7 +446,7 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - `DAArena.css` — ~450 lines using design-tokens.css variables exclusively (3D perspective, backface-visibility, color-specific glow effects)
 
 **Shared:**
-- `Icons.jsx` — SVG icon components. V3: Added `IconStar`
+- `Icons.jsx` — SVG icon components. V3: Added `IconStar`. V3.8: Added `IconSun`, `IconMoon` for theme toggle
 - `CopyButton.jsx` — V3: Reusable copy-to-clipboard component (`navigator.clipboard.writeText`). Shows IconCopy, switches to IconCheck for 2s after copy. CSS class `.gc-btn-copy` (absolute positioned, appears on parent `.gc-copyable` hover)
 
 **V3 — Overview & Archive:**
@@ -667,6 +676,9 @@ All ReactMarkdown components must be wrapped in `<div className="markdown-conten
 21. **Scope "all" Includes Eliminated**: Eliminated concepts may have incomplete data (missing visual_direction, partial scores). `generate_image_prompts()` includes merged concepts too
 22. **CopyButton Parent Class**: CopyButton only appears on hover when its parent has class `.gc-copyable` (CSS: `position: relative` + child `.gc-btn-copy` transitions from `opacity: 0` to `opacity: 1`)
 23. **Compare View Threshold**: Gallery/Compare toggle only renders when `images.length > 1`. Compare view uses 1:1 aspect ratio while gallery uses 280px-wide cards with 240px-tall images
+24. **Light/Dark Mode**: Toggle in Sidebar footer stores preference in `localStorage('gc-theme')`. Default is dark. `[data-theme="light"]` on `<html>` triggers CSS variable overrides. All components inherit via existing CSS variables — no per-component changes needed. Brand accent colors identical in both modes
+25. **Office Upload Dependencies**: `python-docx` for .docx, `openpyxl` for .xlsx. Both imported lazily inside extraction functions. `.doc` (legacy Word) returns a guidance message to re-save as .docx
+26. **Context Token Counter**: Estimates tokens as `chars / 4`. Color thresholds: green (<50K tokens), yellow (50-100K), red (>100K). Displayed only when reference files are uploaded
 
 ## Reference Documentation
 
