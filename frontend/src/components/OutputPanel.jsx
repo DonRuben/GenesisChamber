@@ -23,6 +23,7 @@ export default function OutputPanel({ simId, simState }) {
   const [videoTiers, setVideoTiers] = useState(null);
   const [selectedTier, setSelectedTier] = useState('standard');
   const [selectedImageModel, setSelectedImageModel] = useState('auto');
+  const [imageScope, setImageScope] = useState('active');
 
   useEffect(() => {
     // Try to load existing images/videos
@@ -58,7 +59,10 @@ export default function OutputPanel({ simId, simState }) {
   const handleGenerateImages = async () => {
     setImageStatus('generating');
     try {
-      const options = selectedImageModel !== 'auto' ? { model: selectedImageModel } : {};
+      const options = {
+        ...(selectedImageModel !== 'auto' ? { model: selectedImageModel } : {}),
+        scope: imageScope,
+      };
       await api.generateImages(simId, options);
       // Poll for completion
       const poll = setInterval(async () => {
@@ -157,6 +161,20 @@ export default function OutputPanel({ simId, simState }) {
               <div className="op-model-desc">
                 {IMAGE_MODELS.find(m => m.key === selectedImageModel)?.desc}
               </div>
+            </div>
+
+            {/* V3: Scope selector */}
+            <div className="op-model-select" style={{ marginTop: 8 }}>
+              <label className="op-model-label">Generate for</label>
+              <select
+                className="gc-input op-model-dropdown"
+                value={imageScope}
+                onChange={(e) => setImageScope(e.target.value)}
+              >
+                <option value="active">Active concepts</option>
+                <option value="all">All concepts (inc. eliminated)</option>
+                <option value="winner">Winner only</option>
+              </select>
             </div>
 
             {renderStatusBadge(imageStatus)}

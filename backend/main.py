@@ -1058,6 +1058,7 @@ async def get_output_file(sim_id: str, filename: str):
 
 class GenerateImagesRequest(BaseModel):
     model: Optional[str] = None  # Override auto-selection with specific model key
+    scope: Optional[str] = "active"  # V3: 'winner', 'active', 'all'
 
 
 @app.post("/api/simulation/{sim_id}/generate-images")
@@ -1070,7 +1071,8 @@ async def generate_images(sim_id: str, request: Optional[GenerateImagesRequest] 
     engine = OutputEngine()
     sim_dir = Path(SIMULATION_OUTPUT_DIR) / sim_id
     sim_dir.mkdir(parents=True, exist_ok=True)
-    prompts_path = engine.generate_image_prompts(state, sim_dir)
+    scope = request.scope if request and request.scope else "active"
+    prompts_path = engine.generate_image_prompts(state, sim_dir, scope=scope)
 
     with open(prompts_path) as f:
         prompts = json.load(f)

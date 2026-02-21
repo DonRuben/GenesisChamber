@@ -31,6 +31,7 @@ export default function GeneratedGallery({ simId }) {
   const [loading, setLoading] = useState(true);
   const [lightboxImg, setLightboxImg] = useState(null);
   const [expandedPrompts, setExpandedPrompts] = useState({});
+  const [viewMode, setViewMode] = useState('gallery'); // 'gallery' | 'compare'
   const lightboxRef = useRef(null);
 
   useEffect(() => {
@@ -110,18 +111,71 @@ export default function GeneratedGallery({ simId }) {
           {images.length} image{images.length !== 1 ? 's' : ''}
           {videos.length > 0 && `, ${videos.length} video${videos.length !== 1 ? 's' : ''}`}
         </span>
-        <a
-          href={api.getDownloadUrl(simId, 'all')}
-          className="gc-btn gc-btn-secondary gg-download-all"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <IconDownload size={14} /> Download All (ZIP)
-        </a>
+        <div className="gg-bulk-right">
+          {images.length > 1 && (
+            <div className="gg-view-toggle">
+              <button
+                className={`gc-btn gc-btn-ghost gg-view-btn ${viewMode === 'gallery' ? 'active' : ''}`}
+                onClick={() => setViewMode('gallery')}
+              >
+                Gallery
+              </button>
+              <button
+                className={`gc-btn gc-btn-ghost gg-view-btn ${viewMode === 'compare' ? 'active' : ''}`}
+                onClick={() => setViewMode('compare')}
+              >
+                Compare
+              </button>
+            </div>
+          )}
+          <a
+            href={api.getDownloadUrl(simId, 'all')}
+            className="gc-btn gc-btn-secondary gg-download-all"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <IconDownload size={14} /> Download All (ZIP)
+          </a>
+        </div>
       </div>
 
+      {/* V3: Compare View */}
+      {viewMode === 'compare' && images.length > 0 && (
+        <div className="gg-section">
+          <h3 className="gg-section-title">
+            <IconImage size={16} /> Side-by-Side Comparison
+          </h3>
+          <div className="gg-compare-grid">
+            {images.map((img, i) => (
+              <div key={i} className="gg-compare-card" onClick={() => setLightboxImg(img)}>
+                <img
+                  src={getMediaUrl(img)}
+                  alt={img.concept_name || `Image ${i + 1}`}
+                  className="gg-compare-img"
+                  loading="lazy"
+                />
+                <div className="gg-compare-info">
+                  <div className="gg-compare-name">{img.concept_name || `Concept ${i + 1}`}</div>
+                  <div className="gg-compare-persona">{img.persona || 'Unknown'}</div>
+                  <div className="gg-compare-badges">
+                    {img.concept_status && (
+                      <span className={`gc-badge ${img.concept_status === 'winner' ? 'gc-badge-gold' : img.concept_status === 'eliminated' ? 'gc-badge-red' : 'gc-badge-green'}`}>
+                        {img.concept_status}
+                      </span>
+                    )}
+                    {img.model && (
+                      <span className="gg-card-model">{MODEL_NAMES[img.model] || img.model}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Image Gallery */}
-      {images.length > 0 && (
+      {viewMode === 'gallery' && images.length > 0 && (
         <div className="gg-section">
           <h3 className="gg-section-title">
             <IconImage size={16} /> Concept Images
@@ -201,7 +255,7 @@ export default function GeneratedGallery({ simId }) {
       )}
 
       {/* Video Gallery */}
-      {videos.length > 0 && (
+      {viewMode === 'gallery' && videos.length > 0 && (
         <div className="gg-section">
           <h3 className="gg-section-title">
             <IconVideo size={16} /> Concept Videos
