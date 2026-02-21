@@ -800,8 +800,35 @@ async def get_available_models():
 
 @app.get("/api/config/participants")
 async def get_default_participants():
-    """Return default participant, moderator, evaluator, and Devil's Advocate configurations."""
+    """Return default participant, moderator, evaluator, Devil's Advocate configurations, and DA training stats."""
     from .config import DEFAULT_PARTICIPANTS, DEFAULT_MODERATOR, DEFAULT_EVALUATOR, DEFAULT_DEVILS_ADVOCATE, TEAMS, PERSONA_TEAMS
+    import json as _json
+
+    # Aggregate DA training stats across all simulations
+    da_training_summary = {"total_rated": 0, "training_level": "none", "last_trained": None}
+    output_dir = Path("output")
+    if output_dir.exists():
+        for state_file in output_dir.glob("*/state.json"):
+            try:
+                with open(state_file) as f:
+                    state_data = _json.load(f)
+                da_ratings = state_data.get("da_ratings", {})
+                for rid, rdata in da_ratings.items():
+                    if rdata.get("rating"):
+                        da_training_summary["total_rated"] += 1
+                        reviewed_at = rdata.get("reviewed_at")
+                        if reviewed_at and (da_training_summary["last_trained"] is None or reviewed_at > da_training_summary["last_trained"]):
+                            da_training_summary["last_trained"] = reviewed_at
+            except Exception:
+                continue
+    total = da_training_summary["total_rated"]
+    da_training_summary["training_level"] = (
+        "advanced" if total >= 16 else
+        "intermediate" if total >= 6 else
+        "beginner" if total >= 1 else
+        "none"
+    )
+
     return {
         "participants": DEFAULT_PARTICIPANTS,
         "moderator": DEFAULT_MODERATOR,
@@ -809,6 +836,7 @@ async def get_default_participants():
         "devils_advocate": DEFAULT_DEVILS_ADVOCATE,
         "teams": TEAMS,
         "persona_teams": PERSONA_TEAMS,
+        "da_training_summary": da_training_summary,
     }
 
 
