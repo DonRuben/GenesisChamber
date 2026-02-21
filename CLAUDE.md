@@ -1,6 +1,6 @@
 # CLAUDE.md - Technical Notes for Genesis Chamber
 
-This file contains technical details, architectural decisions, and important implementation notes for future development sessions. **Last updated: 2026-02-20.**
+This file contains technical details, architectural decisions, and important implementation notes for future development sessions. **Last updated: 2026-02-21.**
 
 ## Project Overview
 
@@ -12,10 +12,10 @@ Genesis Chamber is a multi-persona AI creative simulation engine, evolved from K
 A working 3-stage deliberation system: parallel LLM querying via OpenRouter, anonymized peer review, chairman synthesis, streaming SSE, React frontend.
 
 ### What We've Built (Genesis Chamber)
-A 5-stage, multi-round simulation engine with:
+A 5-stage (+ optional DA Defense), multi-round simulation engine with:
 - 19 soul-loaded personas across 3 teams + flexible leadership
-- Concept evolution with elimination mechanics and quality gates
-- Devil's Advocate (Advocatus Diaboli) with Sanhedrin principle
+- Concept evolution with elimination mechanics, quality gates, and version chaining
+- Devil's Advocate (Advocatus Diaboli) with Sanhedrin principle + DA Defense stage + DA Arena
 - Real-time SSE streaming with per-participant events
 - Thinking mode (off/thinking/deep) with per-participant overrides
 - Web search integration via OpenRouter plugins
@@ -41,15 +41,20 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - Soul docs live in `souls/` directory (19 souls, ~17K total lines)
 
 ### Council Engine (`backend/simulation.py`)
-- 5 stages per round: Create -> Critique -> Synthesize -> Refine -> Present
+- 5 stages per round: Create -> Critique -> (DA Defense) -> Synthesize -> Refine -> Present
+- Optional DA Defense stage (Stage 2.5): Creatives defend concepts against DA challenges, DA issues individual verdicts
 - Multi-round with configurable elimination schedule (e.g., R1: 0%, R2: 40%, R3: 50%, R4: 67%)
+- Concept version chaining: Each refinement snapshots the old concept and links via `previous_version_id`
 - Quality gates pause for human approval
 - Full state persistence and resume via `SimulationStore` (database + file hybrid)
 - SSE streaming with callbacks: `on_stage_start`, `on_stage_complete`, `on_round_complete`, `on_gate_reached`, `on_participant_event`
 - Devil's Advocate injects adversarial critiques during Stage 2
+- 3-tier fuzzy elimination matching (exact name -> normalized -> fuzzy ratio) for robust concept tracking
 
 ### Output Engine (`backend/output_engine.py`)
-- Markdown export: full summary, winner package, per-round, per-persona
+- Markdown export: full summary, winner package, per-round, per-persona, DA-specific report
+- Concept version history rendering in markdown exports
+- DA Defense results (defense text, verdict, revised score) in round + DA reports
 - reveal.js presentations with Genesis Chamber dark theme
 - Image prompt extraction for fal.ai generation
 - Video prompt extraction for fal.ai generation
@@ -122,25 +127,36 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - Reference file uploads: images, HTML, text, PDF, ZIP with text extraction
 - Markdown export: summary, winner, per-round, per-persona
 - Media generation: images, videos, combined gallery, ZIP download
+- DA Arena API: 5 endpoints for interaction extraction, rating, training, and suggestions
+- `DARatingRequest`: Pydantic model for DA interaction ratings (JSON body, not query params)
 - Upload serving with database fallback for cross-deploy survival
 - `clean_soul_name()`: Canonical lookup + regex cleanup for soul document headings
 
-**`simulation.py`** — Core 5-stage engine
+**`simulation.py`** — Core 5-stage engine (+ optional DA Defense)
 - `OutputParser`: 3-tier structured output parsing (strict delimiters -> loose extraction -> raw fallback)
-- `GenesisRound`: Runs one complete round (configurable 3 or 5 stages)
+- `GenesisRound`: Runs one complete round (configurable 3 or 5 stages + DA Defense)
 - `GenesisSimulation`: Orchestrates N rounds with elimination, quality gates, state persistence
 - Callbacks for SSE streaming: stage start/complete, round complete, gate reached, participant thinking/response
 - Devil's Advocate integration during critique stage (Stage 2)
+- `_stage_da_defense()`: Two-phase adversarial dialog — Phase 1: creatives defend in parallel, Phase 2: DA issues individual verdicts per concept (avoids position bias)
+- `_stage_refinement()` with concept version chaining: snapshots old concept as `ConceptVersion`, links via `previous_version_id`, copies accumulated scores
+- `_stage_synthesis()` accepts optional `da_defense_results` to include defense/verdict context in moderator summary
+- `_add_transcript()` handles `da_defense` entries with full challenge/defense/verdict data
+- 3-tier fuzzy elimination matching (exact -> normalized -> fuzzy ratio with 70% threshold)
 - 5-minute timeout per stage with graceful degradation
 
 **`models.py`** — Pydantic schemas
 - `ParticipantConfig`: model, soul_document, role, temperature, thinking_mode, enable_web_search, color
 - `SimulationConfig`: name, type, rounds, stages_per_round, participants, moderator, evaluator, devils_advocate, elimination_schedule, quality_gates, brief, brand_context
-- `Concept`: Full creative concept with 14 fields + scores + status lifecycle
+- `ConceptVersion`: Snapshot of concept at specific round/stage (name, headline, tagline, idea, visual_direction, evolution_notes, score, timestamp)
+- `Concept`: Full creative concept with 14 fields + scores + status lifecycle + `versions: List[ConceptVersion]` + `previous_version_id: Optional[str]`
 - `Critique`: Anonymized peer review with score, strengths, weaknesses, fatal_flaw
+- `DADefenseResult`: Creative's defense against DA challenge — concept_id, persona_id, defense_text, da_challenge, verdict, verdict_details, revised_score
+- `DAInteraction`: Full DA interaction for Arena review — DA attack (critique text, fatal flaw, weaknesses, score, demanded change), creative defense, DA verdict, human rating, round/concept metadata (~30 fields)
 - `ModeratorDirection`: surviving/eliminated concepts, merge suggestions, constraints, direction_notes, one_more_thing
 - `EvaluatorAssessment`: Per-concept craft quality assessment
-- `StageResult`, `RoundResult`, `SimulationState`, `QualityGate`
+- `StageResult`, `RoundResult`, `QualityGate`
+- `SimulationState`: + `da_interactions: List[Dict]` + `da_ratings: Dict[str, Dict]` for DA Arena persistence
 
 **`soul_engine.py`** — Soul document loading and prompt compilation
 - `load_soul()`: Parse markdown into 7 layers (cognitive, emotional, behavioral, calibration, key_works, quotes, instructions)
@@ -189,7 +205,10 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 **`output_engine.py`** — Deliverable generation
 - `generate_markdown_summary()`: Full simulation summary
 - `generate_markdown_winner()`: Winner concept package
-- `generate_markdown_round()` / `generate_markdown_persona()`: Per-round/persona export
+- `generate_markdown_round()`: Per-round export + DA Defense section (defense text, verdict, revised score)
+- `generate_markdown_persona()`: Per-persona export
+- `generate_markdown_devils_advocate()`: Full DA report with critiques, defense results, verdicts, evolution notes fallback
+- `_concept_to_md()`: Concept rendering with version history chain + previous_version_id lineage
 - `generate_reveal_presentation()`: reveal.js HTML with dark Genesis Chamber theme
 - `generate_image_prompts()`: Extract IMAGE_PROMPT fields for fal.ai
 
@@ -204,6 +223,14 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - Quality tiers: hero, standard, draft
 
 **`migrate.py`** — Database migration utilities
+
+**`da_training.py`** — DA Arena training and analysis
+- `extract_da_interactions(state)`: Pull DA critiques from transcript, cross-reference DA Defense results, check evolution notes for creative response
+- `save_interactions_to_state(state, interactions)`: Store interactions to `state.da_interactions`
+- `load_interactions_from_state(state)`: Load `DAInteraction` objects from state
+- `save_rating(state, interaction_id, rating, notes)`: Update rating in `da_interactions` + `da_ratings`
+- `generate_training_report(state)`: Aggregate patterns (brilliant/effective/weak/unfair), effectiveness score, response rate, verdict stats
+- `generate_refinement_suggestions(state)`: Human-readable markdown suggestions for manual soul editing (no auto-rewrite)
 
 ## API Endpoints
 
@@ -256,6 +283,13 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - `GET /api/config/participants` — Default configs
 - `GET /api/config/teams` — Team definitions
 
+### DA Arena
+- `POST /api/simulation/{id}/da/extract` — Extract DA interactions from completed simulation
+- `GET /api/simulation/{id}/da/interactions` — Get all DA interactions for review
+- `POST /api/simulation/{id}/da/rate` — Rate interaction (JSON body: `{interaction_id, rating, notes}`)
+- `GET /api/simulation/{id}/da/training` — Get aggregated training report
+- `GET /api/simulation/{id}/da/suggestions` — Get soul refinement suggestions (manual review only)
+
 ### Reference Uploads
 - `POST /api/upload/reference` — Upload file (image, HTML, text, PDF, ZIP)
 - `GET /api/uploads/{id}/{path}` — Serve uploaded files
@@ -266,7 +300,7 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - **OmniPresent Brand**: Custom `@font-face` (OmniPresent TTF from CDN)
 - **Color Foundation**: `--op-void` (#1B1D22), `--op-flame` (#F27123), `--op-light` (#E9E7E4)
 - **Genesis Extensions**: `--gc-cyan` (#00D9FF), `--gc-magenta` (#FF006E), `--gc-gold` (#FFB800)
-- **Stage Colors**: create (green), critique (amber), synthesize (red), refine (blue), present (purple)
+- **Stage Colors**: create (green), critique (amber), da-defense (#DC2626 red), synthesize (red), refine (blue), present (purple)
 - **Typography**: OmniPresent (display), Inter (body/data), Playfair Display (serif accent), JetBrains Mono (code)
 - **Spacing**: Fibonacci scale (8, 13, 21, 34, 55, 89px)
 - **Surfaces**: 4-tier dark surface system (#1B1D22 -> #33363E)
@@ -274,7 +308,7 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 
 ### Core Files
 - `App.jsx` — Main orchestration, manages conversations + simulations
-- `api.js` — API client with all endpoint methods + SSE streaming
+- `api.js` — API client with all endpoint methods + SSE streaming + DA Arena methods (extract, interactions, rate, training, suggestions)
 - `main.jsx` — React entry point
 - `design-tokens.css` — OmniPresent brand design system
 - `index.css` — Global styles + markdown content styling
@@ -302,9 +336,9 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - `HelpTooltip.jsx` + `helpContent.js` — Contextual help popovers
 
 **Dashboard & Live:**
-- `SimulationDashboard.jsx` — Live simulation monitoring
+- `SimulationDashboard.jsx` — Live simulation monitoring + conditional DA Arena tab (shown when DA enabled + simulation completed)
 - `StatusHeader.jsx` — Status bar with round/stage info
-- `LiveFeed.jsx` — Real-time SSE event feed
+- `LiveFeed.jsx` — Real-time SSE event feed (+ `da_defense` stage verb/label)
 - `ChamberAnimation.jsx` — Animated visual during processing
 - `RoundProgress.jsx` — Visual round/stage progress
 - `Skeleton.jsx` — Loading skeleton placeholders
@@ -318,21 +352,32 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 
 **Output & Export:**
 - `PresentationGallery.jsx` — Browse concepts across rounds
-- `TranscriptViewer.jsx` — Interactive full transcript
+- `TranscriptViewer.jsx` — Interactive full transcript + DA Defense filter/color/label + defense cards with challenge, defense text, verdict (accepted/insufficient styling)
+- `TranscriptViewer.css` — Transcript styles including ~90 lines of DA defense card styles
 - `GeneratedGallery.jsx` — Image + video gallery with download
 - `OutputPanel.jsx` — Export buttons (markdown, presentation, media)
+
+**DA Arena:**
+- `DAArena.jsx` — Post-simulation DA interaction review with two modes:
+  - **Focus Mode**: 3D flashcard with CSS `rotateY` flip — DA attack (front) / defense + verdict (back)
+  - **Overview Mode**: Scrollable grid of compact interaction cards with click-to-focus
+  - 4 rating buttons: Brilliant / Effective / Weak / Unfair (keyboard shortcuts: 1-4, Space to flip, arrows to navigate)
+  - Progress bar with gradient fill, go-back/forward navigation, auto-advance after rating
+  - Training report panel with effectiveness stats + soul refinement suggestions (manual only)
+- `DAArena.css` — ~450 lines using design-tokens.css variables exclusively (3D perspective, backface-visibility, color-specific glow effects)
 
 **Shared:**
 - `Icons.jsx` — SVG icon components
 
 ## Key Design Decisions
 
-### Five-Stage Round System
+### Five-Stage Round System (+ Optional DA Defense)
 1. **CREATE** — Independent concept generation (soul-loaded, parallel queries)
 2. **CRITIQUE** — Anonymized peer review (concepts as A, B, C) + Devil's Advocate
-3. **SYNTHESIZE** — Moderator direction + evaluator craft assessment
-4. **REFINE** — Directed revision based on feedback
-5. **PRESENT** — Group presentation with moderator reaction
+3. **DA DEFENSE** *(optional, Stage 2.5)* — Creatives defend concepts against DA challenges, DA issues individual verdicts
+4. **SYNTHESIZE** — Moderator direction + evaluator craft assessment (includes DA defense context when available)
+5. **REFINE** — Directed revision based on feedback (with concept version chaining)
+6. **PRESENT** — Group presentation with moderator reaction
 
 ### Multi-Model Cognitive Diversity
 Different LLMs assigned for different cognitive profiles via OpenRouter:
@@ -354,6 +399,32 @@ Different LLMs assigned for different cognitive profiles via OpenRouter:
 - **Sanhedrin Principle**: If all critics agree, that agreement itself is suspicious
 - Every criticism must include what would fix the problem
 - Ends critiques with: "This concept earns canonization if it can answer: [specific challenge]"
+
+### DA Defense Stage (Stage 2.5)
+- Runs after Stage 2 (Critique), before Stage 3 (Synthesis), only when DA is enabled and DA critiques exist
+- **Phase 1 — Creative Defense**: Each creative with a DA-challenged concept defends in parallel. Prompt includes DA's fatal flaw, weaknesses, and demanded change. Creative must: (1) argue if fatal flaw is actually fatal, (2) accept or counter each weakness, (3) accept or refuse the demanded change
+- **Phase 2 — DA Verdict**: DA issues individual verdict per concept (not combined, to avoid position bias). Parses `VERDICT:` (accepted/insufficient), `DETAILS:`, `REVISED_SCORE:` (1-10)
+- Sub-stage numbering: `stage_name="da_defense"`, `stage_num=2` — avoids breaking `RoundProgress.jsx` array indexing
+- Results passed to `_stage_synthesis()` so moderator sees full defense/verdict context
+- Full defense cycle recorded in transcript via `_add_transcript()` handler
+
+### DA Arena (Post-Simulation Review)
+- **Backend** (`da_training.py`): Extract DA interactions from transcript, rate them, generate training reports + soul refinement suggestions
+- **Frontend** (`DAArena.jsx`): Two-mode flashcard review system
+  - **Focus Mode**: NotebookLM-inspired 3D flashcard — DA attack on front, defense + verdict on back. CSS `rotateY` flip with `perspective(1000px)` and `backface-visibility: hidden`
+  - **Overview Mode**: Scrollable grid of compact cards with click-to-focus
+  - 4 ratings: Brilliant (green), Effective (blue), Weak (amber), Unfair (red) with keyboard shortcuts (1-4)
+  - Progress bar with gradient fill, auto-advance to next unreviewed after rating
+  - Training report panel with effectiveness stats, pattern analysis, and soul refinement suggestions
+- **Storage**: Embedded in `SimulationState` (`da_interactions`, `da_ratings`) — persists via existing DB+file hybrid, no new storage layer
+- **No auto-rewrite**: Soul refinement suggestions are manual only — human reviews suggestions and edits soul documents by hand
+
+### Concept Versioning (Chain Approach)
+- Each refinement creates a NEW `Concept` object (new UUID via `OutputParser`)
+- Old concept snapshotted as `ConceptVersion` (round, stage, name, headline, tagline, idea, visual_direction, evolution_notes, score, timestamp)
+- New concept gets: `previous_version_id` pointing to old concept, `versions` list with snapshot appended, accumulated `scores` dict copied
+- Full evolution chain preserved: R1 original -> R2 refined -> R3 deepened -> etc.
+- Version history rendered in markdown exports via `_concept_to_md()`
 
 ### Thinking Mode System
 Three tiers controllable globally + per-participant overrides:
@@ -442,6 +513,11 @@ All ReactMarkdown components must be wrapped in `<div className="markdown-conten
 8. **fal.ai URLs Expire**: Generated image/video URLs are temporary (~24h). ZIP download is best-effort
 9. **Thinking Mode Token Scaling**: Deep mode uses 3x base tokens — watch costs with premium models
 10. **Soul Name Mismatch**: If a soul heading doesn't match the canonical name, `clean_soul_name()` fixes it. Add new personas to `_CANONICAL_NAMES` in `main.py`
+11. **DA Defense Stage Numbering**: Uses `stage_name="da_defense"` with `stage_num=2` — NOT a separate stage number. This prevents breaking `RoundProgress.jsx` which indexes stages by `stageNum - 1`
+12. **DA Verdict Position Bias**: Individual verdict calls per concept, not combined. Combined calls showed position bias favoring last-listed concept
+13. **Concept Version Chaining**: `_stage_refinement()` creates new `Concept` objects with new UUIDs. Versions are COPIED (not referenced) — each concept carries its full history. `previous_version_id` links the chain
+14. **DA Arena Tab Visibility**: Only appears when `simState.config.devils_advocate` is truthy AND `simState.status === 'completed'`
+15. **DA Training Suggestions**: Manual only — no `auto_refine_soul()` function. Human must review suggestions and edit soul documents manually
 
 ## Reference Documentation
 
@@ -473,17 +549,36 @@ SimulationLauncher (configure: preset, participants, models, thinking, brief)
     |
 POST /api/simulation/start/stream -> SSE events
     |
-Round 1: DIVERGE (5 stages) -> 10-18 concepts
+Round 1: DIVERGE (5 stages + DA Defense) -> 10-18 concepts (versioned)
     |
-Round 2: CONVERGE (5 stages, eliminate 40%) -> 6-10 concepts
+Round 2: CONVERGE (5 stages + DA Defense, eliminate 40%) -> 6-10 concepts
     |
-Round 3: DEEPEN (5 stages, eliminate 50%) -> 3-5 concepts
+Round 3: DEEPEN (5 stages + DA Defense, eliminate 50%) -> 3-5 concepts
     | [QUALITY GATE -- human approval]
-Round 4: GLADIATOR (5 stages, eliminate 67%) -> 1-2 concepts
+Round 4: GLADIATOR (5 stages + DA Defense, eliminate 67%) -> 1-2 concepts
     |
 Round 5: POLISH (full team on winner)
     |
 Round 6: SPEC (production specification)
     | [QUALITY GATE -- human approval]
 Output Engine -> Markdown, Presentations, Images (fal.ai), Videos (fal.ai), ZIP Package
+    |
+DA Arena (if DA enabled) -> Extract interactions -> Review flashcards -> Rate -> Training report -> Soul suggestions
+```
+
+### Per-Round Stage Flow (with DA Defense)
+```
+Stage 1: CREATE (parallel, soul-loaded)
+    |
+Stage 2: CRITIQUE (anonymized peer review + DA attack)
+    |
+Stage 2.5: DA DEFENSE (if DA enabled + DA critiques exist)
+    |-- Phase 1: Creatives defend in parallel
+    |-- Phase 2: DA issues individual verdicts
+    |
+Stage 3: SYNTHESIZE (moderator + evaluator, with DA defense context)
+    |
+Stage 4: REFINE (version chaining: snapshot -> new concept -> link previous_version_id)
+    |
+Stage 5: PRESENT (group presentation)
 ```
