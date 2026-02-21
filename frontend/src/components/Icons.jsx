@@ -445,6 +445,28 @@ export const IconStar = (props) => (
   </Icon>
 );
 
+// ─── Theme (2) ──────────────────────────────────────────────────────────────
+
+export const IconSun = (props) => (
+  <Icon {...props}>
+    <circle cx="10" cy="10" r="3.5" />
+    <line x1="10" y1="2" x2="10" y2="4" />
+    <line x1="10" y1="16" x2="10" y2="18" />
+    <line x1="2" y1="10" x2="4" y2="10" />
+    <line x1="16" y1="10" x2="18" y2="10" />
+    <line x1="4.34" y1="4.34" x2="5.76" y2="5.76" />
+    <line x1="14.24" y1="14.24" x2="15.66" y2="15.66" />
+    <line x1="4.34" y1="15.66" x2="5.76" y2="14.24" />
+    <line x1="14.24" y1="5.76" x2="15.66" y2="4.34" />
+  </Icon>
+);
+
+export const IconMoon = (props) => (
+  <Icon {...props}>
+    <path d="M16.5 10.5a6.5 6.5 0 1 1-6-8.5 5 5 0 0 0 6 8.5z" />
+  </Icon>
+);
+
 // ─── Convenience lookup object ──────────────────────────────────────────────
 
 export const Icons = {
@@ -509,4 +531,7 @@ export const Icons = {
   IconArchive,
   IconMore,
   IconStar,
+  // Theme
+  IconSun,
+  IconMoon,
 };

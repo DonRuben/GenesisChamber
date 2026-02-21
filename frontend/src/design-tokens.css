@@ -109,6 +109,55 @@
 
 
 /* =============================================
+   LIGHT MODE — V3.8
+   Brand accents (cyan, gold, magenta, stage colors,
+   status colors) stay identical in both modes.
+   ============================================= */
+
+[data-theme="light"] {
+  /* Surfaces */
+  --surface-0: #F5F5F7;
+  --surface-1: #FFFFFF;
+  --surface-2: #F0F0F2;
+  --surface-3: #E5E5EA;
+
+  /* Borders */
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-default: rgba(0, 0, 0, 0.12);
+  --border-strong: rgba(0, 0, 0, 0.20);
+
+  /* Text */
+  --text-primary: #1D1D1F;
+  --text-secondary: #48484A;
+  --text-muted: #6E6E73;
+
+  /* OmniPresent overrides */
+  --op-void: #F5F5F7;
+  --op-light: #1D1D1F;
+  --op-agate: #48484A;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.10);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-glow-cyan: 0 0 12px rgba(0, 217, 255, 0.10);
+  --shadow-glow-flame: 0 0 12px rgba(242, 113, 35, 0.10);
+  --shadow-glow-gold: 0 0 12px rgba(255, 184, 0, 0.10);
+
+  /* Scrollbar */
+  scrollbar-color: #D1D1D6 transparent;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #D1D1D6;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #B0B0B5;
+}
+
+
+/* =============================================
    ANIMATIONS
    ============================================= */
 
