@@ -346,3 +346,13 @@
     align-items: flex-start;
   }
 }
+
+/* V3: Prompt labels */
+.gg-prompt-label {
+  font-size: 0.7em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}

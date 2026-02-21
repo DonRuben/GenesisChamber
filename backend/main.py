@@ -34,6 +34,7 @@ from .da_training import (
 )
 from .image_generator import ImageGenerator
 from .video_generator import VideoGenerator, VIDEO_QUALITY_TIERS
+from .prompt_bible import get_all_strategies, optimize_prompt as pb_optimize_prompt
 from .database import DatabasePool, UploadDB, is_db_available, ensure_schema
 
 app = FastAPI(title="LLM Council + Genesis Chamber API")
@@ -1275,6 +1276,23 @@ async def persist_media(sim_id: str):
         json_path.write_text(json.dumps(items, indent=2), encoding="utf-8")
 
     return results
+
+
+# === PROMPT BIBLE API ===
+
+@app.get("/api/prompt-bible/strategies")
+async def get_prompt_strategies():
+    """Return all model prompt strategies for UI display."""
+    return get_all_strategies()
+
+
+@app.post("/api/prompt-bible/optimize")
+async def optimize_concept_prompt(request: dict):
+    """Preview prompt optimization for a concept."""
+    concept = request.get("concept", {})
+    model_key = request.get("model_key", "nano_banana_pro")
+    optimized = pb_optimize_prompt(concept, model_key)
+    return {"original": concept.get("prompt", ""), "optimized": optimized, "model": model_key}
 
 
 @app.get("/api/simulation/{sim_id}/download/all")

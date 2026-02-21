@@ -10,6 +10,7 @@ from typing import Dict, Any, List, Optional
 import httpx
 
 from .config import FAL_KEY, SIMULATION_OUTPUT_DIR
+from .prompt_bible import optimize_prompt
 
 
 # fal.ai model endpoints (via queue API) — Updated Feb 2026
@@ -186,14 +187,21 @@ class ImageGenerator:
 
         for prompt_data in prompts:
             model_key = model_override if model_override and model_override in FAL_MODELS else self.select_model(prompt_data)
+
+            # ── V3: Optimize prompt for the target model ──
+            optimized_prompt = optimize_prompt(prompt_data, model_key)
+            print(f"[PromptBible] {model_key}: '{prompt_data.get('prompt', '')[:50]}...' → '{optimized_prompt[:50]}...'")
+
             result = await self.generate_with_fallback(
-                prompt=prompt_data["prompt"],
+                prompt=optimized_prompt,
                 preferred_model=model_key,
             )
 
             if result:
                 result["concept_name"] = prompt_data.get("concept_name", "Unknown")
                 result["persona"] = prompt_data.get("persona", "Unknown")
+                result["original_prompt"] = prompt_data.get("prompt", "")
+                result["optimized_prompt"] = optimized_prompt
                 results.append(result)
 
                 # ── V3: Download the actual file to persist it locally ──

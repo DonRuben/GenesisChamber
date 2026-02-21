@@ -154,7 +154,7 @@ export default function GeneratedGallery({ simId }) {
                   )}
                 </div>
 
-                {img.prompt && (
+                {(img.prompt || img.original_prompt) && (
                   <div className="gg-card-prompt-wrap">
                     <button
                       className="gg-card-prompt-toggle"
@@ -163,10 +163,22 @@ export default function GeneratedGallery({ simId }) {
                       {expandedPrompts[`img-${i}`] ? 'Hide prompt' : 'Show prompt'}
                     </button>
                     {expandedPrompts[`img-${i}`] && (
-                      <div className="gg-card-prompt gc-copyable">
-                        {img.prompt}
-                        <CopyButton text={img.prompt} />
-                      </div>
+                      <>
+                        <div className="gg-card-prompt gc-copyable">
+                          <div className="gg-prompt-label">Creative Prompt:</div>
+                          {img.original_prompt || img.prompt}
+                          <CopyButton text={img.original_prompt || img.prompt} />
+                        </div>
+                        {img.optimized_prompt && img.optimized_prompt !== (img.original_prompt || img.prompt) && (
+                          <div className="gg-card-prompt gc-copyable" style={{borderLeft: '2px solid var(--gc-cyan)', marginTop: 6}}>
+                            <div className="gg-prompt-label" style={{color: 'var(--gc-cyan)'}}>
+                              Optimized for {MODEL_NAMES[img.model] || img.model}:
+                            </div>
+                            {img.optimized_prompt}
+                            <CopyButton text={img.optimized_prompt} />
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
@@ -230,7 +242,7 @@ export default function GeneratedGallery({ simId }) {
                   </div>
                 </div>
 
-                {vid.prompt && (
+                {(vid.prompt || vid.original_prompt) && (
                   <div className="gg-card-prompt-wrap">
                     <button
                       className="gg-card-prompt-toggle"
@@ -239,10 +251,22 @@ export default function GeneratedGallery({ simId }) {
                       {expandedPrompts[`vid-${i}`] ? 'Hide prompt' : 'Show prompt'}
                     </button>
                     {expandedPrompts[`vid-${i}`] && (
-                      <div className="gg-card-prompt gc-copyable">
-                        {vid.prompt}
-                        <CopyButton text={vid.prompt} />
-                      </div>
+                      <>
+                        <div className="gg-card-prompt gc-copyable">
+                          <div className="gg-prompt-label">Creative Prompt:</div>
+                          {vid.original_prompt || vid.prompt}
+                          <CopyButton text={vid.original_prompt || vid.prompt} />
+                        </div>
+                        {vid.optimized_prompt && vid.optimized_prompt !== (vid.original_prompt || vid.prompt) && (
+                          <div className="gg-card-prompt gc-copyable" style={{borderLeft: '2px solid var(--gc-cyan)', marginTop: 6}}>
+                            <div className="gg-prompt-label" style={{color: 'var(--gc-cyan)'}}>
+                              Optimized for {MODEL_NAMES[vid.model] || vid.model}:
+                            </div>
+                            {vid.optimized_prompt}
+                            <CopyButton text={vid.optimized_prompt} />
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 )}

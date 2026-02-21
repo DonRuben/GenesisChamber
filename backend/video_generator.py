@@ -14,6 +14,7 @@ from typing import Dict, Any, List, Optional
 import httpx
 
 from .config import FAL_KEY, SIMULATION_OUTPUT_DIR
+from .prompt_bible import optimize_prompt
 
 
 # fal.ai video model endpoints (via queue API) — Updated Feb 2026
@@ -270,8 +271,12 @@ class VideoGenerator:
             image_url = concept_data.get("image_url")
             prompt = concept_data.get("prompt", "")
 
+            # ── V3: Optimize prompt for video model ──
+            optimized_prompt = optimize_prompt(concept_data, model_key)
+            print(f"[PromptBible] {model_key}: '{prompt[:50]}...' → '{optimized_prompt[:50]}...'")
+
             result = await self.generate_with_fallback(
-                prompt=prompt,
+                prompt=optimized_prompt,
                 preferred_model=model_key,
                 image_url=image_url,
                 duration=tier.get("duration", "5"),
@@ -281,6 +286,8 @@ class VideoGenerator:
                 result["concept_name"] = concept_data.get("concept_name", "Unknown")
                 result["persona"] = concept_data.get("persona", "Unknown")
                 result["quality_tier"] = quality
+                result["original_prompt"] = prompt
+                result["optimized_prompt"] = optimized_prompt
                 results.append(result)
 
                 # ── V3: Download video file to persist locally ──
