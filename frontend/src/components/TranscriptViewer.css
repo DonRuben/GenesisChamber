@@ -235,6 +235,197 @@
   color: var(--text-secondary);
 }
 
+/* ── Critique cards ── */
+.tv-critiques {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tv-critique-card {
+  background: var(--surface-1);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm);
+  margin: 0;
+  border-left: 3px solid var(--gc-cyan);
+}
+
+.tv-critique-da {
+  border-left-color: #DC2626;
+}
+
+.tv-critique-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.tv-critic-name {
+  font-family: var(--font-data);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tv-critique-concept {
+  font-family: var(--font-data);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.tv-critique-score {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+.tv-critique-score.high { color: #22C55E; }
+.tv-critique-score.mid { color: var(--gc-gold); }
+.tv-critique-score.low { color: #EF4444; }
+
+.tv-critique-strengths {
+  color: #22C55E;
+  font-size: 0.85em;
+  line-height: 1.4;
+}
+
+.tv-critique-weaknesses {
+  color: var(--text-muted);
+  font-size: 0.85em;
+  line-height: 1.4;
+}
+
+.tv-critique-fatal {
+  color: #EF4444;
+  font-weight: 600;
+  margin-top: 4px;
+  font-size: 0.85em;
+}
+
+/* ── Badges ── */
+.gc-badge-da {
+  background: rgba(220, 38, 38, 0.15);
+  color: #DC2626;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gc-badge-active {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10B981;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  margin: 2px;
+}
+
+.gc-badge-eliminated {
+  background: rgba(239, 68, 68, 0.12);
+  color: #EF4444;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  margin: 2px;
+}
+
+/* ── Synthesis section ── */
+.tv-synthesis {
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm);
+}
+
+.tv-direction-full {
+  font-family: var(--font-caption);
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.6;
+  margin-bottom: var(--space-xs);
+}
+
+.tv-surviving,
+.tv-eliminated-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.tv-badge-label {
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-right: 4px;
+}
+
+.tv-one-more {
+  color: var(--gc-cyan);
+  font-weight: 600;
+  margin-top: var(--space-xs);
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* ── Refinement + Presentation sections ── */
+.tv-section-label {
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.tv-refined,
+.tv-presentations {
+  margin-top: 6px;
+}
+
+.tv-refined-item,
+.tv-presentation-item {
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs) var(--space-sm);
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.tv-refined-persona,
+.tv-presentation-persona {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.tv-evolution {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+.tv-presentation-content {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+  margin-top: 4px;
+  white-space: pre-wrap;
+}
+
 @media (max-width: 768px) {
   .tv-controls {
     flex-direction: column;

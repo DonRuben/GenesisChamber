@@ -961,10 +961,12 @@ class GenesisSimulation:
             entry["concepts"] = [
                 {
                     "persona": c.persona_name,
+                    "persona_id": c.persona_id,
                     "name": c.name,
                     "idea": c.idea,
                     "headline": getattr(c, "headline", ""),
                     "tagline": getattr(c, "tagline", ""),
+                    "status": c.status,
                 }
                 for c in result.outputs
             ]
@@ -988,6 +990,7 @@ class GenesisSimulation:
             entry["critiques_count"] = len(result.outputs)
         elif stage_name == "synthesis" and result.outputs:
             d = result.outputs
+            # Flat keys (backward compat)
             entry["direction"] = d.direction_notes or ""
             entry["one_more_thing"] = getattr(d, "one_more_thing", "") or ""
             entry["surviving_concepts"] = [
@@ -1000,19 +1003,36 @@ class GenesisSimulation:
             ]
             if hasattr(d, "evaluator_notes") and d.evaluator_notes:
                 entry["evaluator_notes"] = d.evaluator_notes
+            # Nested dict for TranscriptViewer
+            entry["synthesis"] = {
+                "direction_notes": d.direction_notes or "",
+                "one_more_thing": getattr(d, "one_more_thing", "") or "",
+                "surviving_concepts": entry["surviving_concepts"],
+                "eliminated_concepts": entry["eliminated_concepts"],
+                "evaluator_notes": getattr(d, "evaluator_notes", "") or "",
+            }
         elif stage_name == "refinement" and result.outputs:
             entry["refined_concepts"] = [
                 {
                     "persona": c.persona_name,
                     "name": c.name,
-                    "idea": c.idea[:500] if c.idea else "",
+                    "idea": c.idea,
                     "headline": getattr(c, "headline", ""),
-                    "evolution": getattr(c, "evolution_notes", ""),
+                    "evolution_notes": getattr(c, "evolution_notes", ""),
                 }
                 for c in result.outputs
             ]
         elif stage_name == "presentation" and result.outputs:
+            outputs = result.outputs if isinstance(result.outputs, list) else [result.outputs]
             entry["presentation"] = str(result.outputs)[:3000] if result.outputs else ""
+            entry["presentations"] = [
+                {
+                    "concept_name": getattr(p, 'concept_name', '') or getattr(p, 'name', ''),
+                    "persona": getattr(p, 'persona_name', ''),
+                    "content": getattr(p, 'content', '') or getattr(p, 'presentation', ''),
+                }
+                for p in outputs
+            ]
 
         self.state.transcript_entries.append(entry)
 

@@ -154,14 +154,95 @@ export default function TranscriptViewer({ entries, eventLog }) {
                     </div>
                   )}
 
-                  {entry.critiques_count != null && (
-                    <div className="tv-entry-meta">
-                      {entry.critiques_count} critiques submitted
+                  {/* Full critiques (V1+) */}
+                  {entry.critiques && entry.critiques.length > 0 ? (
+                    <div className="tv-critiques">
+                      {entry.critiques.map((crit, ci) => (
+                        <div key={ci} className={`tv-critique-card ${crit.is_devils_advocate ? 'tv-critique-da' : ''}`}>
+                          <div className="tv-critique-header">
+                            <span className="tv-critic-name">{crit.critic_name}</span>
+                            {crit.is_devils_advocate && <span className="gc-badge gc-badge-da">DA</span>}
+                            <span className="tv-critique-concept">{crit.concept_label}</span>
+                            {crit.score != null && (
+                              <span className={`tv-critique-score ${crit.score >= 8 ? 'high' : crit.score >= 6 ? 'mid' : 'low'}`}>
+                                {crit.score}/10
+                              </span>
+                            )}
+                          </div>
+                          {crit.strengths && crit.strengths.length > 0 && (
+                            <div className="tv-critique-strengths">{crit.strengths.join(', ')}</div>
+                          )}
+                          {crit.weaknesses && crit.weaknesses.length > 0 && (
+                            <div className="tv-critique-weaknesses">{crit.weaknesses.join(', ')}</div>
+                          )}
+                          {crit.fatal_flaw && (
+                            <div className="tv-critique-fatal">Fatal: {crit.fatal_flaw}</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : entry.critiques_count != null ? (
+                    <div className="tv-entry-meta">{entry.critiques_count} critiques submitted</div>
+                  ) : null}
+
+                  {/* Full synthesis (V1+) */}
+                  {entry.synthesis ? (
+                    <div className="tv-synthesis">
+                      {entry.synthesis.direction_notes && (
+                        <div className="tv-direction-full">{entry.synthesis.direction_notes}</div>
+                      )}
+                      {entry.synthesis.surviving_concepts?.length > 0 && (
+                        <div className="tv-surviving">
+                          <span className="tv-badge-label">Surviving:</span>
+                          {entry.synthesis.surviving_concepts.map((s, i) => (
+                            <span key={i} className="gc-badge gc-badge-active">
+                              {typeof s === 'string' ? s : s.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {entry.synthesis.eliminated_concepts?.length > 0 && (
+                        <div className="tv-eliminated-list">
+                          <span className="tv-badge-label">Eliminated:</span>
+                          {entry.synthesis.eliminated_concepts.map((e, i) => (
+                            <span key={i} className="gc-badge gc-badge-eliminated">
+                              {typeof e === 'string' ? e : e.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {entry.synthesis.one_more_thing && entry.synthesis.one_more_thing !== "NONE" && (
+                        <div className="tv-one-more">"One more thing..." {entry.synthesis.one_more_thing}</div>
+                      )}
+                    </div>
+                  ) : entry.direction ? (
+                    <div className="tv-entry-direction">{entry.direction}</div>
+                  ) : null}
+
+                  {/* Refined concepts */}
+                  {entry.refined_concepts && (
+                    <div className="tv-refined">
+                      <div className="tv-section-label">Refined Concepts</div>
+                      {entry.refined_concepts.map((rc, ri) => (
+                        <div key={ri} className="tv-refined-item">
+                          <strong>{rc.name}</strong> <span className="tv-refined-persona">({rc.persona})</span>
+                          {rc.evolution_notes && <div className="tv-evolution">{rc.evolution_notes}</div>}
+                        </div>
+                      ))}
                     </div>
                   )}
 
-                  {entry.direction && (
-                    <div className="tv-entry-direction">{entry.direction}</div>
+                  {/* Presentations */}
+                  {entry.presentations && (
+                    <div className="tv-presentations">
+                      <div className="tv-section-label">Presentations</div>
+                      {entry.presentations.map((p, pi) => (
+                        <div key={pi} className="tv-presentation-item">
+                          <strong>{p.concept_name}</strong> <span className="tv-presentation-persona">({p.persona})</span>
+                          <div className="tv-presentation-content">{p.content}</div>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               </div>
