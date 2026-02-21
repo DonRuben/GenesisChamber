@@ -28,6 +28,7 @@ from .config import (
     SIMULATION_OUTPUT_DIR, TEAMS, PERSONA_TEAMS, OPENROUTER_API_KEY, UPLOADS_DIR,
 )
 from .output_engine import OutputEngine
+from .soul_engine import SoulEngine
 from .da_training import (
     extract_da_interactions, save_interactions_to_state, load_interactions_from_state,
     save_rating as da_save_rating, generate_training_report, generate_refinement_suggestions,
@@ -1418,14 +1419,16 @@ SAFE_EXTENSIONS = {
     '.html', '.htm', '.css', '.js', '.json', '.png', '.jpg', '.jpeg',
     '.gif', '.svg', '.ico', '.woff', '.woff2', '.ttf', '.eot', '.map',
     '.txt', '.md', '.xml', '.webp', '.avif', '.pdf',
+    '.docx', '.doc', '.xlsx', '.csv',
 }
 
 # Categorized upload types
-_TEXT_EXTS = {"html", "htm", "txt", "md", "css", "js", "json", "xml"}
+_TEXT_EXTS = {"html", "htm", "txt", "md", "css", "js", "json", "xml", "csv", "rtf"}
+_OFFICE_EXTS = {"docx", "doc", "xlsx"}
 _IMAGE_EXTS = {"png", "jpg", "jpeg", "gif", "svg", "webp", "avif"}
 _PDF_EXTS = {"pdf"}
 _ARCHIVE_EXTS = {"zip"}
-_ALLOWED_UPLOAD_EXTS = _TEXT_EXTS | _IMAGE_EXTS | _PDF_EXTS | _ARCHIVE_EXTS
+_ALLOWED_UPLOAD_EXTS = _TEXT_EXTS | _OFFICE_EXTS | _IMAGE_EXTS | _PDF_EXTS | _ARCHIVE_EXTS
 
 # Content-type map (used for DB save + serving)
 _CONTENT_TYPES = {
@@ -1459,6 +1462,67 @@ def _extract_text_from_plaintext(raw: bytes, filename: str = "") -> str:
     if len(text) > 15000:
         text = text[:15000] + "\n\n[...content truncated for context window...]"
     return f"[File: {filename}]\n{text}" if filename else text
+
+
+def _extract_text_from_docx(raw: bytes, filename: str) -> str:
+    """Extract text from .docx files using python-docx."""
+    try:
+        import io
+        from docx import Document
+        doc = Document(io.BytesIO(raw))
+        paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
+        tables_text = []
+        for table in doc.tables:
+            for row in table.rows:
+                cells = [cell.text.strip() for cell in row.cells if cell.text.strip()]
+                if cells:
+                    tables_text.append(" | ".join(cells))
+        all_text = "\n".join(paragraphs)
+        if tables_text:
+            all_text += "\n\n[Tables from document]\n" + "\n".join(tables_text)
+        if len(all_text) > 15000:
+            all_text = all_text[:15000] + "\n\n[...content truncated for context window...]"
+        return f"[Document: {filename}]\n{all_text}" if all_text else f"[Document: {filename} — no text content found]"
+    except Exception as e:
+        return f"[Document: {filename} — could not extract text: {str(e)}]"
+
+
+def _extract_text_from_xlsx(raw: bytes, filename: str) -> str:
+    """Extract text from .xlsx files using openpyxl."""
+    try:
+        import io
+        from openpyxl import load_workbook
+        wb = load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
+        sheets_text = []
+        for sheet_name in wb.sheetnames:
+            ws = wb[sheet_name]
+            rows = []
+            for row in ws.iter_rows(values_only=True):
+                cells = [str(c) for c in row if c is not None]
+                if cells:
+                    rows.append(" | ".join(cells))
+            if rows:
+                sheets_text.append(f"[Sheet: {sheet_name}]\n" + "\n".join(rows[:200]))
+        wb.close()
+        all_text = "\n\n".join(sheets_text) if sheets_text else ""
+        if len(all_text) > 15000:
+            all_text = all_text[:15000] + "\n\n[...content truncated for context window...]"
+        return f"[Spreadsheet: {filename}]\n{all_text}" if all_text else f"[Spreadsheet: {filename} — empty]"
+    except Exception as e:
+        return f"[Spreadsheet: {filename} — could not extract: {str(e)}]"
+
+
+def _extract_text_from_csv(raw: bytes, filename: str) -> str:
+    """Extract text from .csv files."""
+    try:
+        text = raw.decode("utf-8", errors="replace")
+        lines = text.strip().split("\n")[:200]  # Cap at 200 rows
+        all_text = "\n".join(lines)
+        if len(all_text) > 15000:
+            all_text = all_text[:15000] + "\n\n[...content truncated for context window...]"
+        return f"[CSV: {filename}]\n{all_text}"
+    except Exception as e:
+        return f"[CSV: {filename} — could not read: {str(e)}]"
 
 
 def _describe_image_file(filename: str, raw: bytes = None) -> str:
@@ -1557,6 +1621,12 @@ def _extract_member_text(member_path: Path, member_bytes: bytes, member_name: st
         return _describe_image_file(member_name, member_bytes)
     elif suffix == '.pdf':
         return _extract_text_from_pdf_basic(member_bytes, member_name)
+    elif suffix == '.docx':
+        return _extract_text_from_docx(member_bytes, member_name)
+    elif suffix == '.xlsx':
+        return _extract_text_from_xlsx(member_bytes, member_name)
+    elif suffix in ('.csv', '.rtf'):
+        return _extract_text_from_plaintext(member_bytes, member_name) if suffix == '.rtf' else _extract_text_from_csv(member_bytes, member_name)
     return ""
 
 
@@ -1569,7 +1639,7 @@ async def upload_reference_file(file: UploadFile = File(...)):
     if ext not in _ALLOWED_UPLOAD_EXTS:
         raise HTTPException(
             status_code=400,
-            detail=f"Unsupported file type '.{ext}'. Accepted: images (.png, .jpg, .gif, .svg, .webp), text (.html, .txt, .md, .css, .js, .json), PDF, and ZIP archives.",
+            detail=f"Unsupported file type '.{ext}'. Accepted: images (.png, .jpg, .gif, .svg, .webp), text (.html, .txt, .md, .css, .js, .json), documents (.docx, .xlsx, .csv), PDF, and ZIP archives.",
         )
 
     content = await file.read()
@@ -1626,8 +1696,25 @@ async def upload_reference_file(file: UploadFile = File(...)):
         dest.write_bytes(content)
         file_list.append("index.html")
         extracted_text = _extract_text_from_html(content.decode("utf-8", errors="replace"))
+    elif ext in _OFFICE_EXTS:
+        # Office documents (.docx, .doc, .xlsx)
+        dest = upload_path / filename
+        dest.write_bytes(content)
+        file_list.append(filename)
+        if ext == "docx":
+            extracted_text = _extract_text_from_docx(content, filename)
+        elif ext == "xlsx":
+            extracted_text = _extract_text_from_xlsx(content, filename)
+        elif ext == "doc":
+            extracted_text = f"[Document: {filename} — .doc format detected. For best results, save as .docx and re-upload.]"
+    elif ext == "csv":
+        # CSV file
+        dest = upload_path / filename
+        dest.write_bytes(content)
+        file_list.append(filename)
+        extracted_text = _extract_text_from_csv(content, filename)
     else:
-        # Plain text file (.txt, .md, .css, .js, .json, .xml)
+        # Plain text file (.txt, .md, .css, .js, .json, .xml, .rtf)
         dest = upload_path / filename
         dest.write_bytes(content)
         file_list.append(filename)
@@ -1640,6 +1727,8 @@ async def upload_reference_file(file: UploadFile = File(...)):
         file_type = "image"
     elif ext in _PDF_EXTS:
         file_type = "pdf"
+    elif ext in _OFFICE_EXTS:
+        file_type = "document"
     else:
         file_type = "text"
 
@@ -1681,6 +1770,28 @@ async def upload_reference_file(file: UploadFile = File(...)):
         "extraction_quality": extraction_quality,
         "char_count": char_count,
         "was_truncated": was_truncated,
+    }
+
+
+@app.post("/api/debug/preview-context")
+async def preview_context(brief: str = Form(""), brand_context: str = Form("")):
+    """Debug: preview what the LLM would receive as context. Does NOT call any API."""
+    engine = SoulEngine(SOULS_DIR)
+    sample_prompt = engine.compile_system_prompt(
+        persona_id="david-ogilvy",
+        persona_name="David Ogilvy",
+        stage=1,
+        round_num=1,
+        brief=brief or "Sample brief",
+        context=brand_context or "",
+    )
+    return {
+        "brief_length": len(brief),
+        "context_length": len(brand_context),
+        "total_prompt_length": len(sample_prompt),
+        "prompt_preview": sample_prompt[:2000] + "..." if len(sample_prompt) > 2000 else sample_prompt,
+        "context_included": "BRAND CONTEXT:" in sample_prompt,
+        "context_snippet": brand_context[:500] if brand_context else "[empty]",
     }
 
 
