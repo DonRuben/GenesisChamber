@@ -11,12 +11,13 @@ import PresentationGallery from './PresentationGallery';
 import StatusHeader from './StatusHeader';
 import OutputPanel from './OutputPanel';
 import GeneratedGallery from './GeneratedGallery';
+import DAArena from './DAArena';
 import LiveFeed from './LiveFeed';
 import ChamberAnimation from './ChamberAnimation';
 import HelpTooltip from './HelpTooltip';
 import { helpContent } from './helpContent';
 import { SkeletonGrid } from './Skeleton';
-import { IconDiamond, IconGrid, IconEye, IconCompass, IconScroll, IconPackage, IconImage, IconSpark, IconError } from './Icons';
+import { IconDiamond, IconGrid, IconEye, IconCompass, IconScroll, IconPackage, IconImage, IconSpark, IconError, IconScale } from './Icons';
 import './SimulationDashboard.css';
 
 const VIEW_TABS = [
@@ -205,10 +206,12 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
     }
   }
 
-  // Build tabs — add Generated + Output tabs for completed sims
+  // Build tabs — add Generated + Output + DA Arena tabs for completed sims
+  const hasDA = !!simState.config?.devils_advocate;
   const tabs = simState.status === 'completed'
     ? [
         ...VIEW_TABS,
+        ...(hasDA ? [{ key: 'da_arena', label: 'DA Arena', icon: <IconScale size={14} /> }] : []),
         { key: 'generated', label: 'Generated', icon: <IconImage size={14} /> },
         { key: 'output', label: 'Output', icon: <IconPackage size={14} /> },
       ]
@@ -382,6 +385,12 @@ export default function SimulationDashboard({ simulations, currentSimId, onSelec
         {activeView === 'transcript' && (
           <div className="dashboard-view-animate">
             <TranscriptViewer entries={simState.transcript_entries} eventLog={simState.event_log} />
+          </div>
+        )}
+
+        {activeView === 'da_arena' && simState.status === 'completed' && hasDA && (
+          <div className="dashboard-view-animate">
+            <DAArena simId={currentSimId} />
           </div>
         )}
 

@@ -422,6 +422,41 @@ export const api = {
     return `${API_BASE}/api/simulation/${simId}/export/production`;
   },
 
+  // --- DA Training / Arena ---
+  async extractDAInteractions(simId) {
+    const response = await fetch(`${API_BASE}/api/simulation/${simId}/da/extract`, { method: 'POST' });
+    if (!response.ok) throw new Error('Failed to extract DA interactions');
+    return response.json();
+  },
+
+  async getDAInteractions(simId) {
+    const response = await fetch(`${API_BASE}/api/simulation/${simId}/da/interactions`);
+    if (!response.ok) throw new Error('Failed to load DA interactions');
+    return response.json();
+  },
+
+  async rateDAInteraction(simId, interactionId, rating, notes = '') {
+    const response = await fetch(`${API_BASE}/api/simulation/${simId}/da/rate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ interaction_id: interactionId, rating, notes }),
+    });
+    if (!response.ok) throw new Error('Failed to rate interaction');
+    return response.json();
+  },
+
+  async getDATraining(simId) {
+    const response = await fetch(`${API_BASE}/api/simulation/${simId}/da/training`);
+    if (!response.ok) throw new Error('Failed to load training data');
+    return response.json();
+  },
+
+  async getDASuggestions(simId) {
+    const response = await fetch(`${API_BASE}/api/simulation/${simId}/da/suggestions`);
+    if (!response.ok) throw new Error('Failed to load suggestions');
+    return response.json();
+  },
+
   async uploadReference(file) {
     const formData = new FormData();
     formData.append('file', file);
