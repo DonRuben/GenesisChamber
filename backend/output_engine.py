@@ -10,45 +10,119 @@ from .models import SimulationState
 from .config import SIMULATION_OUTPUT_DIR, PERSONA_COLORS
 
 
-# Genesis Chamber reveal.js theme — aligned with frontend/src/design-tokens.css
+# Genesis Chamber reveal.js theme — V3 cinematic overhaul
+# Aligned with frontend/src/design-tokens.css, Sora display font
 GENESIS_REVEAL_THEME = """
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
-.reveal { font-family: 'Inter', system-ui, sans-serif; color: #E9E7E4; }
-.reveal .slides section { background: #1B1D22; padding: 40px 60px; text-align: left; }
-.reveal h1 { color: #00D9FF; font-weight: 800; font-size: 2.2em; margin-bottom: 16px; }
-.reveal h2 { color: #00D9FF; font-weight: 700; font-size: 1.6em; margin-bottom: 12px; }
-.reveal h3 { color: #FFB800; font-weight: 600; font-size: 1.2em; margin-bottom: 8px; }
-.reveal p { color: #E9E7E4; line-height: 1.7; font-size: 0.85em; }
-.reveal .dim { color: #7A7880; font-size: 0.75em; }
-.reveal .cyan { color: #00D9FF; }
-.reveal .gold { color: #FFB800; }
-.reveal .flame { color: #F27123; }
-.gc-card { background: #22252B; border-radius: 12px; padding: 24px; margin: 12px 0; border: 1px solid rgba(233,231,228,0.06); }
-.gc-card-left { border-left: 4px solid #00D9FF; }
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --gc-void: #1B1D22;
+  --gc-surface-1: #22252B;
+  --gc-surface-2: #2A2D34;
+  --gc-surface-3: #33363E;
+  --gc-cyan: #00D9FF;
+  --gc-gold: #FFB800;
+  --gc-flame: #F27123;
+  --gc-magenta: #FF006E;
+  --gc-green: #10B981;
+  --gc-red: #EF4444;
+  --gc-blue: #3B82F6;
+  --gc-text: #E9E7E4;
+  --gc-text-sec: #CBCDCE;
+  --gc-text-dim: #7A7880;
+  --gc-border: rgba(233,231,228,0.06);
+  --gc-border-med: rgba(233,231,228,0.10);
+}
+
+.reveal { font-family: 'Inter', system-ui, sans-serif; color: var(--gc-text); }
+.reveal .slides section { background: var(--gc-void); padding: 50px 70px; text-align: left; }
+.reveal h1 { font-family: 'Sora', 'Inter', sans-serif; color: var(--gc-cyan); font-weight: 800; font-size: 2.4em; margin-bottom: 16px; text-shadow: 0 0 40px rgba(0,217,255,0.2); }
+.reveal h2 { font-family: 'Sora', 'Inter', sans-serif; color: var(--gc-cyan); font-weight: 700; font-size: 1.7em; margin-bottom: 12px; }
+.reveal h3 { font-family: 'Sora', 'Inter', sans-serif; color: var(--gc-gold); font-weight: 600; font-size: 1.2em; margin-bottom: 8px; }
+.reveal p { color: var(--gc-text); line-height: 1.7; font-size: 0.85em; }
+.reveal .dim { color: var(--gc-text-dim); font-size: 0.75em; }
+.reveal .cyan { color: var(--gc-cyan); }
+.reveal .gold { color: var(--gc-gold); }
+.reveal .flame { color: var(--gc-flame); }
+.reveal .act-label { font-family: 'Sora', sans-serif; font-size: 0.6em; font-weight: 600; text-transform: uppercase; letter-spacing: 3px; color: var(--gc-text-dim); margin-bottom: 16px; display: block; }
+
+/* Cards */
+.gc-card { background: var(--gc-surface-1); border-radius: 12px; padding: 24px; margin: 12px 0; border: 1px solid var(--gc-border); }
+.gc-card-left { border-left: 4px solid var(--gc-cyan); }
+
+/* Brief card */
+.gc-brief-card { background: linear-gradient(135deg, var(--gc-surface-1) 0%, var(--gc-surface-2) 100%); border: 1px solid var(--gc-border-med); border-left: 4px solid var(--gc-flame); border-radius: 12px; padding: 34px; margin: 21px 0; }
+.gc-brief-card .brief-label { font-family: 'Sora', sans-serif; font-size: 0.65em; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: var(--gc-flame); margin-bottom: 12px; }
+.gc-brief-card .brief-text { font-size: 1.05em; line-height: 1.8; color: var(--gc-text); }
+.gc-brief-card .brand-ctx { font-size: 0.8em; color: var(--gc-text-dim); margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--gc-border); line-height: 1.6; }
+
+/* Roster */
 .gc-roster { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-top: 21px; }
-.gc-persona { background: #22252B; border-radius: 12px; padding: 16px; border-left: 4px solid #69676C; }
-.gc-persona .name { font-weight: 700; font-size: 1em; margin-bottom: 4px; }
-.gc-persona .role { font-size: 0.7em; color: #7A7880; text-transform: uppercase; letter-spacing: 0.5px; }
-.gc-persona .model { font-size: 0.65em; color: #69676C; font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+.gc-persona { background: var(--gc-surface-1); border-radius: 12px; padding: 16px; border-left: 4px solid #69676C; transition: transform 0.2s; }
+.gc-persona .name { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1em; margin-bottom: 4px; }
+.gc-persona .role { font-size: 0.7em; color: var(--gc-text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.gc-persona .model { font-size: 0.65em; color: #69676C; font-family: 'JetBrains Mono', monospace; }
+
+/* Concepts */
 .gc-concepts { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
-.gc-concept { background: #22252B; border-radius: 12px; padding: 21px; border-left: 4px solid #69676C; }
-.gc-concept .cname { font-weight: 700; font-size: 1em; margin-bottom: 4px; }
-.gc-concept .tagline { font-style: italic; color: #7A7880; font-size: 0.8em; margin-bottom: 8px; }
+.gc-concept { background: var(--gc-surface-1); border-radius: 12px; padding: 21px; border-left: 4px solid #69676C; }
+.gc-concept .cname { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1em; margin-bottom: 4px; }
+.gc-concept .tagline { font-style: italic; color: var(--gc-text-dim); font-size: 0.8em; margin-bottom: 8px; }
 .gc-concept .idea { font-size: 0.8em; line-height: 1.6; }
+
+/* Badges */
 .gc-badge { display: inline-block; padding: 3px 10px; border-radius: 9999px; font-size: 0.6em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 8px; }
-.gc-badge-winner { background: rgba(255,184,0,0.12); color: #FFB800; }
-.gc-badge-eliminated { background: rgba(239,68,68,0.12); color: #EF4444; }
-.gc-badge-active { background: rgba(16,185,129,0.12); color: #10B981; }
-.gc-badge-runner { background: rgba(59,130,246,0.12); color: #3B82F6; }
+.gc-badge-winner { background: rgba(255,184,0,0.15); color: var(--gc-gold); }
+.gc-badge-eliminated { background: rgba(239,68,68,0.12); color: var(--gc-red); }
+.gc-badge-active { background: rgba(16,185,129,0.12); color: var(--gc-green); }
+.gc-badge-runner { background: rgba(59,130,246,0.12); color: var(--gc-blue); }
 .gc-badge-da { background: rgba(220,38,38,0.12); color: #DC2626; }
-.gc-direction { background: #22252B; border-left: 4px solid #FFB800; border-radius: 0 12px 12px 0; padding: 21px 24px; margin: 16px 0; }
-.gc-surviving { color: #10B981; }
-.gc-eliminated { color: #EF4444; text-decoration: line-through; }
-.gc-winner-card { background: linear-gradient(135deg, #22252B 0%, #2A2D34 100%); border: 2px solid #FFB800; border-radius: 16px; padding: 34px; margin: 21px 0; box-shadow: 0 0 20px rgba(255,184,0,0.15); }
-.gc-winner-card .headline { font-size: 1.4em; font-weight: 800; color: #00D9FF; margin: 12px 0; }
+
+/* Direction */
+.gc-direction { background: var(--gc-surface-1); border-left: 4px solid var(--gc-gold); border-radius: 0 12px 12px 0; padding: 21px 24px; margin: 16px 0; }
+.gc-surviving { color: var(--gc-green); margin: 4px 0; }
+.gc-eliminated { color: var(--gc-red); text-decoration: line-through; margin: 4px 0; }
+
+/* Winner card — V3 gold treatment */
+.gc-winner-card { background: linear-gradient(135deg, #22252B 0%, #2A2520 50%, #22252B 100%); border: 2px solid var(--gc-gold); border-radius: 16px; padding: 40px; margin: 21px 0; box-shadow: 0 0 40px rgba(255,184,0,0.12), 0 0 80px rgba(255,184,0,0.06); position: relative; overflow: hidden; }
+.gc-winner-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at center, rgba(255,184,0,0.04) 0%, transparent 50%); pointer-events: none; }
+.gc-winner-card .headline { font-family: 'Sora', sans-serif; font-size: 1.6em; font-weight: 800; color: var(--gc-cyan); margin: 12px 0; text-shadow: 0 0 30px rgba(0,217,255,0.15); }
+.gc-winner-card .tagline { font-style: italic; font-size: 1em; color: var(--gc-text-sec); margin: 8px 0 16px; }
+
+/* Score bars */
+.gc-score-bar { background: var(--gc-surface-2); border-radius: 6px; height: 24px; position: relative; overflow: hidden; margin: 6px 0; }
+.gc-score-fill { height: 100%; border-radius: 6px; transition: width 0.6s ease; }
+.gc-score-fill.high { background: linear-gradient(90deg, var(--gc-green), #34D399); }
+.gc-score-fill.mid { background: linear-gradient(90deg, var(--gc-gold), #FBBF24); }
+.gc-score-fill.low { background: linear-gradient(90deg, var(--gc-red), #F87171); }
+.gc-score-label { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 0.7em; font-weight: 600; color: var(--gc-text); font-family: 'JetBrains Mono', monospace; }
+.gc-score-round { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: 0.65em; color: var(--gc-text-sec); font-family: 'Inter', sans-serif; }
+
+/* Media gallery */
+.gc-media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-top: 16px; }
+.gc-media-item { background: var(--gc-surface-1); border-radius: 12px; overflow: hidden; border: 1px solid var(--gc-border); }
+.gc-media-item img { width: 100%; height: 240px; object-fit: cover; display: block; }
+.gc-media-item .media-info { padding: 12px 16px; }
+.gc-media-item .media-name { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 0.9em; }
+.gc-media-item .media-persona { font-size: 0.7em; color: var(--gc-text-dim); margin-top: 2px; }
+.gc-media-item .media-model { font-size: 0.6em; color: var(--gc-cyan); font-family: 'JetBrains Mono', monospace; background: rgba(0,217,255,0.08); padding: 2px 6px; border-radius: 3px; display: inline-block; margin-top: 4px; }
+
+/* Image prompts fallback gallery */
 .gc-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 16px; }
-.gc-gallery-item { background: #22252B; border-radius: 12px; padding: 16px; font-size: 0.8em; }
-.gc-gallery-item .prompt { color: #7A7880; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.85em; line-height: 1.5; }
+.gc-gallery-item { background: var(--gc-surface-1); border-radius: 12px; padding: 16px; font-size: 0.8em; }
+.gc-gallery-item .prompt { color: var(--gc-text-dim); font-family: 'JetBrains Mono', monospace; font-size: 0.85em; line-height: 1.5; }
+
+/* Credits */
+.gc-credits { text-align: center; }
+.gc-credits h1 { text-shadow: 0 0 60px rgba(0,217,255,0.3); }
+.gc-credits .stats { font-family: 'JetBrains Mono', monospace; font-size: 0.75em; color: var(--gc-text-dim); margin-top: 24px; }
+.gc-credits .engine { font-family: 'Sora', sans-serif; font-size: 0.85em; color: var(--gc-text-sec); margin-top: 40px; }
+
+/* Production spec */
+.gc-spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+.gc-spec-item { background: var(--gc-surface-1); border-radius: 8px; padding: 16px; }
+.gc-spec-item .spec-label { font-size: 0.65em; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--gc-text-dim); margin-bottom: 4px; }
+.gc-spec-item .spec-value { font-size: 0.85em; color: var(--gc-text); line-height: 1.6; }
 """
 
 REVEAL_TEMPLATE = """<!DOCTYPE html>
@@ -59,7 +133,7 @@ REVEAL_TEMPLATE = """<!DOCTYPE html>
 <title>{title} — Genesis Chamber Presentation</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.2.1/dist/reset.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.2.1/dist/reveal.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
 {theme_css}
 </style>
@@ -305,20 +379,53 @@ h2 {{ font-size:20px; color:var(--cyan); margin:34px 0 16px; padding-bottom:8px;
         return html.escape(str(text))
 
     def generate_reveal_presentation(self, state: SimulationState) -> Path:
-        """Generate a reveal.js HTML presentation from simulation state."""
+        """Generate a reveal.js HTML presentation — V3 4-act storytelling structure.
+
+        ACT 1: Challenge — opening, brief, roster
+        ACT 2: Battle — per-round intro, concepts, direction
+        ACT 3: Reveal — winner, runner-up, score evolution
+        ACT 4: Production — media gallery, production spec, credits
+        """
         sim_dir = self.output_dir / state.id
         sim_dir.mkdir(parents=True, exist_ok=True)
         path = sim_dir / "presentation.html"
 
         slides = []
-        slides.append(self._slide_title(state))
+
+        # ACT 1: THE CHALLENGE
+        slides.append(self._slide_opening(state))
+        slides.append(self._slide_brief(state))
         slides.append(self._slide_roster(state))
 
+        # ACT 2: THE BATTLE
         for round_result in state.rounds:
-            slides.append(self._slide_round(state, round_result))
+            round_slides = []
+            round_slides.append(self._slide_round_intro(state, round_result))
+            concepts_slide = self._slide_round_concepts(state, round_result)
+            if concepts_slide:
+                round_slides.append(concepts_slide)
+            direction_slide = self._slide_round_direction(state, round_result)
+            if direction_slide:
+                round_slides.append(direction_slide)
+            # Wrap round slides in a vertical stack
+            slides.append(f"<section>{''.join(round_slides)}</section>")
 
-        slides.append(self._slide_winner(state))
-        slides.append(self._slide_image_gallery(state))
+        # ACT 3: THE REVEAL
+        slides.append(self._slide_winner_reveal(state))
+        runner_slide = self._slide_runner_up(state)
+        if runner_slide:
+            slides.append(runner_slide)
+        evolution_slide = self._slide_evolution(state)
+        if evolution_slide:
+            slides.append(evolution_slide)
+
+        # ACT 4: PRODUCTION
+        media_slide = self._slide_media_gallery(state)
+        if media_slide:
+            slides.append(media_slide)
+        spec_slide = self._slide_production_spec(state)
+        if spec_slide:
+            slides.append(spec_slide)
         slides.append(self._slide_credits(state))
 
         slides_html = "\n".join(slides)
@@ -330,6 +437,309 @@ h2 {{ font-size:20px; color:var(--cyan); margin:34px 0 16px; padding-bottom:8px;
 
         path.write_text(presentation_html, encoding="utf-8")
         return path
+
+    # === V3 SLIDE METHODS (4-ACT STRUCTURE) ===
+
+    def _slide_opening(self, state: SimulationState) -> str:
+        """ACT 1: Full-screen dramatic title slide."""
+        ts = datetime.utcnow().strftime("%Y-%m-%d")
+        sim_type = self._esc(state.config.type)
+        rounds = state.config.rounds
+        participant_count = len(state.config.participants)
+
+        return f"""<section>
+<span class="act-label">Act I &mdash; The Challenge</span>
+<h1 style="font-size:3em;margin-top:40px;">Genesis <span class="cyan">Chamber</span></h1>
+<h2 style="margin-top:24px;font-size:1.4em;color:{self._esc('#E9E7E4')};font-weight:400;">{self._esc(state.config.name)}</h2>
+<p class="dim" style="margin-top:32px;">{sim_type} &middot; {rounds} rounds &middot; {participant_count} minds &middot; {ts}</p>
+</section>"""
+
+    def _slide_brief(self, state: SimulationState) -> str:
+        """ACT 1: Brief card with brand context."""
+        brief = state.config.brief or "No brief provided"
+        brand_ctx = getattr(state.config, "brand_context", "") or ""
+
+        brand_html = ""
+        if brand_ctx:
+            # Truncate long brand context for presentation
+            ctx_display = brand_ctx[:500] + ("..." if len(brand_ctx) > 500 else "")
+            brand_html = f'<div class="brand-ctx">{self._esc(ctx_display)}</div>'
+
+        return f"""<section>
+<h2>The Brief</h2>
+<div class="gc-brief-card">
+<div class="brief-label">Creative Challenge</div>
+<div class="brief-text">{self._esc(brief)}</div>
+{brand_html}
+</div>
+</section>"""
+
+    def _slide_round_intro(self, state: SimulationState, round_result) -> str:
+        """ACT 2: Round number + mode introduction."""
+        rnum = round_result.round_num
+        mode = (round_result.mode or "unknown").upper()
+        stage_count = len(round_result.stages)
+
+        mode_descriptions = {
+            "DIVERGE": "Maximum creative exploration",
+            "CONVERGE": "Focus and eliminate the weak",
+            "DEEPEN": "Push concepts to their limits",
+            "GLADIATOR": "Final elimination battle",
+            "POLISH": "Refine the champion",
+            "SPEC": "Production specification",
+        }
+        mode_desc = mode_descriptions.get(mode, "")
+
+        return f"""<section>
+<span class="act-label">Act II &mdash; The Battle</span>
+<h1 style="font-size:4em;color:var(--gc-gold);">Round {rnum}</h1>
+<h3 style="margin-top:16px;font-size:1.4em;color:var(--gc-text-sec);">{self._esc(mode)}</h3>
+{f'<p style="margin-top:8px;font-size:0.9em;color:var(--gc-text-dim);">{self._esc(mode_desc)}</p>' if mode_desc else ''}
+<p class="dim" style="margin-top:24px;">{stage_count} stages completed</p>
+</section>"""
+
+    def _slide_round_concepts(self, state: SimulationState, round_result) -> str:
+        """ACT 2: Concepts created/active in this round."""
+        rnum = round_result.round_num
+        active = state.concepts.get("active", [])
+        eliminated = state.concepts.get("eliminated", [])
+        all_concepts = active + eliminated
+        round_concepts = [c for c in all_concepts if c.round_created == rnum]
+
+        if not round_concepts:
+            return ""
+
+        concept_cards = ""
+        for c in round_concepts:
+            color = PERSONA_COLORS.get(c.persona_id, "#666")
+            badge_class = f"gc-badge-{c.status}" if c.status in ("winner", "eliminated", "active") else "gc-badge-active"
+            score_display = ""
+            if c.scores:
+                latest_score = list(c.scores.values())[-1] if isinstance(c.scores, dict) else ""
+                if latest_score:
+                    score_display = f'<span class="gc-badge gc-badge-active">{latest_score}/10</span>'
+
+            concept_cards += f"""<div class="gc-concept" style="border-left-color:{color}">
+<div class="cname">{self._esc(c.name)} <span class="gc-badge {badge_class}">{self._esc(c.status)}</span> {score_display}</div>
+<div style="color:{color};font-size:0.7em;margin-bottom:4px;">{self._esc(c.persona_name)}</div>
+<div class="tagline">{self._esc(c.tagline)}</div>
+<div class="idea">{self._esc(c.idea)}</div>
+</div>"""
+
+        return f"""<section>
+<h3>Round {rnum} &mdash; Concepts</h3>
+<div class="gc-concepts">{concept_cards}</div>
+</section>"""
+
+    def _slide_round_direction(self, state: SimulationState, round_result) -> str:
+        """ACT 2: Surviving/eliminated from synthesis."""
+        rnum = round_result.round_num
+
+        for stage in round_result.stages.values():
+            if stage.stage_name == "synthesis" and stage.outputs:
+                outputs = stage.outputs
+                if isinstance(outputs, dict):
+                    surviving = outputs.get("surviving_concepts", [])
+                    elim = outputs.get("eliminated_concepts", [])
+                    direction_notes = outputs.get("direction", "") or outputs.get("direction_notes", "")
+                    one_more = outputs.get("one_more_thing", "")
+
+                    if not surviving and not elim:
+                        continue
+
+                    surv_html = "".join(
+                        f'<div class="gc-surviving">&#10003; {self._esc(str(s))}</div>' for s in surviving
+                    )
+                    elim_html = "".join(
+                        f'<div class="gc-eliminated">&#10007; {self._esc(str(e))}</div>' for e in elim
+                    )
+
+                    return f"""<section>
+<h3>Round {rnum} &mdash; Moderator Direction</h3>
+<div class="gc-direction">
+{surv_html}
+{elim_html}
+{f'<p style="margin-top:12px;font-size:0.85em;">{self._esc(str(direction_notes))}</p>' if direction_notes else ''}
+{f'<p style="margin-top:12px;color:var(--gc-cyan);font-weight:600;">"One more thing..." {self._esc(str(one_more))}</p>' if one_more and str(one_more).upper() != "NONE" else ''}
+</div>
+</section>"""
+
+        return ""
+
+    def _slide_winner_reveal(self, state: SimulationState) -> str:
+        """ACT 3: Hero moment with gold treatment."""
+        active = state.concepts.get("active", [])
+        winner = next((c for c in active if c.status == "winner"), None)
+
+        if not winner:
+            if active:
+                winner = active[0]
+            else:
+                return '<section><span class="act-label">Act III &mdash; The Reveal</span><h2>Results Pending</h2><p class="dim">Simulation not yet complete</p></section>'
+
+        color = PERSONA_COLORS.get(winner.persona_id, "#00D9FF")
+        headline = self._esc(winner.headline) if winner.headline else self._esc(winner.name)
+
+        return f"""<section>
+<span class="act-label">Act III &mdash; The Reveal</span>
+<h1 style="font-size:1.8em;">The Winner</h1>
+<div class="gc-winner-card">
+<div style="color:{color};font-size:0.85em;font-weight:600;font-family:'Sora',sans-serif;">{self._esc(winner.persona_name)}</div>
+<div class="headline">{headline}</div>
+<div class="tagline">{self._esc(winner.tagline)}</div>
+<p style="font-size:0.9em;margin-top:16px;line-height:1.7;">{self._esc(winner.idea)}</p>
+{f'<p style="margin-top:16px;font-size:0.8em;color:var(--gc-text-dim);">{self._esc(winner.rationale)}</p>' if winner.rationale else ''}
+</div>
+</section>"""
+
+    def _slide_runner_up(self, state: SimulationState) -> str:
+        """ACT 3: Runner-up honor."""
+        active = state.concepts.get("active", [])
+        runner = next((c for c in active if c.status == "runner_up"), None)
+
+        if not runner:
+            return ""
+
+        r_color = PERSONA_COLORS.get(runner.persona_id, "#3B82F6")
+
+        return f"""<section>
+<h2>Runner-Up</h2>
+<div class="gc-card" style="border-left:4px solid {r_color};">
+<div style="font-family:'Sora',sans-serif;font-weight:700;font-size:1.2em;">{self._esc(runner.name)}</div>
+<div style="color:{r_color};font-size:0.8em;margin-top:4px;">{self._esc(runner.persona_name)}</div>
+{f'<p style="font-style:italic;color:var(--gc-text-dim);margin-top:8px;">{self._esc(runner.tagline)}</p>' if runner.tagline else ''}
+<p style="font-size:0.85em;margin-top:12px;line-height:1.7;">{self._esc(runner.idea)}</p>
+</div>
+</section>"""
+
+    def _slide_evolution(self, state: SimulationState) -> str:
+        """ACT 3: Score progression bars for top concepts."""
+        active = state.concepts.get("active", [])
+        # Get concepts with score history
+        scored = [c for c in active if c.scores and len(c.scores) > 0]
+
+        if not scored:
+            return ""
+
+        # Sort by latest score descending
+        def latest_score(c):
+            vals = list(c.scores.values()) if isinstance(c.scores, dict) else []
+            return vals[-1] if vals else 0
+        scored.sort(key=latest_score, reverse=True)
+
+        # Show top 5
+        bars_html = ""
+        for c in scored[:5]:
+            color = PERSONA_COLORS.get(c.persona_id, "#666")
+            bars_html += f'<div style="margin-bottom:16px;">'
+            bars_html += f'<div style="font-family:\'Sora\',sans-serif;font-weight:600;font-size:0.85em;margin-bottom:6px;">'
+            bars_html += f'<span style="color:{color}">{self._esc(c.name)}</span>'
+            bars_html += f' <span style="color:var(--gc-text-dim);font-size:0.8em;">by {self._esc(c.persona_name)}</span></div>'
+
+            if isinstance(c.scores, dict):
+                for rnd_key, score in sorted(c.scores.items(), key=lambda x: int(x[0])):
+                    score_val = float(score) if score else 0
+                    pct = min(score_val * 10, 100)
+                    fill_class = "high" if score_val >= 7 else "mid" if score_val >= 5 else "low"
+                    bars_html += f'<div class="gc-score-bar">'
+                    bars_html += f'<div class="gc-score-fill {fill_class}" style="width:{pct}%"></div>'
+                    bars_html += f'<span class="gc-score-round">R{rnd_key}</span>'
+                    bars_html += f'<span class="gc-score-label">{score_val}/10</span>'
+                    bars_html += f'</div>'
+
+            bars_html += '</div>'
+
+        return f"""<section>
+<h2>Score Evolution</h2>
+<p class="dim" style="margin-bottom:24px;">How concepts scored across rounds</p>
+{bars_html}
+</section>"""
+
+    def _slide_media_gallery(self, state: SimulationState) -> str:
+        """ACT 4: Embedded generated images (reads generated_images.json)."""
+        sim_dir = self.output_dir / state.id
+        images_path = sim_dir / "generated_images.json"
+
+        if images_path.exists():
+            try:
+                images = json.loads(images_path.read_text(encoding="utf-8"))
+            except Exception:
+                images = []
+        else:
+            images = []
+
+        if not images:
+            # Fall back to image prompts display
+            return self._slide_image_gallery(state)
+
+        items_html = ""
+        for img in images:
+            # Use local path if available, else fal.ai URL
+            if img.get("local_path") and img.get("filename"):
+                img_src = f"media/images/{img['filename']}"
+            elif img.get("url"):
+                img_src = img["url"]
+            else:
+                continue
+
+            name = self._esc(img.get("concept_name", "Untitled"))
+            persona = self._esc(img.get("persona", ""))
+            model = self._esc(img.get("model", ""))
+
+            items_html += f"""<div class="gc-media-item">
+<img src="{self._esc(img_src)}" alt="{name}" />
+<div class="media-info">
+<div class="media-name">{name}</div>
+{f'<div class="media-persona">by {persona}</div>' if persona else ''}
+{f'<div class="media-model">{model}</div>' if model else ''}
+</div>
+</div>"""
+
+        return f"""<section>
+<span class="act-label">Act IV &mdash; Production</span>
+<h2>Generated Visuals</h2>
+<p class="dim" style="margin-bottom:16px;">AI-generated concept visualizations</p>
+<div class="gc-media-grid">{items_html}</div>
+</section>"""
+
+    def _slide_production_spec(self, state: SimulationState) -> str:
+        """ACT 4: Full winner specification card."""
+        active = state.concepts.get("active", [])
+        winner = next((c for c in active if c.status == "winner"), None)
+        if not winner:
+            return ""
+
+        specs = []
+        if winner.headline:
+            specs.append(("Headline", winner.headline))
+        if winner.tagline:
+            specs.append(("Tagline", winner.tagline))
+        if winner.visual_direction:
+            specs.append(("Visual Direction", winner.visual_direction))
+        if winner.color_mood:
+            specs.append(("Color & Mood", winner.color_mood))
+        if winner.body_copy:
+            specs.append(("Body Copy", winner.body_copy[:300] + ("..." if len(winner.body_copy) > 300 else "")))
+        if winner.image_prompt:
+            specs.append(("Image Prompt", winner.image_prompt[:300] + ("..." if len(winner.image_prompt) > 300 else "")))
+
+        if not specs:
+            return ""
+
+        grid_html = ""
+        for label, value in specs:
+            grid_html += f"""<div class="gc-spec-item">
+<div class="spec-label">{self._esc(label)}</div>
+<div class="spec-value">{self._esc(value)}</div>
+</div>"""
+
+        return f"""<section>
+<h2>Production Specification</h2>
+<p class="dim" style="margin-bottom:16px;">{self._esc(winner.name)} &mdash; ready for production</p>
+<div class="gc-spec-grid">{grid_html}</div>
+</section>"""
+
+    # === LEGACY SLIDE METHODS (kept for backward compatibility) ===
 
     def _slide_title(self, state: SimulationState) -> str:
         """Title slide with simulation name and metadata."""
@@ -1021,14 +1431,31 @@ h2 {{ font-size:20px; color:var(--cyan); margin:34px 0 16px; padding-bottom:8px;
         return "\n".join(lines)
 
     def _slide_credits(self, state: SimulationState) -> str:
-        """Credits/footer slide."""
+        """Credits/footer slide — V3 cinematic design."""
         rounds = len(state.rounds)
         total_concepts = len(state.concepts.get("active", [])) + len(state.concepts.get("eliminated", []))
+        participants = len(state.config.participants)
         ts = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
+        # Build participant credits
+        participant_names = []
+        for pid, p in state.config.participants.items():
+            color = PERSONA_COLORS.get(pid, "#666")
+            participant_names.append(
+                f'<span style="color:{color}">{self._esc(p.display_name)}</span>'
+            )
+        roster_line = " &middot; ".join(participant_names)
+
+        mod_name = self._esc(state.config.moderator.display_name)
+
         return f"""<section>
-<h1>Genesis <span class="teal">Chamber</span></h1>
-<p style="margin-top:24px;font-size:0.9em;">{self._esc(state.config.name)}</p>
-<p class="dim" style="margin-top:16px;">{rounds} rounds &middot; {total_concepts} concepts evaluated &middot; Generated {ts}</p>
-<p class="dim" style="margin-top:32px;">Multi-persona AI creative simulation engine</p>
+<div class="gc-credits">
+<h1 style="font-size:2.8em;">Genesis <span class="cyan">Chamber</span></h1>
+<p style="margin-top:24px;font-size:1em;color:var(--gc-text);">{self._esc(state.config.name)}</p>
+<p style="margin-top:16px;font-size:0.85em;">Moderated by <span class="gold">{mod_name}</span></p>
+<p style="margin-top:12px;font-size:0.8em;">{roster_line}</p>
+<div class="stats">{rounds} rounds &middot; {total_concepts} concepts evaluated &middot; {participants} participants</div>
+<div class="engine">Multi-persona AI creative simulation engine</div>
+<p class="dim" style="margin-top:24px;">{ts}</p>
+</div>
 </section>"""
