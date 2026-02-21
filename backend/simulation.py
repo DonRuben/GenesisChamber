@@ -374,16 +374,7 @@ class GenesisRound:
                     concept_names = [c.name for c in concepts]
                     await _maybe_await(on_participant_event, "response", pid, pconfig.display_name, "creation", concept_names)
             else:
-                print(f"[SimWarn] No response from {pconfig.display_name} ({pconfig.model}) in R{self.round_num}")
-
-        # Check for participants who had a response but produced 0 concepts
-        for pid, response in zip(participant_ids, responses):
-            pconfig = self.config.participants[pid]
-            concepts_by_this_participant = [c for c in all_concepts if c.persona_id == pid]
-            if not concepts_by_this_participant:
-                had_response = response is not None and bool(response.get("content"))
-                print(f"[SimWarn] {pconfig.display_name} ({pconfig.model}) produced 0 concepts in R{self.round_num}"
-                      f" (had_response={had_response})")
+                print(f"Warning: No response from {pconfig.display_name} in Stage 1")
 
         stage.outputs = all_concepts
         stage.status = "complete"
@@ -818,9 +809,6 @@ class GenesisSimulation:
             if elim_pct > 0 and direction:
                 eliminated = self._apply_elimination(active_concepts, direction, elim_pct)
                 self.state.concepts["eliminated"].extend(eliminated)
-                # Update round result with actual elimination count
-                round_result.concepts_eliminated = len(eliminated)
-                round_result.concepts_surviving = len([c for c in active_concepts if c.status == "active"])
 
             # Store round result
             self.state.rounds.append(round_result)
@@ -869,58 +857,21 @@ class GenesisSimulation:
     def _apply_elimination(self, concepts: List[Concept],
                            direction: ModeratorDirection,
                            pct: float) -> List[Concept]:
-        """Eliminate bottom N% of concepts based on moderator direction + scores."""
-        import re as _re
-
+        """Eliminate bottom N% of concepts based on scores and moderator direction."""
         active = [c for c in concepts if c.status == "active"]
         if not active:
             return []
 
-        def _normalize(name):
-            """Strip punctuation, collapse spaces, lowercase."""
-            return _re.sub(r'[^a-z0-9\s]', '', (name or "").lower()).strip()
-
-        def _fuzzy_match(concept_name, target_names):
-            """Check if concept name matches any target with fuzzy logic."""
-            cn = _normalize(concept_name)
-            if not cn:
-                return False
-            for tn in target_names:
-                tn_norm = _normalize(tn)
-                if not tn_norm:
-                    continue
-                # Exact match after normalization
-                if cn == tn_norm:
-                    return True
-                # Substring containment (for partial references like "seven years" matching "the weight of seven years")
-                if len(tn_norm) > 8 and (tn_norm in cn or cn in tn_norm):
-                    return True
-                # Word overlap > 60% (handles reworded names)
-                cn_words = set(cn.split())
-                tn_words = set(tn_norm.split())
-                if cn_words and tn_words:
-                    overlap = len(cn_words & tn_words) / max(len(cn_words), len(tn_words))
-                    if overlap > 0.6:
-                        return True
-            return False
-
-        eliminated_names = [e.get("name", "") for e in (direction.eliminated_concepts or [])]
+        # Use moderator's elimination list first
+        eliminated_names = {e.get("name", "").lower() for e in direction.eliminated_concepts}
         eliminated = []
 
-        # Phase 1: Match moderator's explicit elimination list
-        if eliminated_names:
-            for concept in active:
-                if _fuzzy_match(concept.name, eliminated_names):
-                    concept.status = "eliminated"
-                    eliminated.append(concept)
-                    self._log_event("elimination", {
-                        "concept": concept.name,
-                        "persona": concept.persona_name,
-                        "reason": "moderator_direction",
-                        "round": self.state.current_round,
-                    })
+        for concept in active:
+            if concept.name.lower() in eliminated_names:
+                concept.status = "eliminated"
+                eliminated.append(concept)
 
-        # Phase 2: Score-based fallback if moderator didn't eliminate enough
+        # If moderator didn't eliminate enough, eliminate by score
         target = max(1, int(len(active) * pct))
         if len(eliminated) < target:
             remaining = sorted(
@@ -930,12 +881,6 @@ class GenesisSimulation:
             for concept in remaining[:target - len(eliminated)]:
                 concept.status = "eliminated"
                 eliminated.append(concept)
-                self._log_event("elimination", {
-                    "concept": concept.name,
-                    "persona": concept.persona_name,
-                    "reason": "score_fallback",
-                    "round": self.state.current_round,
-                })
 
         return eliminated
 
@@ -957,6 +902,7 @@ class GenesisSimulation:
             "timestamp": datetime.utcnow().isoformat(),
         }
 
+        # Fix 1.3 — Store full concept data (not truncated)
         if stage_name == "creation" and result.outputs:
             entry["concepts"] = [
                 {
@@ -968,6 +914,7 @@ class GenesisSimulation:
                 }
                 for c in result.outputs
             ]
+        # Fix 1.1 — Store full critique data (not just count)
         elif stage_name == "critique" and result.outputs:
             entry["critiques"] = [
                 {
@@ -986,6 +933,7 @@ class GenesisSimulation:
                 for c in result.outputs
             ]
             entry["critiques_count"] = len(result.outputs)
+        # Fix 1.2 — Store full synthesis/direction data (not truncated)
         elif stage_name == "synthesis" and result.outputs:
             d = result.outputs
             entry["direction"] = d.direction_notes or ""
@@ -1000,6 +948,7 @@ class GenesisSimulation:
             ]
             if hasattr(d, "evaluator_notes") and d.evaluator_notes:
                 entry["evaluator_notes"] = d.evaluator_notes
+        # Fix 1.4 — Store refinement and presentation stages
         elif stage_name == "refinement" and result.outputs:
             entry["refined_concepts"] = [
                 {
