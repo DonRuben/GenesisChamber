@@ -254,6 +254,12 @@ export default function OutputPanel({ simId, simState }) {
               <a href={api.getExportUrl(simId, 'winner')} className="gc-btn gc-btn-ghost op-export-btn" download>
                 <IconDownload size={14} /> Winner Package
               </a>
+              <a href={api.getDAExportUrl(simId)} className="gc-btn gc-btn-ghost op-export-btn" style={{borderColor: '#DC2626', color: '#DC2626'}} download>
+                <IconDownload size={14} /> DA Report
+              </a>
+              <a href={api.getProductionExportUrl(simId)} className="gc-btn gc-btn-ghost op-export-btn" style={{borderColor: 'var(--gc-gold)', color: 'var(--gc-gold)'}} download>
+                <IconDownload size={14} /> Production Package
+              </a>
               {simState?.rounds?.map((r) => (
                 <a key={r.round_num} href={api.getExportUrl(simId, 'round', r.round_num)} className="gc-btn gc-btn-ghost op-export-btn" download>
                   <IconDownload size={14} /> R{r.round_num}

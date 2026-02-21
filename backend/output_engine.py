@@ -10,42 +10,45 @@ from .models import SimulationState
 from .config import SIMULATION_OUTPUT_DIR, PERSONA_COLORS
 
 
-# Genesis Chamber reveal.js theme (inline CSS)
+# Genesis Chamber reveal.js theme — aligned with frontend/src/design-tokens.css
 GENESIS_REVEAL_THEME = """
-.reveal { font-family: 'Inter', -apple-system, sans-serif; color: #E5E7EB; }
-.reveal .slides section { background: #0A0E17; padding: 40px 60px; text-align: left; }
-.reveal h1 { color: #00D9C4; font-weight: 800; font-size: 2.2em; margin-bottom: 16px; }
-.reveal h2 { color: #00D9C4; font-weight: 700; font-size: 1.6em; margin-bottom: 12px; }
-.reveal h3 { color: #F59E0B; font-weight: 600; font-size: 1.2em; margin-bottom: 8px; }
-.reveal p { color: #E5E7EB; line-height: 1.7; font-size: 0.85em; }
-.reveal .dim { color: #9CA3AF; font-size: 0.75em; }
-.reveal .teal { color: #00D9C4; }
-.reveal .gold { color: #F59E0B; }
-.gc-card { background: #111827; border-radius: 12px; padding: 24px; margin: 12px 0; border: 1px solid rgba(255,255,255,0.08); }
-.gc-card-left { border-left: 4px solid #00D9C4; }
-.gc-roster { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-top: 20px; }
-.gc-persona { background: #111827; border-radius: 12px; padding: 16px; border-left: 4px solid #666; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+.reveal { font-family: 'Inter', system-ui, sans-serif; color: #E9E7E4; }
+.reveal .slides section { background: #1B1D22; padding: 40px 60px; text-align: left; }
+.reveal h1 { color: #00D9FF; font-weight: 800; font-size: 2.2em; margin-bottom: 16px; }
+.reveal h2 { color: #00D9FF; font-weight: 700; font-size: 1.6em; margin-bottom: 12px; }
+.reveal h3 { color: #FFB800; font-weight: 600; font-size: 1.2em; margin-bottom: 8px; }
+.reveal p { color: #E9E7E4; line-height: 1.7; font-size: 0.85em; }
+.reveal .dim { color: #7A7880; font-size: 0.75em; }
+.reveal .cyan { color: #00D9FF; }
+.reveal .gold { color: #FFB800; }
+.reveal .flame { color: #F27123; }
+.gc-card { background: #22252B; border-radius: 12px; padding: 24px; margin: 12px 0; border: 1px solid rgba(233,231,228,0.06); }
+.gc-card-left { border-left: 4px solid #00D9FF; }
+.gc-roster { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-top: 21px; }
+.gc-persona { background: #22252B; border-radius: 12px; padding: 16px; border-left: 4px solid #69676C; }
 .gc-persona .name { font-weight: 700; font-size: 1em; margin-bottom: 4px; }
-.gc-persona .role { font-size: 0.7em; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.5px; }
-.gc-persona .model { font-size: 0.65em; color: #6B7280; font-family: 'JetBrains Mono', monospace; }
+.gc-persona .role { font-size: 0.7em; color: #7A7880; text-transform: uppercase; letter-spacing: 0.5px; }
+.gc-persona .model { font-size: 0.65em; color: #69676C; font-family: 'JetBrains Mono', 'Fira Code', monospace; }
 .gc-concepts { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
-.gc-concept { background: #111827; border-radius: 12px; padding: 20px; border-left: 4px solid #666; }
+.gc-concept { background: #22252B; border-radius: 12px; padding: 21px; border-left: 4px solid #69676C; }
 .gc-concept .cname { font-weight: 700; font-size: 1em; margin-bottom: 4px; }
-.gc-concept .tagline { font-style: italic; color: #9CA3AF; font-size: 0.8em; margin-bottom: 8px; }
+.gc-concept .tagline { font-style: italic; color: #7A7880; font-size: 0.8em; margin-bottom: 8px; }
 .gc-concept .idea { font-size: 0.8em; line-height: 1.6; }
-.gc-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.6em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 8px; }
-.gc-badge-winner { background: rgba(245,158,11,0.15); color: #F59E0B; }
-.gc-badge-eliminated { background: rgba(239,68,68,0.15); color: #EF4444; }
-.gc-badge-active { background: rgba(16,185,129,0.15); color: #10B981; }
-.gc-badge-runner { background: rgba(59,130,246,0.15); color: #3B82F6; }
-.gc-direction { background: #111827; border-left: 4px solid #F59E0B; border-radius: 0 12px 12px 0; padding: 20px 24px; margin: 16px 0; }
+.gc-badge { display: inline-block; padding: 3px 10px; border-radius: 9999px; font-size: 0.6em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 8px; }
+.gc-badge-winner { background: rgba(255,184,0,0.12); color: #FFB800; }
+.gc-badge-eliminated { background: rgba(239,68,68,0.12); color: #EF4444; }
+.gc-badge-active { background: rgba(16,185,129,0.12); color: #10B981; }
+.gc-badge-runner { background: rgba(59,130,246,0.12); color: #3B82F6; }
+.gc-badge-da { background: rgba(220,38,38,0.12); color: #DC2626; }
+.gc-direction { background: #22252B; border-left: 4px solid #FFB800; border-radius: 0 12px 12px 0; padding: 21px 24px; margin: 16px 0; }
 .gc-surviving { color: #10B981; }
 .gc-eliminated { color: #EF4444; text-decoration: line-through; }
-.gc-winner-card { background: linear-gradient(135deg, #111827 0%, #1a2332 100%); border: 2px solid #F59E0B; border-radius: 16px; padding: 32px; margin: 20px 0; }
-.gc-winner-card .headline { font-size: 1.4em; font-weight: 800; color: #00D9C4; margin: 12px 0; }
+.gc-winner-card { background: linear-gradient(135deg, #22252B 0%, #2A2D34 100%); border: 2px solid #FFB800; border-radius: 16px; padding: 34px; margin: 21px 0; box-shadow: 0 0 20px rgba(255,184,0,0.15); }
+.gc-winner-card .headline { font-size: 1.4em; font-weight: 800; color: #00D9FF; margin: 12px 0; }
 .gc-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 16px; }
-.gc-gallery-item { background: #111827; border-radius: 12px; padding: 16px; font-size: 0.8em; }
-.gc-gallery-item .prompt { color: #9CA3AF; font-family: 'JetBrains Mono', monospace; font-size: 0.85em; line-height: 1.5; }
+.gc-gallery-item { background: #22252B; border-radius: 12px; padding: 16px; font-size: 0.8em; }
+.gc-gallery-item .prompt { color: #7A7880; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.85em; line-height: 1.5; }
 """
 
 REVEAL_TEMPLATE = """<!DOCTYPE html>
@@ -110,9 +113,9 @@ class OutputEngine:
         for entry in state.transcript_entries:
             stage_color = {
                 "creation": "#10B981", "critique": "#F59E0B",
-                "synthesis": "#00D9C4", "refinement": "#3B82F6",
+                "synthesis": "#EF4444", "refinement": "#3B82F6",
                 "presentation": "#8B5CF6",
-            }.get(entry.get("stage_name", ""), "#666")
+            }.get(entry.get("stage_name", ""), "#69676C")
 
             entries_html += f"""
             <div class="entry" style="border-left-color: {stage_color}">
@@ -127,7 +130,21 @@ class OutputEngine:
                 for c in entry["concepts"]:
                     entries_html += f'<div class="concept-entry"><strong>{c.get("persona", "?")}:</strong> {c.get("name", "")} — {c.get("idea", "")}</div>'
 
-            if entry.get("critiques_count"):
+            if entry.get("critiques"):
+                for crit in entry["critiques"]:
+                    da_class = ' style="border-left:3px solid #DC2626;padding-left:8px;margin:4px 0;"' if crit.get("is_devils_advocate") else ""
+                    da_badge = '<span style="background:rgba(220,38,38,0.15);color:#DC2626;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:6px;">DA</span>' if crit.get("is_devils_advocate") else ""
+                    score = crit.get("score", 0)
+                    score_color = "#10B981" if score >= 7 else "#F59E0B" if score >= 5 else "#EF4444"
+                    entries_html += f'<div class="detail"{da_class}>'
+                    entries_html += f'<strong>{html.escape(crit.get("critic_name", "?"))}</strong>{da_badge} '
+                    entries_html += f'on {html.escape(crit.get("concept_label", "?"))} — '
+                    entries_html += f'<span style="color:{score_color}">{crit.get("score", "?")}/10</span>'
+                    if crit.get("fatal_flaw") and str(crit["fatal_flaw"]).upper() != "NONE":
+                        entries_html += f'<br><em>Fatal: {html.escape(str(crit["fatal_flaw"]))}</em>'
+                    entries_html += '</div>'
+            elif entry.get("critiques_count"):
+                # Backward compat for old simulations
                 entries_html += f'<div class="detail">{entry["critiques_count"]} critiques submitted</div>'
 
             if entry.get("direction"):
@@ -159,31 +176,33 @@ class OutputEngine:
 <head>
 <meta charset="UTF-8">
 <title>{state.config.name} — Transcript</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root {{ --void: #0A0E17; --surface: #111827; --teal: #00D9C4; --text: #E5E7EB; --text-dim: #9CA3AF; --border: rgba(255,255,255,0.08); }}
+:root {{ --void: #1B1D22; --surface: #22252B; --surface-2: #2A2D34; --cyan: #00D9FF; --gold: #FFB800; --flame: #F27123; --text: #E9E7E4; --text-sec: #CBCDCE; --text-dim: #7A7880; --border: rgba(233,231,228,0.06); --border-med: rgba(233,231,228,0.10); }}
 * {{ margin:0; padding:0; box-sizing:border-box; }}
-body {{ background:var(--void); color:var(--text); font-family:'Inter',-apple-system,sans-serif; line-height:1.7; padding:40px 24px; max-width:900px; margin:0 auto; }}
+body {{ background:var(--void); color:var(--text); font-family:'Inter',system-ui,sans-serif; line-height:1.7; padding:40px 24px; max-width:900px; margin:0 auto; }}
 h1 {{ font-size:32px; font-weight:800; margin-bottom:8px; }}
-h1 span {{ color:var(--teal); }}
-h2 {{ font-size:20px; color:var(--teal); margin:32px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--border); }}
-.meta {{ color:var(--text-dim); margin-bottom:32px; }}
-.entry {{ padding:12px 16px; border-left:3px solid var(--border); margin-bottom:8px; background:var(--surface); border-radius:0 8px 8px 0; }}
+h1 span {{ color:var(--cyan); }}
+h2 {{ font-size:20px; color:var(--cyan); margin:34px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--border-med); }}
+.meta {{ color:var(--text-dim); margin-bottom:34px; }}
+.entry {{ padding:13px 16px; border-left:3px solid var(--border-med); margin-bottom:8px; background:var(--surface); border-radius:0 6px 6px 0; }}
 .entry-header {{ display:flex; justify-content:space-between; margin-bottom:6px; }}
 .stage {{ font-weight:600; text-transform:uppercase; font-size:12px; letter-spacing:0.5px; }}
-.time {{ font-size:11px; color:var(--text-dim); font-family:monospace; }}
-.detail {{ font-size:13px; color:var(--text-dim); }}
+.time {{ font-size:11px; color:var(--text-dim); font-family:'JetBrains Mono','Fira Code',monospace; }}
+.detail {{ font-size:13px; color:var(--text-sec); margin:4px 0; }}
 .concept-entry {{ font-size:13px; margin:4px 0; }}
-.concept-card {{ background:var(--surface); border-radius:0 12px 12px 0; padding:16px 20px; margin-bottom:12px; }}
+.concept-card {{ background:var(--surface); border-radius:0 12px 12px 0; padding:16px 21px; margin-bottom:13px; }}
 .concept-card h3 {{ font-size:16px; margin-bottom:4px; }}
 .persona {{ font-size:12px; margin-bottom:8px; }}
 .tagline {{ font-style:italic; color:var(--text-dim); margin-bottom:8px; }}
-.headline {{ font-size:18px; font-weight:700; color:var(--teal); margin:8px 0; }}
+.headline {{ font-size:18px; font-weight:700; color:var(--cyan); margin:8px 0; }}
 .rationale {{ font-size:13px; color:var(--text-dim); }}
-.badge {{ display:inline-block; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:600; text-transform:uppercase; margin-left:8px; }}
-.badge.active {{ background:rgba(16,185,129,0.15); color:#10B981; }}
-.badge.winner {{ background:rgba(245,158,11,0.15); color:#F59E0B; }}
-.badge.eliminated {{ background:rgba(239,68,68,0.15); color:#EF4444; }}
-.badge.runner_up {{ background:rgba(59,130,246,0.15); color:#3B82F6; }}
+.badge {{ display:inline-block; padding:2px 8px; border-radius:9999px; font-size:10px; font-weight:600; text-transform:uppercase; margin-left:8px; }}
+.badge.active {{ background:rgba(16,185,129,0.12); color:#10B981; }}
+.badge.winner {{ background:rgba(255,184,0,0.12); color:#FFB800; }}
+.badge.eliminated {{ background:rgba(239,68,68,0.12); color:#EF4444; }}
+.badge.runner_up {{ background:rgba(59,130,246,0.12); color:#3B82F6; }}
 </style>
 </head>
 <body>
@@ -306,7 +325,7 @@ h2 {{ font-size:20px; color:var(--teal); margin:32px 0 16px; padding-bottom:8px;
 
         return f"""<section>
 <h1>Genesis <span class="teal">Chamber</span></h1>
-<h2 style="margin-top:16px;font-size:1.3em;color:#E5E7EB;font-weight:400;">{self._esc(state.config.name)}</h2>
+<h2 style="margin-top:16px;font-size:1.3em;color:#E9E7E4;font-weight:400;">{self._esc(state.config.name)}</h2>
 <p class="dim" style="margin-top:24px;">{sim_type} &middot; {rounds} rounds &middot; {ts}</p>
 <p style="margin-top:16px;font-size:0.85em;">Moderated by <span class="gold">{mod_name}</span></p>
 <p style="margin-top:8px;font-size:0.8em;">{roster_line}</p>
@@ -327,7 +346,7 @@ h2 {{ font-size:20px; color:var(--teal); margin:32px 0 16px; padding-bottom:8px;
         # Evaluator
         if state.config.evaluator:
             ev = state.config.evaluator
-            ev_color = PERSONA_COLORS.get("jony-ive", "#9CA3AF")
+            ev_color = PERSONA_COLORS.get("jony-ive", "#CBCDCE")
             cards += f"""<div class="gc-persona" style="border-left-color:{ev_color}">
 <div class="name" style="color:{ev_color}">{self._esc(ev.display_name)}</div>
 <div class="role">Evaluator</div>
@@ -400,7 +419,7 @@ h2 {{ font-size:20px; color:var(--teal); margin:32px 0 16px; padding-bottom:8px;
 {surv_html}
 {elim_html}
 {f'<p style="margin-top:12px;font-size:0.85em;">{self._esc(str(direction_notes))}</p>' if direction_notes else ''}
-{f'<p style="margin-top:12px;color:#00D9C4;font-weight:600;">"One more thing..." {self._esc(str(one_more))}</p>' if one_more and one_more != "NONE" else ''}
+{f'<p style="margin-top:12px;color:#00D9FF;font-weight:600;">"One more thing..." {self._esc(str(one_more))}</p>' if one_more and one_more != "NONE" else ''}
 </div>
 </section>"""
 
@@ -434,7 +453,7 @@ h2 {{ font-size:20px; color:var(--teal); margin:32px 0 16px; padding-bottom:8px;
             else:
                 return '<section><h2>Results Pending</h2><p class="dim">Simulation not yet complete</p></section>'
 
-        color = PERSONA_COLORS.get(winner.persona_id, "#00D9C4")
+        color = PERSONA_COLORS.get(winner.persona_id, "#00D9FF")
         headline = self._esc(winner.headline) if winner.headline else self._esc(winner.name)
 
         runner_html = ""
@@ -453,7 +472,7 @@ h2 {{ font-size:20px; color:var(--teal); margin:32px 0 16px; padding-bottom:8px;
 <div class="headline">{headline}</div>
 <p style="font-size:0.9em;margin-top:8px;">{self._esc(winner.tagline)}</p>
 <p style="margin-top:16px;">{self._esc(winner.idea)}</p>
-{f'<p style="margin-top:12px;font-size:0.85em;color:#9CA3AF;">{self._esc(winner.rationale)}</p>' if winner.rationale else ''}
+{f'<p style="margin-top:12px;font-size:0.85em;color:#7A7880;">{self._esc(winner.rationale)}</p>' if winner.rationale else ''}
 </div>
 {runner_html}
 </section>"""
@@ -624,52 +643,272 @@ h2 {{ font-size:20px; color:var(--teal); margin:32px 0 16px; padding-bottom:8px;
         return "\n".join(lines)
 
     def generate_markdown_round(self, state: SimulationState, round_num: int) -> str:
-        """Generate markdown for one specific round."""
+        """Generate comprehensive markdown for one round — all stages, all data."""
         lines = [f"# Round {round_num}", ""]
 
-        # Round result info
+        # Round metadata
         rnd = next((r for r in state.rounds if r.round_num == round_num), None)
         if rnd:
-            lines.append(f"**Mode:** {rnd.mode}  ")
+            mode_label = rnd.mode.upper() if rnd.mode else "UNKNOWN"
+            lines.append(f"**Mode:** {mode_label}  ")
             lines.append(f"**Status:** {rnd.status}  ")
-            lines.append(f"**Concepts Created:** {rnd.concepts_created}  ")
+            lines.append(f"**Concepts This Round:** {rnd.concepts_created}  ")
             lines.append(f"**Surviving:** {rnd.concepts_surviving}  ")
             lines.append(f"**Eliminated:** {rnd.concepts_eliminated}  ")
             lines.append("")
 
-        # Concepts created in this round
         all_concepts = state.concepts.get("active", []) + state.concepts.get("eliminated", []) + state.concepts.get("merged", [])
+
+        # --- STAGE 1: CONCEPTS ---
+        # Show concepts that were created OR refined in this round
         round_concepts = [c for c in all_concepts if c.round_created == round_num]
+
+        # Also find concepts refined this round (from transcript)
+        refined_this_round = []
+        for entry in state.transcript_entries:
+            if entry.get("round") == round_num and entry.get("refined_concepts"):
+                refined_this_round = entry["refined_concepts"]
 
         if round_concepts:
             lines.append("## Concepts")
             for c in round_concepts:
                 lines.append(self._concept_to_md(c))
+                lines.append("")
                 lines.append("---")
                 lines.append("")
 
-        # Critiques from this round
+        if refined_this_round and not round_concepts:
+            lines.append("## Refined Concepts")
+            for rc in refined_this_round:
+                lines.append(f"### {rc.get('name', 'Untitled')}")
+                lines.append(f"**By:** {rc.get('persona', '?')}  ")
+                if rc.get("headline"):
+                    lines.append(f"**Headline:** {rc['headline']}  ")
+                if rc.get("evolution"):
+                    lines.append(f"**Changes:** {rc['evolution']}")
+                lines.append("")
+                lines.append("---")
+                lines.append("")
+
+        # --- STAGE 2: CRITIQUES ---
         round_crits = []
         for entry in state.transcript_entries:
             if entry.get("round") == round_num and entry.get("critiques"):
                 round_crits.extend(entry["critiques"])
 
         if round_crits:
-            lines.append("## Critiques")
-            for crit in round_crits:
-                lines.append(f"### {crit.get('critic_name', 'Anon')} on {crit.get('concept_label', '?')} — {crit.get('score', '?')}/10")
-                if crit.get("strengths"):
-                    for s in crit["strengths"]:
-                        lines.append(f"- (+) {s}")
-                if crit.get("weaknesses"):
-                    for w in crit["weaknesses"]:
-                        lines.append(f"- (-) {w}")
-                lines.append("")
+            # Separate peer critiques from Devil's Advocate
+            peer = [c for c in round_crits if not c.get("is_devils_advocate")]
+            da = [c for c in round_crits if c.get("is_devils_advocate")]
 
-        # Direction from this round
+            if peer:
+                lines.append(f"## Peer Critiques")
+                lines.append("")
+                for crit in peer:
+                    label = crit.get("concept_label", "?")
+                    lines.append(f"### {crit.get('critic_name', 'Anonymous')} \u2192 {label} \u2014 {crit.get('score', '?')}/10")
+                    if crit.get("strengths"):
+                        lines.append("**Strengths:**")
+                        for s in crit["strengths"]:
+                            lines.append(f"- {s}")
+                    if crit.get("weaknesses"):
+                        lines.append("**Weaknesses:**")
+                        for w in crit["weaknesses"]:
+                            lines.append(f"- {w}")
+                    if crit.get("fatal_flaw") and str(crit["fatal_flaw"]).upper() != "NONE":
+                        lines.append(f"**Fatal Flaw:** {crit['fatal_flaw']}")
+                    if crit.get("one_change"):
+                        lines.append(f"**One Change:** {crit['one_change']}")
+                    if crit.get("would_champion"):
+                        lines.append(f"**Would Champion:** {crit['would_champion']}")
+                    lines.append("")
+
+            if da:
+                lines.append(f"## Devil's Advocate")
+                lines.append("")
+                for crit in da:
+                    label = crit.get("concept_label", "?")
+                    lines.append(f"### Advocatus Diaboli \u2192 {label} \u2014 {crit.get('score', '?')}/10")
+                    if crit.get("fatal_flaw") and str(crit["fatal_flaw"]).upper() != "NONE":
+                        lines.append(f"**Fatal Flaw:** {crit['fatal_flaw']}")
+                    if crit.get("weaknesses"):
+                        lines.append("**Weaknesses:**")
+                        for w in crit["weaknesses"]:
+                            lines.append(f"- {w}")
+                    if crit.get("strengths"):
+                        lines.append("**Concessions:**")
+                        for s in crit["strengths"]:
+                            lines.append(f"- {s}")
+                    if crit.get("one_change"):
+                        lines.append(f"**Demanded Change:** {crit['one_change']}")
+                    lines.append("")
+
+        # --- STAGE 3: MODERATOR DIRECTION ---
         for entry in state.transcript_entries:
             if entry.get("round") == round_num and entry.get("direction"):
-                lines.extend(["## Moderator Direction", entry["direction"], ""])
+                lines.append("## Moderator Direction")
+                lines.append(entry["direction"])
+                lines.append("")
+
+                if entry.get("evaluator_notes"):
+                    lines.append("## Evaluator Assessment")
+                    lines.append(entry["evaluator_notes"])
+                    lines.append("")
+
+                if entry.get("one_more_thing"):
+                    lines.append(f"**\"One More Thing...\"** {entry['one_more_thing']}")
+                    lines.append("")
+
+                surviving = entry.get("surviving_concepts", [])
+                eliminated = entry.get("eliminated_concepts", [])
+                if surviving or eliminated:
+                    lines.append("### Decisions")
+                    for s in surviving:
+                        reason = f" \u2014 {s['reason']}" if s.get("reason") else ""
+                        lines.append(f"- **{s.get('name', '?')}** survives{reason}")
+                    for e in eliminated:
+                        reason = f" \u2014 {e['reason']}" if e.get("reason") else ""
+                        lines.append(f"- ~~{e.get('name', '?')}~~ eliminated{reason}")
+                    lines.append("")
+
+        # --- ERRORS ---
+        for entry in state.transcript_entries:
+            if entry.get("round") == round_num and entry.get("stage_name") == "participant_error":
+                lines.append(f"> \u26a0\ufe0f {entry.get('error', 'Unknown failure')}")
+                lines.append("")
+
+        return "\n".join(lines)
+
+    def generate_markdown_devils_advocate(self, state: SimulationState) -> str:
+        """Generate a dedicated Devil's Advocate report."""
+        lines = [
+            "# Advocatus Diaboli \u2014 Challenge Report",
+            f"**Simulation:** {state.config.name}",
+            f"**Rounds:** {len(state.rounds)}",
+            "",
+        ]
+
+        all_concepts = state.concepts.get("active", []) + state.concepts.get("eliminated", [])
+        has_da_content = False
+
+        for round_num in range(1, len(state.rounds) + 1):
+            da_crits = []
+            for entry in state.transcript_entries:
+                if entry.get("round") == round_num and entry.get("critiques"):
+                    da_crits.extend([c for c in entry["critiques"] if c.get("is_devils_advocate")])
+
+            if not da_crits:
+                continue
+
+            has_da_content = True
+            rnd = next((r for r in state.rounds if r.round_num == round_num), None)
+            mode = rnd.mode.upper() if rnd else "?"
+            lines.append(f"## Round {round_num} \u2014 {mode}")
+            lines.append("")
+
+            for crit in da_crits:
+                concept = next((c for c in all_concepts if c.id == crit.get("concept_id")), None)
+                cname = concept.name if concept else crit.get("concept_label", "?")
+                pname = concept.persona_name if concept else "?"
+
+                lines.append(f"### \u2192 {cname} (by {pname}) \u2014 {crit.get('score', '?')}/10")
+
+                if crit.get("fatal_flaw") and str(crit["fatal_flaw"]).upper() != "NONE":
+                    lines.append(f"**Fatal Flaw:** {crit['fatal_flaw']}")
+                if crit.get("weaknesses"):
+                    for w in crit["weaknesses"]:
+                        lines.append(f"- {w}")
+                if crit.get("one_change"):
+                    lines.append(f"**Demanded:** {crit['one_change']}")
+
+                # Check if creative addressed DA in evolution notes
+                if concept and concept.evolution_notes:
+                    evo = concept.evolution_notes.lower()
+                    if any(kw in evo for kw in ["devil", "advocate", "advocat", "diaboli"]):
+                        lines.append("")
+                        lines.append(f"**Creative Response:** {concept.evolution_notes[:400]}")
+
+                lines.append("")
+                lines.append("---")
+                lines.append("")
+
+        if not has_da_content:
+            lines.append("*No Devil's Advocate critiques found. Was the DA enabled for this simulation?*")
+
+        return "\n".join(lines)
+
+    def generate_production_package(self, state: SimulationState) -> str:
+        """Generate production-ready winner package with full history."""
+        active = state.concepts.get("active", [])
+        winner = next((c for c in active if c.status == "winner"), None)
+        if not winner and active:
+            winner = active[0]
+        if not winner:
+            return "# No winner determined"
+
+        runner = next((c for c in active if c.status == "runner_up"), None)
+
+        lines = [
+            f"# {winner.name}",
+            f"*{winner.tagline}*" if winner.tagline else "",
+            "",
+            f"**By:** {winner.persona_name}  ",
+            f"**Simulation:** {state.config.name} | {len(state.rounds)} rounds | {len(state.config.participants)} participants",
+            "",
+            "---",
+            "",
+        ]
+
+        # Full concept data
+        lines.append(self._concept_to_md(winner))
+        lines.append("")
+
+        # Score history
+        if winner.scores:
+            lines.append("## Score Progression")
+            for rnd, score in sorted(winner.scores.items(), key=lambda x: int(x[0])):
+                filled = round(score)
+                bar = "\u2588" * filled + "\u2591" * (10 - filled)
+                lines.append(f"Round {rnd}: `{bar}` {score}/10")
+            lines.append("")
+
+        # All critiques this concept received
+        winner_crits = []
+        for entry in state.transcript_entries:
+            if entry.get("critiques"):
+                for c in entry["critiques"]:
+                    if c.get("concept_id") == winner.id:
+                        c["_round"] = entry.get("round", 0)
+                        winner_crits.append(c)
+
+        if winner_crits:
+            lines.append("## Critique History")
+            for crit in sorted(winner_crits, key=lambda x: x.get("_round", 0)):
+                da_tag = " *(Devil's Advocate)*" if crit.get("is_devils_advocate") else ""
+                lines.append(f"### R{crit.get('_round', '?')} \u2014 {crit.get('critic_name', '?')}{da_tag} \u2014 {crit.get('score', '?')}/10")
+                if crit.get("strengths"):
+                    lines.append("**Strengths:** " + "; ".join(crit["strengths"][:3]))
+                if crit.get("weaknesses"):
+                    lines.append("**Weaknesses:** " + "; ".join(crit["weaknesses"][:3]))
+                if crit.get("fatal_flaw") and str(crit["fatal_flaw"]).upper() != "NONE":
+                    lines.append(f"**Fatal Flaw:** {crit['fatal_flaw']}")
+                if crit.get("one_change"):
+                    lines.append(f"**One Change:** {crit['one_change']}")
+                lines.append("")
+
+        # Runner up
+        if runner:
+            lines.extend(["---", "", "## Runner-Up", ""])
+            lines.append(self._concept_to_md(runner))
+            lines.append("")
+
+        # Eliminated
+        eliminated = state.concepts.get("eliminated", [])
+        if eliminated:
+            lines.extend(["---", "", "## Eliminated Concepts", ""])
+            for c in eliminated:
+                lines.append(f"- **{c.name}** by {c.persona_name} \u2014 *{c.tagline or ''}*")
+            lines.append("")
 
         return "\n".join(lines)
 

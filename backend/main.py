@@ -908,6 +908,36 @@ async def export_persona_markdown(sim_id: str, persona_id: str):
     )
 
 
+@app.get("/api/simulation/{sim_id}/export/devils-advocate")
+async def export_da_markdown(sim_id: str):
+    """Export Devil's Advocate challenge report as markdown."""
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    engine = OutputEngine()
+    md = engine.generate_markdown_devils_advocate(state)
+    return StreamingResponse(
+        io.BytesIO(md.encode("utf-8")),
+        media_type="text/markdown",
+        headers={"Content-Disposition": f'attachment; filename="da-report-{sim_id}.md"'},
+    )
+
+
+@app.get("/api/simulation/{sim_id}/export/production")
+async def export_production_markdown(sim_id: str):
+    """Export production-ready winner package as markdown."""
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    engine = OutputEngine()
+    md = engine.generate_production_package(state)
+    return StreamingResponse(
+        io.BytesIO(md.encode("utf-8")),
+        media_type="text/markdown",
+        headers={"Content-Disposition": f'attachment; filename="production-{sim_id}.md"'},
+    )
+
+
 # === OUTPUT & MEDIA ENDPOINTS ===
 
 
