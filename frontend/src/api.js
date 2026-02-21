@@ -414,6 +414,14 @@ export const api = {
     return `${base}/${type}`;
   },
 
+  getDAExportUrl(simId) {
+    return `${API_BASE}/api/simulation/${simId}/export/devils-advocate`;
+  },
+
+  getProductionExportUrl(simId) {
+    return `${API_BASE}/api/simulation/${simId}/export/production`;
+  },
+
   async uploadReference(file) {
     const formData = new FormData();
     formData.append('file', file);

@@ -10,42 +10,45 @@ from .models import SimulationState
 from .config import SIMULATION_OUTPUT_DIR, PERSONA_COLORS
 
 
-# Genesis Chamber reveal.js theme (inline CSS)
+# Genesis Chamber reveal.js theme — aligned with frontend/src/design-tokens.css
 GENESIS_REVEAL_THEME = """
-.reveal { font-family: 'Inter', -apple-system, sans-serif; color: #E5E7EB; }
-.reveal .slides section { background: #0A0E17; padding: 40px 60px; text-align: left; }
-.reveal h1 { color: #00D9C4; font-weight: 800; font-size: 2.2em; margin-bottom: 16px; }
-.reveal h2 { color: #00D9C4; font-weight: 700; font-size: 1.6em; margin-bottom: 12px; }
-.reveal h3 { color: #F59E0B; font-weight: 600; font-size: 1.2em; margin-bottom: 8px; }
-.reveal p { color: #E5E7EB; line-height: 1.7; font-size: 0.85em; }
-.reveal .dim { color: #9CA3AF; font-size: 0.75em; }
-.reveal .teal { color: #00D9C4; }
-.reveal .gold { color: #F59E0B; }
-.gc-card { background: #111827; border-radius: 12px; padding: 24px; margin: 12px 0; border: 1px solid rgba(255,255,255,0.08); }
-.gc-card-left { border-left: 4px solid #00D9C4; }
-.gc-roster { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-top: 20px; }
-.gc-persona { background: #111827; border-radius: 12px; padding: 16px; border-left: 4px solid #666; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+.reveal { font-family: 'Inter', system-ui, sans-serif; color: #E9E7E4; }
+.reveal .slides section { background: #1B1D22; padding: 40px 60px; text-align: left; }
+.reveal h1 { color: #00D9FF; font-weight: 800; font-size: 2.2em; margin-bottom: 16px; }
+.reveal h2 { color: #00D9FF; font-weight: 700; font-size: 1.6em; margin-bottom: 12px; }
+.reveal h3 { color: #FFB800; font-weight: 600; font-size: 1.2em; margin-bottom: 8px; }
+.reveal p { color: #E9E7E4; line-height: 1.7; font-size: 0.85em; }
+.reveal .dim { color: #7A7880; font-size: 0.75em; }
+.reveal .cyan { color: #00D9FF; }
+.reveal .gold { color: #FFB800; }
+.reveal .flame { color: #F27123; }
+.gc-card { background: #22252B; border-radius: 12px; padding: 24px; margin: 12px 0; border: 1px solid rgba(233,231,228,0.06); }
+.gc-card-left { border-left: 4px solid #00D9FF; }
+.gc-roster { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-top: 21px; }
+.gc-persona { background: #22252B; border-radius: 12px; padding: 16px; border-left: 4px solid #69676C; }
 .gc-persona .name { font-weight: 700; font-size: 1em; margin-bottom: 4px; }
-.gc-persona .role { font-size: 0.7em; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.5px; }
-.gc-persona .model { font-size: 0.65em; color: #6B7280; font-family: 'JetBrains Mono', monospace; }
+.gc-persona .role { font-size: 0.7em; color: #7A7880; text-transform: uppercase; letter-spacing: 0.5px; }
+.gc-persona .model { font-size: 0.65em; color: #69676C; font-family: 'JetBrains Mono', 'Fira Code', monospace; }
 .gc-concepts { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
-.gc-concept { background: #111827; border-radius: 12px; padding: 20px; border-left: 4px solid #666; }
+.gc-concept { background: #22252B; border-radius: 12px; padding: 21px; border-left: 4px solid #69676C; }
 .gc-concept .cname { font-weight: 700; font-size: 1em; margin-bottom: 4px; }
-.gc-concept .tagline { font-style: italic; color: #9CA3AF; font-size: 0.8em; margin-bottom: 8px; }
+.gc-concept .tagline { font-style: italic; color: #7A7880; font-size: 0.8em; margin-bottom: 8px; }
 .gc-concept .idea { font-size: 0.8em; line-height: 1.6; }
-.gc-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.6em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 8px; }
-.gc-badge-winner { background: rgba(245,158,11,0.15); color: #F59E0B; }
-.gc-badge-eliminated { background: rgba(239,68,68,0.15); color: #EF4444; }
-.gc-badge-active { background: rgba(16,185,129,0.15); color: #10B981; }
-.gc-badge-runner { background: rgba(59,130,246,0.15); color: #3B82F6; }
-.gc-direction { background: #111827; border-left: 4px solid #F59E0B; border-radius: 0 12px 12px 0; padding: 20px 24px; margin: 16px 0; }
+.gc-badge { display: inline-block; padding: 3px 10px; border-radius: 9999px; font-size: 0.6em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 8px; }
+.gc-badge-winner { background: rgba(255,184,0,0.12); color: #FFB800; }
+.gc-badge-eliminated { background: rgba(239,68,68,0.12); color: #EF4444; }
+.gc-badge-active { background: rgba(16,185,129,0.12); color: #10B981; }
+.gc-badge-runner { background: rgba(59,130,246,0.12); color: #3B82F6; }
+.gc-badge-da { background: rgba(220,38,38,0.12); color: #DC2626; }
+.gc-direction { background: #22252B; border-left: 4px solid #FFB800; border-radius: 0 12px 12px 0; padding: 21px 24px; margin: 16px 0; }
 .gc-surviving { color: #10B981; }
 .gc-eliminated { color: #EF4444; text-decoration: line-through; }
-.gc-winner-card { background: linear-gradient(135deg, #111827 0%, #1a2332 100%); border: 2px solid #F59E0B; border-radius: 16px; padding: 32px; margin: 20px 0; }
-.gc-winner-card .headline { font-size: 1.4em; font-weight: 800; color: #00D9C4; margin: 12px 0; }
+.gc-winner-card { background: linear-gradient(135deg, #22252B 0%, #2A2D34 100%); border: 2px solid #FFB800; border-radius: 16px; padding: 34px; margin: 21px 0; box-shadow: 0 0 20px rgba(255,184,0,0.15); }
+.gc-winner-card .headline { font-size: 1.4em; font-weight: 800; color: #00D9FF; margin: 12px 0; }
 .gc-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 16px; }
-.gc-gallery-item { background: #111827; border-radius: 12px; padding: 16px; font-size: 0.8em; }
-.gc-gallery-item .prompt { color: #9CA3AF; font-family: 'JetBrains Mono', monospace; font-size: 0.85em; line-height: 1.5; }
+.gc-gallery-item { background: #22252B; border-radius: 12px; padding: 16px; font-size: 0.8em; }
+.gc-gallery-item .prompt { color: #7A7880; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.85em; line-height: 1.5; }
 """
 
 REVEAL_TEMPLATE = """<!DOCTYPE html>
@@ -110,9 +113,9 @@ class OutputEngine:
         for entry in state.transcript_entries:
             stage_color = {
                 "creation": "#10B981", "critique": "#F59E0B",
-                "synthesis": "#00D9C4", "refinement": "#3B82F6",
+                "synthesis": "#EF4444", "refinement": "#3B82F6",
                 "presentation": "#8B5CF6",
-            }.get(entry.get("stage_name", ""), "#666")
+            }.get(entry.get("stage_name", ""), "#69676C")
 
             entries_html += f"""
             <div class="entry" style="border-left-color: {stage_color}">
@@ -173,31 +176,33 @@ class OutputEngine:
 <head>
 <meta charset="UTF-8">
 <title>{state.config.name} — Transcript</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root {{ --void: #0A0E17; --surface: #111827; --teal: #00D9C4; --text: #E5E7EB; --text-dim: #9CA3AF; --border: rgba(255,255,255,0.08); }}
+:root {{ --void: #1B1D22; --surface: #22252B; --surface-2: #2A2D34; --cyan: #00D9FF; --gold: #FFB800; --flame: #F27123; --text: #E9E7E4; --text-sec: #CBCDCE; --text-dim: #7A7880; --border: rgba(233,231,228,0.06); --border-med: rgba(233,231,228,0.10); }}
 * {{ margin:0; padding:0; box-sizing:border-box; }}
-body {{ background:var(--void); color:var(--text); font-family:'Inter',-apple-system,sans-serif; line-height:1.7; padding:40px 24px; max-width:900px; margin:0 auto; }}
+body {{ background:var(--void); color:var(--text); font-family:'Inter',system-ui,sans-serif; line-height:1.7; padding:40px 24px; max-width:900px; margin:0 auto; }}
 h1 {{ font-size:32px; font-weight:800; margin-bottom:8px; }}
-h1 span {{ color:var(--teal); }}
-h2 {{ font-size:20px; color:var(--teal); margin:32px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--border); }}
-.meta {{ color:var(--text-dim); margin-bottom:32px; }}
-.entry {{ padding:12px 16px; border-left:3px solid var(--border); margin-bottom:8px; background:var(--surface); border-radius:0 8px 8px 0; }}
+h1 span {{ color:var(--cyan); }}
+h2 {{ font-size:20px; color:var(--cyan); margin:34px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--border-med); }}
+.meta {{ color:var(--text-dim); margin-bottom:34px; }}
+.entry {{ padding:13px 16px; border-left:3px solid var(--border-med); margin-bottom:8px; background:var(--surface); border-radius:0 6px 6px 0; }}
 .entry-header {{ display:flex; justify-content:space-between; margin-bottom:6px; }}
 .stage {{ font-weight:600; text-transform:uppercase; font-size:12px; letter-spacing:0.5px; }}
-.time {{ font-size:11px; color:var(--text-dim); font-family:monospace; }}
-.detail {{ font-size:13px; color:var(--text-dim); }}
+.time {{ font-size:11px; color:var(--text-dim); font-family:'JetBrains Mono','Fira Code',monospace; }}
+.detail {{ font-size:13px; color:var(--text-sec); margin:4px 0; }}
 .concept-entry {{ font-size:13px; margin:4px 0; }}
-.concept-card {{ background:var(--surface); border-radius:0 12px 12px 0; padding:16px 20px; margin-bottom:12px; }}
+.concept-card {{ background:var(--surface); border-radius:0 12px 12px 0; padding:16px 21px; margin-bottom:13px; }}
 .concept-card h3 {{ font-size:16px; margin-bottom:4px; }}
 .persona {{ font-size:12px; margin-bottom:8px; }}
 .tagline {{ font-style:italic; color:var(--text-dim); margin-bottom:8px; }}
-.headline {{ font-size:18px; font-weight:700; color:var(--teal); margin:8px 0; }}
+.headline {{ font-size:18px; font-weight:700; color:var(--cyan); margin:8px 0; }}
 .rationale {{ font-size:13px; color:var(--text-dim); }}
-.badge {{ display:inline-block; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:600; text-transform:uppercase; margin-left:8px; }}
-.badge.active {{ background:rgba(16,185,129,0.15); color:#10B981; }}
-.badge.winner {{ background:rgba(245,158,11,0.15); color:#F59E0B; }}
-.badge.eliminated {{ background:rgba(239,68,68,0.15); color:#EF4444; }}
-.badge.runner_up {{ background:rgba(59,130,246,0.15); color:#3B82F6; }}
+.badge {{ display:inline-block; padding:2px 8px; border-radius:9999px; font-size:10px; font-weight:600; text-transform:uppercase; margin-left:8px; }}
+.badge.active {{ background:rgba(16,185,129,0.12); color:#10B981; }}
+.badge.winner {{ background:rgba(255,184,0,0.12); color:#FFB800; }}
+.badge.eliminated {{ background:rgba(239,68,68,0.12); color:#EF4444; }}
+.badge.runner_up {{ background:rgba(59,130,246,0.12); color:#3B82F6; }}
 </style>
 </head>
 <body>
@@ -320,7 +325,7 @@ h2 {{ font-size:20px; color:var(--teal); margin:32px 0 16px; padding-bottom:8px;
 
         return f"""<section>
 <h1>Genesis <span class="teal">Chamber</span></h1>
-<h2 style="margin-top:16px;font-size:1.3em;color:#E5E7EB;font-weight:400;">{self._esc(state.config.name)}</h2>
+<h2 style="margin-top:16px;font-size:1.3em;color:#E9E7E4;font-weight:400;">{self._esc(state.config.name)}</h2>
 <p class="dim" style="margin-top:24px;">{sim_type} &middot; {rounds} rounds &middot; {ts}</p>
 <p style="margin-top:16px;font-size:0.85em;">Moderated by <span class="gold">{mod_name}</span></p>
 <p style="margin-top:8px;font-size:0.8em;">{roster_line}</p>
@@ -341,7 +346,7 @@ h2 {{ font-size:20px; color:var(--teal); margin:32px 0 16px; padding-bottom:8px;
         # Evaluator
         if state.config.evaluator:
             ev = state.config.evaluator
-            ev_color = PERSONA_COLORS.get("jony-ive", "#9CA3AF")
+            ev_color = PERSONA_COLORS.get("jony-ive", "#CBCDCE")
             cards += f"""<div class="gc-persona" style="border-left-color:{ev_color}">
 <div class="name" style="color:{ev_color}">{self._esc(ev.display_name)}</div>
 <div class="role">Evaluator</div>
@@ -414,7 +419,7 @@ h2 {{ font-size:20px; color:var(--teal); margin:32px 0 16px; padding-bottom:8px;
 {surv_html}
 {elim_html}
 {f'<p style="margin-top:12px;font-size:0.85em;">{self._esc(str(direction_notes))}</p>' if direction_notes else ''}
-{f'<p style="margin-top:12px;color:#00D9C4;font-weight:600;">"One more thing..." {self._esc(str(one_more))}</p>' if one_more and one_more != "NONE" else ''}
+{f'<p style="margin-top:12px;color:#00D9FF;font-weight:600;">"One more thing..." {self._esc(str(one_more))}</p>' if one_more and one_more != "NONE" else ''}
 </div>
 </section>"""
 
@@ -448,7 +453,7 @@ h2 {{ font-size:20px; color:var(--teal); margin:32px 0 16px; padding-bottom:8px;
             else:
                 return '<section><h2>Results Pending</h2><p class="dim">Simulation not yet complete</p></section>'
 
-        color = PERSONA_COLORS.get(winner.persona_id, "#00D9C4")
+        color = PERSONA_COLORS.get(winner.persona_id, "#00D9FF")
         headline = self._esc(winner.headline) if winner.headline else self._esc(winner.name)
 
         runner_html = ""
@@ -467,7 +472,7 @@ h2 {{ font-size:20px; color:var(--teal); margin:32px 0 16px; padding-bottom:8px;
 <div class="headline">{headline}</div>
 <p style="font-size:0.9em;margin-top:8px;">{self._esc(winner.tagline)}</p>
 <p style="margin-top:16px;">{self._esc(winner.idea)}</p>
-{f'<p style="margin-top:12px;font-size:0.85em;color:#9CA3AF;">{self._esc(winner.rationale)}</p>' if winner.rationale else ''}
+{f'<p style="margin-top:12px;font-size:0.85em;color:#7A7880;">{self._esc(winner.rationale)}</p>' if winner.rationale else ''}
 </div>
 {runner_html}
 </section>"""
