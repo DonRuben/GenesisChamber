@@ -4,6 +4,7 @@ import './LiveFeed.css';
 const STAGE_VERBS = {
   creation: 'crafting concepts',
   critique: 'reviewing anonymously',
+  da_defense: 'defending against DA',
   synthesis: 'synthesizing direction',
   refinement: 'refining concepts',
   presentation: 'presenting work',
@@ -12,6 +13,7 @@ const STAGE_VERBS = {
 const STAGE_LABELS = {
   creation: 'Creation',
   critique: 'Critique',
+  da_defense: 'DA Defense',
   synthesis: 'Synthesis',
   refinement: 'Refinement',
   presentation: 'Presentation',

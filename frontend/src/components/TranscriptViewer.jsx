@@ -5,6 +5,7 @@ const STAGE_FILTERS = [
   { key: 'all', label: 'All' },
   { key: 'creation', label: 'Create', color: 'var(--stage-create)' },
   { key: 'critique', label: 'Critique', color: 'var(--stage-critique)' },
+  { key: 'da_defense', label: 'DA Defense', color: 'var(--stage-da-defense)' },
   { key: 'synthesis', label: 'Synthesize', color: 'var(--stage-synthesize)' },
   { key: 'refinement', label: 'Refine', color: 'var(--stage-refine)' },
   { key: 'presentation', label: 'Present', color: 'var(--stage-present)' },
@@ -13,6 +14,7 @@ const STAGE_FILTERS = [
 const STAGE_COLORS = {
   creation: 'var(--stage-create)',
   critique: 'var(--stage-critique)',
+  da_defense: 'var(--stage-da-defense)',
   synthesis: 'var(--stage-synthesize)',
   refinement: 'var(--stage-refine)',
   presentation: 'var(--stage-present)',
@@ -21,6 +23,7 @@ const STAGE_COLORS = {
 const STAGE_LABELS = {
   creation: 'Creation',
   critique: 'Critique',
+  da_defense: 'DA Defense',
   synthesis: 'Synthesis',
   refinement: 'Refinement',
   presentation: 'Presentation',
@@ -201,6 +204,39 @@ export default function TranscriptViewer({ entries, eventLog }) {
                   ) : entry.critiques_count != null ? (
                     <div className="tv-entry-meta">{entry.critiques_count} critiques submitted</div>
                   ) : null}
+
+                  {/* DA Defense results */}
+                  {entry.da_defenses && entry.da_defenses.length > 0 && (
+                    <div className="tv-da-defenses">
+                      <div className="tv-section-label tv-label-da">DA Defense Round</div>
+                      {entry.da_defenses.map((d, di) => (
+                        <div key={di} className="tv-da-defense-card">
+                          <div className="tv-da-defense-header">
+                            <span className="tv-da-persona">{d.persona_name}</span>
+                            <span className="tv-da-defending">defending</span>
+                            <span className="tv-da-concept">{d.concept_name}</span>
+                          </div>
+                          {d.da_challenge?.fatal_flaw && (
+                            <div className="tv-da-challenge">
+                              <span className="tv-fatal-label">DA's Fatal Flaw:</span> {d.da_challenge.fatal_flaw}
+                            </div>
+                          )}
+                          {d.defense_text && (
+                            <div className="tv-da-defense-text">{d.defense_text}</div>
+                          )}
+                          {d.verdict && (
+                            <div className={`tv-da-verdict ${d.verdict.toLowerCase().includes('accepted') ? 'tv-verdict-accepted' : 'tv-verdict-insufficient'}`}>
+                              <strong>Verdict:</strong> {d.verdict}
+                              {d.verdict_details && <span className="tv-verdict-details"> — {d.verdict_details}</span>}
+                              {d.revised_score != null && (
+                                <span className="tv-revised-score">Revised: {d.revised_score}/10</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Full synthesis (V1+) */}
                   {entry.synthesis ? (

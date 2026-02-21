@@ -8,8 +8,8 @@ from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from .models import (
-    Concept, Critique, EvaluatorAssessment, ModeratorDirection,
-    RoundResult, SimulationConfig, SimulationState, StageResult,
+    Concept, ConceptVersion, Critique, DADefenseResult, EvaluatorAssessment,
+    ModeratorDirection, RoundResult, SimulationConfig, SimulationState, StageResult,
 )
 from .soul_engine import SoulEngine
 from .openrouter import query_with_soul, query_with_soul_parallel, get_reasoning_config
@@ -259,9 +259,26 @@ class GenesisRound:
         if on_stage_complete:
             await _maybe_await(on_stage_complete, 2, "critique", stage2)
 
+        # Stage 2.5: DA Defense (optional — runs if DA is active and has critiques)
+        da_defense_results = None
+        if self.config.devils_advocate and all_critiques:
+            da_crits = [c for c in all_critiques if c.critic_id == "devils-advocate"]
+            if da_crits:
+                await _emit_stage_start(2, "da_defense", [
+                    c.persona_id for c in concepts_to_critique if c.status == "active"
+                ])
+                da_defense_stage = await self._stage_da_defense(
+                    concepts_to_critique, all_critiques,
+                    on_participant_event=on_participant_event,
+                )
+                if da_defense_stage.status == "complete" and da_defense_stage.outputs:
+                    da_defense_results = da_defense_stage.outputs
+                if on_stage_complete:
+                    await _maybe_await(on_stage_complete, 2, "da_defense", da_defense_stage)
+
         # Stage 3: Synthesis (moderator direction)
         await _emit_stage_start(3, "synthesis", ["moderator", "evaluator"])
-        stage3 = await self._stage_synthesis(concepts_to_critique, all_critiques)
+        stage3 = await self._stage_synthesis(concepts_to_critique, all_critiques, da_defense_results)
         self.stage_results[3] = stage3
         round_result.stages[3] = stage3
         if stage3.outputs:
@@ -513,7 +530,8 @@ class GenesisRound:
         return stage
 
     async def _stage_synthesis(self, concepts: List[Concept],
-                                critiques: List[Critique]) -> StageResult:
+                                critiques: List[Critique],
+                                da_defense_results: Optional[List] = None) -> StageResult:
         """Stage 3: Moderator direction + evaluator assessment."""
         stage = StageResult(stage_num=3, stage_name="synthesis", status="running",
                             started_at=datetime.utcnow().isoformat())
@@ -536,6 +554,20 @@ class GenesisRound:
                     summary += f" | Fatal flaw: {crit.fatal_flaw}"
                 summary += "\n"
             summary += "\n"
+
+        # Include DA Defense results if available
+        if da_defense_results:
+            summary += "\nDA DEFENSE RESULTS:\n\n"
+            for d in da_defense_results:
+                summary += f"**{d.persona_name}** defending '{d.concept_name}':\n"
+                summary += f"  DA's Fatal Flaw: {d.da_challenge.get('fatal_flaw', 'N/A')}\n"
+                summary += f"  Defense: {d.defense_text[:300]}\n"
+                summary += f"  DA Verdict: {d.verdict}\n"
+                if d.verdict_details:
+                    summary += f"  Verdict Details: {d.verdict_details}\n"
+                if d.revised_score is not None:
+                    summary += f"  DA Revised Score: {d.revised_score}/10\n"
+                summary += "\n"
 
         # Moderator query
         mod = self.config.moderator
@@ -636,6 +668,12 @@ class GenesisRound:
             print(f"[SimError] Stage 4 Refinement — OpenRouter timeout after 5 min")
             responses = [None] * len(queries)
 
+        # Build map of existing concepts by persona for version chaining
+        existing_by_persona = {}
+        for c in concepts:
+            if c.persona_id not in existing_by_persona and c.status == "active":
+                existing_by_persona[c.persona_id] = c
+
         refined_concepts = []
         for pid, response in zip(participant_ids, responses):
             pconfig = self.config.participants[pid]
@@ -643,6 +681,28 @@ class GenesisRound:
                 concepts_parsed = OutputParser.parse_concept(
                     response["content"], pid, pconfig.display_name, self.round_num
                 )
+                # Chain new concepts to their previous versions
+                old_concept = existing_by_persona.get(pid)
+                for new_concept in concepts_parsed:
+                    if old_concept:
+                        # Snapshot old concept as a version entry
+                        snapshot = ConceptVersion(
+                            round_num=old_concept.round_created,
+                            stage="pre_refinement",
+                            name=old_concept.name,
+                            headline=old_concept.headline,
+                            tagline=old_concept.tagline,
+                            idea=old_concept.idea,
+                            visual_direction=old_concept.visual_direction,
+                            evolution_notes=old_concept.evolution_notes,
+                            score=max(old_concept.scores.values()) if old_concept.scores else None,
+                            timestamp=datetime.utcnow().isoformat(),
+                        )
+                        # Copy version chain from old concept + add new snapshot
+                        new_concept.versions = list(old_concept.versions) + [snapshot]
+                        new_concept.previous_version_id = old_concept.id
+                        # Copy accumulated scores from old concept
+                        new_concept.scores = dict(old_concept.scores)
                 refined_concepts.extend(concepts_parsed)
 
         stage.outputs = refined_concepts
@@ -724,6 +784,197 @@ class GenesisRound:
             scores = [c.score for c in critiques if c.concept_id == concept.id]
             if scores:
                 concept.scores[self.round_num] = sum(scores) / len(scores)
+
+    async def _stage_da_defense(self, concepts: List[Concept],
+                                 da_critiques: List[Critique],
+                                 on_participant_event: Optional[Callable] = None) -> StageResult:
+        """DA Defense: Creatives defend against DA challenges, DA issues individual verdicts."""
+        stage = StageResult(stage_num=2, stage_name="da_defense", status="running",
+                            started_at=datetime.utcnow().isoformat())
+
+        da = self.config.devils_advocate
+        if not da:
+            stage.status = "skipped"
+            stage.completed_at = datetime.utcnow().isoformat()
+            return stage
+
+        # Group DA critiques by concept_id
+        da_by_concept = {}
+        for crit in da_critiques:
+            if crit.critic_id == "devils-advocate" and crit.concept_id:
+                da_by_concept[crit.concept_id] = crit
+
+        if not da_by_concept:
+            stage.status = "skipped"
+            stage.completed_at = datetime.utcnow().isoformat()
+            return stage
+
+        # Phase 1: Get defenses from each creative
+        defense_queries = []
+        defense_pids = []
+        defense_concept_ids = []
+        for concept in concepts:
+            if concept.status != "active" or concept.id not in da_by_concept:
+                continue
+
+            pid = concept.persona_id
+            pconfig = self.config.participants.get(pid)
+            if not pconfig:
+                continue
+
+            da_crit = da_by_concept[concept.id]
+
+            system_prompt = self.soul_engine.compile_system_prompt(
+                persona_id=pid,
+                persona_name=pconfig.display_name,
+                stage=2,
+                round_num=self.round_num,
+                brief=self.config.brief,
+                context=self.config.brand_context,
+            )
+
+            defense_prompt = (
+                f"THE ADVOCATUS DIABOLI HAS CHALLENGED YOUR CONCEPT.\n\n"
+                f"YOUR CONCEPT: \"{concept.name}\"\n"
+                f"HEADLINE: {concept.headline}\n"
+                f"IDEA: {concept.idea[:300]}\n\n"
+                f"THE DA'S ATTACK:\n"
+                f"- Score: {da_crit.score}/10\n"
+                f"- Fatal Flaw: {da_crit.fatal_flaw}\n"
+                f"- Weaknesses: {'; '.join(da_crit.weaknesses)}\n"
+                f"- Demanded Change: {da_crit.one_change}\n\n"
+                f"DEFEND your concept. Address each point:\n"
+                f"1. Is the fatal flaw actually fatal, or can you counter it?\n"
+                f"2. For each weakness — accept it and explain how you'll fix it, or explain why the DA is wrong.\n"
+                f"3. Will you make the demanded change? Why or why not?\n\n"
+                f"Be specific and honest. If the DA found a real flaw, own it and show how you'll fix it. 200-400 words max."
+            )
+
+            query = {
+                "model": pconfig.model,
+                "system_prompt": system_prompt,
+                "user_prompt": defense_prompt,
+                "temperature": 0.4,
+                "max_tokens": pconfig.max_tokens,
+                **_build_query_extras(pconfig),
+            }
+            defense_queries.append(query)
+            defense_pids.append(pid)
+            defense_concept_ids.append(concept.id)
+
+        if not defense_queries:
+            stage.status = "skipped"
+            stage.completed_at = datetime.utcnow().isoformat()
+            return stage
+
+        # Emit thinking events
+        if on_participant_event:
+            for pid in defense_pids:
+                pconfig = self.config.participants.get(pid)
+                if pconfig:
+                    await _maybe_await(on_participant_event, "thinking", pid, pconfig.display_name, "da_defense")
+
+        print(f"[Sim] R{self.round_num} DA Defense — {len(defense_queries)} creatives defending")
+        try:
+            defense_responses = await asyncio.wait_for(
+                query_with_soul_parallel(defense_queries), timeout=300
+            )
+        except asyncio.TimeoutError:
+            print(f"[SimError] DA Defense — timeout after 5 min")
+            defense_responses = [None] * len(defense_queries)
+
+        # Build defense results
+        defense_results = []
+        for pid, concept_id, response in zip(defense_pids, defense_concept_ids, defense_responses):
+            pconfig = self.config.participants.get(pid)
+            concept = next((c for c in concepts if c.id == concept_id), None)
+            da_crit = da_by_concept.get(concept_id)
+
+            defense_text = response.get("content", "") if response else ""
+
+            result = DADefenseResult(
+                concept_id=concept_id,
+                concept_name=concept.name if concept else "?",
+                persona_id=pid,
+                persona_name=pconfig.display_name if pconfig else pid,
+                defense_text=defense_text,
+                da_challenge={
+                    "fatal_flaw": da_crit.fatal_flaw if da_crit else "",
+                    "weaknesses": da_crit.weaknesses if da_crit else [],
+                    "one_change": da_crit.one_change if da_crit else "",
+                    "score": da_crit.score if da_crit else 0,
+                },
+            )
+            defense_results.append(result)
+
+            if on_participant_event and pconfig:
+                await _maybe_await(on_participant_event, "response", pid, pconfig.display_name, "da_defense")
+
+        # Phase 2: DA issues individual verdicts (one per concept to avoid position bias)
+        da_system = self.soul_engine.compile_devils_advocate_prompt(
+            persona_name=da.display_name,
+            round_num=self.round_num,
+            brief=self.config.brief,
+            context=self.config.brand_context,
+        )
+
+        verdict_queries = []
+        for d in defense_results:
+            if not d.defense_text:
+                continue
+            verdict_prompt = (
+                f"You challenged the concept '{d.concept_name}' by {d.persona_name}.\n\n"
+                f"YOUR ORIGINAL CHALLENGE:\n"
+                f"- Fatal Flaw: {d.da_challenge.get('fatal_flaw', '')}\n"
+                f"- Demanded Change: {d.da_challenge.get('one_change', '')}\n\n"
+                f"THEIR DEFENSE:\n{d.defense_text[:600]}\n\n"
+                f"Issue your VERDICT in this exact format:\n"
+                f"VERDICT: defense accepted OR defense insufficient\n"
+                f"DETAILS: [2-3 sentences explaining why]\n"
+                f"REVISED_SCORE: [1-10, your updated score after hearing the defense]"
+            )
+            verdict_queries.append({
+                "model": da.model,
+                "system_prompt": da_system,
+                "user_prompt": verdict_prompt,
+                "temperature": 0.3,
+                "max_tokens": 500,
+                **_build_query_extras(da),
+            })
+
+        if verdict_queries:
+            print(f"[Sim] R{self.round_num} DA Verdicts — {len(verdict_queries)} verdicts to issue")
+            try:
+                verdict_responses = await asyncio.wait_for(
+                    query_with_soul_parallel(verdict_queries), timeout=300
+                )
+            except asyncio.TimeoutError:
+                print(f"[SimError] DA Verdicts — timeout after 5 min")
+                verdict_responses = [None] * len(verdict_queries)
+
+            # Parse verdicts and attach to defense results
+            vi = 0
+            for d in defense_results:
+                if not d.defense_text:
+                    continue
+                if vi < len(verdict_responses) and verdict_responses[vi]:
+                    vtext = verdict_responses[vi].get("content", "")
+                    # Parse VERDICT: line
+                    verdict_match = re.search(r'VERDICT:\s*(.+)', vtext, re.IGNORECASE)
+                    d.verdict = verdict_match.group(1).strip() if verdict_match else vtext[:100]
+                    # Parse DETAILS: line
+                    details_match = re.search(r'DETAILS:\s*(.+?)(?=\nREVISED_SCORE:|\Z)', vtext, re.IGNORECASE | re.DOTALL)
+                    d.verdict_details = details_match.group(1).strip() if details_match else ""
+                    # Parse REVISED_SCORE: line
+                    score_match = re.search(r'REVISED_SCORE:\s*(\d+)', vtext, re.IGNORECASE)
+                    if score_match:
+                        d.revised_score = max(1, min(10, int(score_match.group(1))))
+                vi += 1
+
+        stage.outputs = defense_results
+        stage.status = "complete"
+        stage.completed_at = datetime.utcnow().isoformat()
+        return stage
 
 
 # ---------------------------------------------------------------------------
@@ -1026,6 +1277,23 @@ class GenesisSimulation:
                     "evolution_notes": getattr(c, "evolution_notes", ""),
                 }
                 for c in result.outputs
+            ]
+        elif stage_name == "da_defense" and result.outputs:
+            outputs = result.outputs if isinstance(result.outputs, list) else [result.outputs]
+            entry["da_defenses"] = [
+                {
+                    "concept_id": getattr(d, "concept_id", ""),
+                    "concept_name": getattr(d, "concept_name", ""),
+                    "persona_id": getattr(d, "persona_id", ""),
+                    "persona_name": getattr(d, "persona_name", ""),
+                    "defense_text": getattr(d, "defense_text", ""),
+                    "da_challenge": getattr(d, "da_challenge", {}),
+                    "verdict": getattr(d, "verdict", ""),
+                    "verdict_details": getattr(d, "verdict_details", ""),
+                    "revised_score": getattr(d, "revised_score", None),
+                }
+                for d in outputs
+                if hasattr(d, "concept_id")
             ]
         elif stage_name == "presentation" and result.outputs:
             outputs = result.outputs if isinstance(result.outputs, list) else [result.outputs]

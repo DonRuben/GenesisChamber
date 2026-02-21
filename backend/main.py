@@ -28,6 +28,10 @@ from .config import (
     SIMULATION_OUTPUT_DIR, TEAMS, PERSONA_TEAMS, OPENROUTER_API_KEY, UPLOADS_DIR,
 )
 from .output_engine import OutputEngine
+from .da_training import (
+    extract_da_interactions, save_interactions_to_state, load_interactions_from_state,
+    save_rating as da_save_rating, generate_training_report, generate_refinement_suggestions,
+)
 from .image_generator import ImageGenerator
 from .video_generator import VideoGenerator, VIDEO_QUALITY_TIERS
 from .database import DatabasePool, UploadDB, is_db_available, ensure_schema
@@ -936,6 +940,78 @@ async def export_production_markdown(sim_id: str):
         media_type="text/markdown",
         headers={"Content-Disposition": f'attachment; filename="production-{sim_id}.md"'},
     )
+
+
+# === DA TRAINING / ARENA ENDPOINTS ===
+
+
+class DARatingRequest(BaseModel):
+    interaction_id: str
+    rating: str  # "brilliant", "effective", "weak", "unfair"
+    notes: str = ""
+
+
+@app.post("/api/simulation/{sim_id}/da/extract")
+async def extract_da(sim_id: str):
+    """Extract DA interactions from a completed simulation for review."""
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    interactions = extract_da_interactions(state)
+    save_interactions_to_state(state, interactions)
+    await simulation_store.save_state_async(state)
+    return {"count": len(interactions), "interactions": [i.dict() for i in interactions]}
+
+
+@app.get("/api/simulation/{sim_id}/da/interactions")
+async def get_da_interactions(sim_id: str):
+    """Get all DA interactions for review."""
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    interactions = load_interactions_from_state(state)
+    return {"interactions": [i.dict() for i in interactions]}
+
+
+@app.post("/api/simulation/{sim_id}/da/rate")
+async def rate_da_interaction(sim_id: str, req: DARatingRequest):
+    """Rate a DA interaction: brilliant, effective, weak, unfair."""
+    valid_ratings = ("brilliant", "effective", "weak", "unfair")
+    if req.rating not in valid_ratings:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Rating must be one of: {', '.join(valid_ratings)}"
+        )
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+
+    found = da_save_rating(state, req.interaction_id, req.rating, req.notes)
+    if not found:
+        raise HTTPException(status_code=404, detail="Interaction not found")
+
+    await simulation_store.save_state_async(state)
+    return {"status": "saved", "interaction_id": req.interaction_id, "rating": req.rating}
+
+
+@app.get("/api/simulation/{sim_id}/da/training")
+async def get_training_data(sim_id: str):
+    """Get aggregated training data from reviewed DA interactions."""
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    report = generate_training_report(state)
+    return report
+
+
+@app.get("/api/simulation/{sim_id}/da/suggestions")
+async def get_da_suggestions(sim_id: str):
+    """Get soul refinement suggestions based on reviewed DA interactions."""
+    state = simulation_store.load_state(sim_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    suggestions = generate_refinement_suggestions(state)
+    return {"suggestions": suggestions}
 
 
 # === OUTPUT & MEDIA ENDPOINTS ===

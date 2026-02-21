@@ -41,6 +41,20 @@ class SimulationConfig(BaseModel):
 
 # --- Concept Lifecycle Models ---
 
+class ConceptVersion(BaseModel):
+    """Snapshot of a concept at a specific round/stage before refinement."""
+    round_num: int
+    stage: str = ""  # "creation", "refinement"
+    name: str = ""
+    headline: str = ""
+    tagline: str = ""
+    idea: str = ""
+    visual_direction: str = ""
+    evolution_notes: str = ""
+    score: Optional[float] = None
+    timestamp: str = ""
+
+
 class Concept(BaseModel):
     """A single creative concept produced by a participant."""
     id: str
@@ -63,6 +77,8 @@ class Concept(BaseModel):
     status: Literal["active", "eliminated", "merged", "winner", "runner_up"] = "active"
     scores: Dict[int, float] = {}  # round_num -> avg score
     raw_text: str = ""  # Full LLM output for fallback
+    versions: List[ConceptVersion] = []  # Version history (snapshots before each refinement)
+    previous_version_id: Optional[str] = None  # Links to prior version's concept ID
 
 
 class Critique(BaseModel):
@@ -102,6 +118,19 @@ class EvaluatorAssessment(BaseModel):
     raw_text: str = ""
 
 
+class DADefenseResult(BaseModel):
+    """Result of a creative's defense against a Devil's Advocate challenge."""
+    concept_id: str
+    concept_name: str
+    persona_id: str
+    persona_name: str
+    defense_text: str = ""
+    da_challenge: Dict[str, Any] = {}  # The original DA critique data
+    verdict: str = ""  # "defense accepted" or "defense insufficient"
+    verdict_details: str = ""
+    revised_score: Optional[int] = None
+
+
 # --- Round & Stage Models ---
 
 class StageResult(BaseModel):
@@ -125,6 +154,37 @@ class RoundResult(BaseModel):
     concepts_eliminated: int = 0
 
 
+# --- DA Training Models ---
+
+class DAInteraction(BaseModel):
+    """A single DA interaction for review in DA Arena."""
+    id: str
+    simulation_id: str
+    round_num: int
+    concept_name: str
+    concept_id: str = ""
+    concept_persona: str
+    # DA's attack
+    da_score: int = 5
+    da_fatal_flaw: str = ""
+    da_weaknesses: List[str] = []
+    da_strengths_conceded: List[str] = []
+    da_one_change: str = ""
+    # Defense (from DA Defense stage)
+    defense_text: str = ""
+    da_verdict: str = ""
+    da_verdict_details: str = ""
+    da_revised_score: Optional[int] = None
+    # Creative response (from evolution notes)
+    creative_response: str = ""
+    response_addressed_flaw: bool = False
+    # Human rating
+    rating: Optional[str] = None  # "brilliant", "effective", "weak", "unfair"
+    user_notes: str = ""
+    reviewed: bool = False
+    reviewed_at: Optional[str] = None
+
+
 # --- Simulation State ---
 
 class SimulationState(BaseModel):
@@ -143,6 +203,8 @@ class SimulationState(BaseModel):
     quality_gates: List[Dict[str, Any]] = []
     transcript_entries: List[Dict[str, Any]] = []
     event_log: List[Dict[str, Any]] = []
+    da_interactions: List[Dict[str, Any]] = []  # DA Arena interaction data
+    da_ratings: Dict[str, Dict[str, Any]] = {}  # interaction_id -> rating data
     archived: bool = False
 
 
