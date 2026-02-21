@@ -1,6 +1,6 @@
 # CLAUDE.md - Technical Notes for Genesis Chamber
 
-This file contains technical details, architectural decisions, and important implementation notes for future development sessions. **Last updated: 2026-02-21.**
+This file contains technical details, architectural decisions, and important implementation notes for future development sessions. **Last updated: 2026-02-21. V3.5 Model Strategy + DA Dashboard.**
 
 ## Project Overview
 
@@ -33,6 +33,14 @@ A 5-stage (+ optional DA Defense), multi-round simulation engine with:
   - Simulation starring with localStorage persistence
   - Scope-based image generation (active/all/winner) with compare view
   - Cinematic 4-act reveal.js presentations (Sora font, embedded media, score evolution)
+- **V3.5 Model Strategy + DA Dashboard:**
+  - 20 models across 4 tiers (Premium, Balanced, Efficient, Budget) — 11 new models added
+  - Role-based model assignment — Opus only for Moderator, Sonnet for Evaluator, Grok for DA
+  - New providers: DeepSeek, Mistral, Moonshot, MiniMax, NVIDIA, Alibaba
+  - DA Command Center — launcher config panel (aggression level, attack focus, training status)
+  - DA Overview dashboard tab — per-round attack/defense/verdict display with summary stats
+  - Enriched DA soul bio ("The Promoter of the Faith")
+  - ~50% cost savings per simulation via optimized model assignments
 
 ## Architecture: Three Engines
 
@@ -79,7 +87,7 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 |---------|-------|-------|-------|
 | David Ogilvy | `google/gemini-3-pro` | 1377 | #F59E0B |
 | Claude Hopkins | `anthropic/claude-sonnet-4.6` | 1338 | #3B82F6 |
-| Leo Burnett | `openai/gpt-5.2` | 1277 | #10B981 |
+| Leo Burnett | `openai/gpt-5.1` | 1277 | #10B981 |
 | Mary Wells Lawrence | `meta-llama/llama-4-maverick` | 1158 | #EC4899 |
 | Gary Halbert | `x-ai/grok-4` | 1002 | #EF4444 |
 
@@ -87,7 +95,7 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 | Persona | Model | Lines | Color |
 |---------|-------|-------|-------|
 | Paul Rand | `google/gemini-3-pro` | 918 | #8B5CF6 |
-| Paula Scher | `openai/gpt-5.2` | 827 | #F97316 |
+| Paula Scher | `openai/gpt-5.1` | 827 | #F97316 |
 | Saul Bass | `anthropic/claude-sonnet-4.6` | 996 | #DC2626 |
 | Susan Kare | `meta-llama/llama-4-maverick` | 811 | #06B6D4 |
 | Rob Janoff | `x-ai/grok-4` | 1210 | #A3E635 |
@@ -97,21 +105,21 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 | Persona | Model | Lines | Color |
 |---------|-------|-------|-------|
 | Elon Musk | `x-ai/grok-4` | 690 | #1DA1F2 |
-| Jeff Bezos | `google/gemini-3-pro` | 442 | #FF9900 |
-| Warren Buffett | `anthropic/claude-sonnet-4.6` | 477 | #374151 |
-| Richard Branson | `openai/gpt-5.2` | 402 | #E11D48 |
-| Dietrich Mateschitz | `meta-llama/llama-4-maverick` | 399 | #1E40AF |
+| Jeff Bezos | `anthropic/claude-sonnet-4.6` | 442 | #FF9900 |
+| Warren Buffett | `google/gemini-3-pro` | 477 | #374151 |
+| Richard Branson | `meta-llama/llama-4-maverick` | 402 | #E11D48 |
+| Dietrich Mateschitz | `deepseek/deepseek-v3.2` | 399 | #1E40AF |
 
 ### Leadership (flexible assignment)
 | Persona | Default Role | Model | Lines | Color |
 |---------|-------------|-------|-------|-------|
 | Steve Jobs | Moderator | `anthropic/claude-opus-4-6` | 1029 | #6B7280 |
-| Jony Ive | Evaluator | `anthropic/claude-opus-4-6` | 735 | #9CA3AF |
+| Jony Ive | Evaluator | `anthropic/claude-sonnet-4.6` | 735 | #9CA3AF |
 
 ### Special Roles
 | Persona | Role | Model | Lines | Color |
 |---------|------|-------|-------|-------|
-| Advocatus Diaboli | Devil's Advocate (optional) | `anthropic/claude-sonnet-4.6` | 542 | #DC2626 |
+| Advocatus Diaboli | Devil's Advocate (optional) | `x-ai/grok-4` | 542 | #DC2626 |
 
 ## Backend Structure (`backend/`)
 
@@ -122,9 +130,10 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - `CHAIRMAN_MODEL`: `google/gemini-3-pro`
 - `TEAMS`: 5 divisions (marketing, design, business, leadership, custom)
 - `PERSONA_TEAMS` / `PERSONA_COLORS`: Full mapping for all 19 personas
-- `DEFAULT_PARTICIPANTS`: 16 participant configs with model/soul/temperature/color
-- `DEFAULT_MODERATOR` / `DEFAULT_EVALUATOR`: Steve Jobs / Jony Ive on Claude Opus 4.6
-- `DEFAULT_DEVILS_ADVOCATE`: Advocatus Diaboli on Claude Sonnet 4.6
+- `DEFAULT_PARTICIPANTS`: 16 participant configs with model/soul/temperature/color (V3.5: role-based cost/quality assignments across 7 providers)
+- `DEFAULT_MODERATOR`: Steve Jobs on Claude Opus 4.6 (ONLY Opus usage — elimination decisions need deep reasoning)
+- `DEFAULT_EVALUATOR`: Jony Ive on Claude Sonnet 4.6 (V3.5: downgraded from Opus — structured scoring)
+- `DEFAULT_DEVILS_ADVOCATE`: Advocatus Diaboli on Grok 4 (V3.5: naturally adversarial, replaces Claude Sonnet)
 - `SIMULATION_PRESETS`: 4 presets (quick_test, message_lab, genesis_chamber, assembly_line)
 - `ROUND_MODES`: diverge -> converge -> deepen -> gladiator -> polish -> spec
 - Environment variables: `OPENROUTER_API_KEY`, `DATABASE_URL`, `FAL_KEY`, `ELEVENLABS_API_KEY`
@@ -149,6 +158,8 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 - V3: `GET /api/prompt-bible/strategies` — all model prompt strategies for UI display
 - V3: `POST /api/prompt-bible/optimize` — preview prompt optimization for a concept
 - V3: `GenerateImagesRequest.scope`: `"winner"` | `"active"` | `"all"` — controls which concepts get images generated
+- V3.5: `GET /api/config/models` — 4 tiers (Premium, Balanced, Efficient, Budget) with 20 models across 7 providers
+- V3.5: `GET /api/config/participants` — now includes `da_training_summary` (total_rated, training_level, last_trained)
 
 **`simulation.py`** — Core 5-stage engine (+ optional DA Defense)
 - `OutputParser`: 3-tier structured output parsing (strict delimiters -> loose extraction -> raw fallback)
@@ -165,7 +176,7 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 
 **`models.py`** — Pydantic schemas
 - `ParticipantConfig`: model, soul_document, role, temperature, thinking_mode, enable_web_search, color
-- `SimulationConfig`: name, type, rounds, stages_per_round, participants, moderator, evaluator, devils_advocate, elimination_schedule, quality_gates, brief, brand_context
+- `SimulationConfig`: name, type, rounds, stages_per_round, participants, moderator, evaluator, devils_advocate, da_aggression_level (V3.5), da_attack_focus (V3.5), elimination_schedule, quality_gates, brief, brand_context
 - `ConceptVersion`: Snapshot of concept at specific round/stage (name, headline, tagline, idea, visual_direction, evolution_notes, score, timestamp)
 - `Concept`: Full creative concept with 14 fields + scores + status lifecycle + `versions: List[ConceptVersion]` + `previous_version_id: Optional[str]`
 - `Critique`: Anonymized peer review with score, strengths, weaknesses, fatal_flaw
@@ -426,6 +437,11 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 **V3 — Overview & Archive:**
 - `SimulationOverview.jsx` + `SimulationOverview.css` — Case study overview tab (first in dashboard). Sections: header (name, type, date, status), brief card with CopyButton, brand context, participants grid (moderator/evaluator/DA + creatives with color-coded borders), results (winner/runner-up/stats), media gallery preview (first 5 images with `getMediaUrl()` local preference)
 
+**V3.5 — DA Command Center:**
+- `SimulationLauncher.jsx` — DA section expanded to full config panel when enabled: soul profile card, model selector, aggression level selector (analytical/aggressive/ruthless), training status display (interactions rated, level, last date), attack focus checkboxes (6 areas)
+- `SimulationDashboard.jsx` — `DAOverview` inline component: "Devil's Advocate" tab between Direction and Transcript. Shows DA attacks, defenses, verdicts per round per concept. Summary stats (total attacks, defenses, survived, fell). Conditional on `hasDA`
+- `soulBios.js` — Enriched devils-advocate bio: "The Promoter of the Faith", three-phase attack process, Sanhedrin Principle
+
 ## Key Design Decisions
 
 ### Five-Stage Round System (+ Optional DA Defense)
@@ -436,24 +452,39 @@ SOUL ENGINE -> COUNCIL ENGINE -> OUTPUT ENGINE
 5. **REFINE** — Directed revision based on feedback (with concept version chaining)
 6. **PRESENT** — Group presentation with moderator reaction
 
-### Multi-Model Cognitive Diversity
+### Multi-Model Cognitive Diversity (V3.5: 4 Tiers, 20 Models, 7 Providers)
 Different LLMs assigned for different cognitive profiles via OpenRouter:
-- **Tier 1 Premium**: `anthropic/claude-opus-4-6` ($15/M), `openai/gpt-5.2` ($15/M), `google/gemini-3-pro` ($7/M, 2M context)
-- **Tier 2 Balanced**: `anthropic/claude-sonnet-4.6` ($3/M), `x-ai/grok-4` ($3/M)
-- **Tier 3 Efficient**: `meta-llama/llama-4-maverick` ($0.50/M), `anthropic/claude-haiku-4.5` ($0.25/M)
+- **Tier 1 Premium**: `anthropic/claude-opus-4-6` ($15/M), `openai/gpt-5.2` ($15/M), `openai/gpt-5.1` ($5/M), `google/gemini-3-pro` ($7/M, 2M context)
+- **Tier 2 Balanced**: `anthropic/claude-sonnet-4.6` ($3/M, 1M context), `x-ai/grok-4` ($3/M), `x-ai/grok-4.1` ($3/M), `mistralai/mistral-large` ($2/M)
+- **Tier 3 Efficient**: `meta-llama/llama-4-maverick` ($0.50/M), `anthropic/claude-haiku-4.5` ($0.25/M), `deepseek/deepseek-v3.2` ($0.28/M), `deepseek/deepseek-r1` ($0.55/M), `google/gemini-3-flash` ($0.10/M, 1M), `qwen/qwen-3-235b` ($0.30/M)
+- **Tier 4 Budget** (V3.5): `moonshot/kimi-k2.5` ($0.10/M), `minimax/minimax-m2.5` ($0.15/M), `nvidia/llama-3.3-nemotron` (free)
+
+### Role-Based Model Strategy (V3.5)
+- **Moderator** (Steve Jobs): Claude Opus 4.6 — ONLY Opus usage. Elimination decisions need deep reasoning
+- **Evaluator** (Jony Ive): Claude Sonnet 4.6 — structured scoring, downgraded from Opus ($10/M savings)
+- **Devil's Advocate**: Grok 4 — naturally adversarial. Claude models pull punches in adversarial mode
+- **Participants**: Mix of Gemini 3 Pro (4), Sonnet 4.6 (3), GPT-5.1 (2), Grok 4 (3), Llama 4 (3), DeepSeek V3.2 (1)
+- Cost: ~$5-10/simulation (old: $15-25) — ~50% savings
+
+### Web Search Cost/Behavior (V3.5)
+- OpenRouter charges ~$0.005/query. With 19 participants x 5 stages x 8 rounds = ~760 potential searches = ~$3.80/simulation
+- Model decides whether to search (self-regulating). Enable for real-brand briefs, disable for abstract creative
+- Grok 4 has native X.com search integration
 
 ### Flexible Leadership System
 - **Any soul can be moderator or evaluator** — selected via dropdown in SimulationLauncher
-- Defaults: Steve Jobs (moderator), Jony Ive (evaluator) on Claude Opus 4.6
+- Defaults: Steve Jobs (moderator) on Claude Opus 4.6, Jony Ive (evaluator) on Claude Sonnet 4.6
 - **Dual-role toggle**: Leadership personas can simultaneously participate as creative contributors
 - Cross-team membership: Jobs `cross_teams: ["marketing"]`, Ive `cross_teams: ["design", "marketing"]`
 
 ### Devil's Advocate (Advocatus Diaboli)
 - Optional per-simulation toggle (542-line soul document)
+- Default model: Grok 4 (V3.5) — naturally provocative, better adversarial voice than Claude
 - Based on the Catholic canonization process (Pope Sixtus V, 1587)
 - Scores concepts 1-2 points lower — the standard is real-world survival
 - Identifies hidden assumptions and specific failure scenarios for every concept
 - **Sanhedrin Principle**: If all critics agree, that agreement itself is suspicious
+- V3.5: Configurable aggression level (analytical/aggressive/ruthless) and attack focus areas
 - Every criticism must include what would fix the problem
 - Ends critiques with: "This concept earns canonization if it can answer: [specific challenge]"
 
@@ -464,6 +495,12 @@ Different LLMs assigned for different cognitive profiles via OpenRouter:
 - Sub-stage numbering: `stage_name="da_defense"`, `stage_num=2` — avoids breaking `RoundProgress.jsx` array indexing
 - Results passed to `_stage_synthesis()` so moderator sees full defense/verdict context
 - Full defense cycle recorded in transcript via `_add_transcript()` handler
+
+### DA Command Center (V3.5)
+- **Launcher Config Panel**: When DA enabled, expands to show: soul profile, model selector (default Grok 4), aggression level (analytical/aggressive/ruthless), training status (rated count, level, last date), attack focus (6 checkboxes)
+- **Dashboard Overview Tab**: "Devil's Advocate" tab between Direction and Transcript. Extracts DA critiques + defense results from transcript. Per-round cards: attack (fatal flaw, demanded change, score) + defense (text, verdict, revised score). Summary stats bar: attacks, defenses, survived, fell
+- **Config Fields**: `SimulationConfig.da_aggression_level` (Literal), `SimulationConfig.da_attack_focus` (List[str])
+- **Training Stats Endpoint**: `GET /api/config/participants` includes `da_training_summary` — aggregates rated DA interactions across all simulations
 
 ### DA Arena (Post-Simulation Review)
 - **Backend** (`da_training.py`): Extract DA interactions from transcript, rate them, generate training reports + soul refinement suggestions
