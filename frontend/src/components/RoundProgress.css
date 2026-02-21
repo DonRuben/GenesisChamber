@@ -98,10 +98,10 @@
 /* ── Mode Label ── */
 .round-node-mode {
   font-family: var(--font-data);
-  font-size: 9px;
+  font-size: max(10px, 0.65rem);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.03em;
   color: var(--text-muted);
   margin-top: 4px;
 }

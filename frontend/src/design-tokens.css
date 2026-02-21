@@ -428,3 +428,17 @@
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
+
+
+/* =============================================
+   V3.8 READABILITY FIXES
+   Minimum sizes, contrast, letter-spacing.
+   No layout changes — only size and contrast.
+   ============================================= */
+
+/* Badge minimum readability */
+.gc-badge {
+  font-size: max(10px, 0.65rem);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
