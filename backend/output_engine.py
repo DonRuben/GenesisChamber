@@ -127,7 +127,21 @@ class OutputEngine:
                 for c in entry["concepts"]:
                     entries_html += f'<div class="concept-entry"><strong>{c.get("persona", "?")}:</strong> {c.get("name", "")} — {c.get("idea", "")}</div>'
 
-            if entry.get("critiques_count"):
+            if entry.get("critiques"):
+                for crit in entry["critiques"]:
+                    da_class = ' style="border-left:3px solid #DC2626;padding-left:8px;margin:4px 0;"' if crit.get("is_devils_advocate") else ""
+                    da_badge = '<span style="background:rgba(220,38,38,0.15);color:#DC2626;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:6px;">DA</span>' if crit.get("is_devils_advocate") else ""
+                    score = crit.get("score", 0)
+                    score_color = "#10B981" if score >= 7 else "#F59E0B" if score >= 5 else "#EF4444"
+                    entries_html += f'<div class="detail"{da_class}>'
+                    entries_html += f'<strong>{html.escape(crit.get("critic_name", "?"))}</strong>{da_badge} '
+                    entries_html += f'on {html.escape(crit.get("concept_label", "?"))} — '
+                    entries_html += f'<span style="color:{score_color}">{crit.get("score", "?")}/10</span>'
+                    if crit.get("fatal_flaw") and str(crit["fatal_flaw"]).upper() != "NONE":
+                        entries_html += f'<br><em>Fatal: {html.escape(str(crit["fatal_flaw"]))}</em>'
+                    entries_html += '</div>'
+            elif entry.get("critiques_count"):
+                # Backward compat for old simulations
                 entries_html += f'<div class="detail">{entry["critiques_count"]} critiques submitted</div>'
 
             if entry.get("direction"):
@@ -624,52 +638,272 @@ h2 {{ font-size:20px; color:var(--teal); margin:32px 0 16px; padding-bottom:8px;
         return "\n".join(lines)
 
     def generate_markdown_round(self, state: SimulationState, round_num: int) -> str:
-        """Generate markdown for one specific round."""
+        """Generate comprehensive markdown for one round — all stages, all data."""
         lines = [f"# Round {round_num}", ""]
 
-        # Round result info
+        # Round metadata
         rnd = next((r for r in state.rounds if r.round_num == round_num), None)
         if rnd:
-            lines.append(f"**Mode:** {rnd.mode}  ")
+            mode_label = rnd.mode.upper() if rnd.mode else "UNKNOWN"
+            lines.append(f"**Mode:** {mode_label}  ")
             lines.append(f"**Status:** {rnd.status}  ")
-            lines.append(f"**Concepts Created:** {rnd.concepts_created}  ")
+            lines.append(f"**Concepts This Round:** {rnd.concepts_created}  ")
             lines.append(f"**Surviving:** {rnd.concepts_surviving}  ")
             lines.append(f"**Eliminated:** {rnd.concepts_eliminated}  ")
             lines.append("")
 
-        # Concepts created in this round
         all_concepts = state.concepts.get("active", []) + state.concepts.get("eliminated", []) + state.concepts.get("merged", [])
+
+        # --- STAGE 1: CONCEPTS ---
+        # Show concepts that were created OR refined in this round
         round_concepts = [c for c in all_concepts if c.round_created == round_num]
+
+        # Also find concepts refined this round (from transcript)
+        refined_this_round = []
+        for entry in state.transcript_entries:
+            if entry.get("round") == round_num and entry.get("refined_concepts"):
+                refined_this_round = entry["refined_concepts"]
 
         if round_concepts:
             lines.append("## Concepts")
             for c in round_concepts:
                 lines.append(self._concept_to_md(c))
+                lines.append("")
                 lines.append("---")
                 lines.append("")
 
-        # Critiques from this round
+        if refined_this_round and not round_concepts:
+            lines.append("## Refined Concepts")
+            for rc in refined_this_round:
+                lines.append(f"### {rc.get('name', 'Untitled')}")
+                lines.append(f"**By:** {rc.get('persona', '?')}  ")
+                if rc.get("headline"):
+                    lines.append(f"**Headline:** {rc['headline']}  ")
+                if rc.get("evolution"):
+                    lines.append(f"**Changes:** {rc['evolution']}")
+                lines.append("")
+                lines.append("---")
+                lines.append("")
+
+        # --- STAGE 2: CRITIQUES ---
         round_crits = []
         for entry in state.transcript_entries:
             if entry.get("round") == round_num and entry.get("critiques"):
                 round_crits.extend(entry["critiques"])
 
         if round_crits:
-            lines.append("## Critiques")
-            for crit in round_crits:
-                lines.append(f"### {crit.get('critic_name', 'Anon')} on {crit.get('concept_label', '?')} — {crit.get('score', '?')}/10")
-                if crit.get("strengths"):
-                    for s in crit["strengths"]:
-                        lines.append(f"- (+) {s}")
-                if crit.get("weaknesses"):
-                    for w in crit["weaknesses"]:
-                        lines.append(f"- (-) {w}")
-                lines.append("")
+            # Separate peer critiques from Devil's Advocate
+            peer = [c for c in round_crits if not c.get("is_devils_advocate")]
+            da = [c for c in round_crits if c.get("is_devils_advocate")]
 
-        # Direction from this round
+            if peer:
+                lines.append(f"## Peer Critiques")
+                lines.append("")
+                for crit in peer:
+                    label = crit.get("concept_label", "?")
+                    lines.append(f"### {crit.get('critic_name', 'Anonymous')} \u2192 {label} \u2014 {crit.get('score', '?')}/10")
+                    if crit.get("strengths"):
+                        lines.append("**Strengths:**")
+                        for s in crit["strengths"]:
+                            lines.append(f"- {s}")
+                    if crit.get("weaknesses"):
+                        lines.append("**Weaknesses:**")
+                        for w in crit["weaknesses"]:
+                            lines.append(f"- {w}")
+                    if crit.get("fatal_flaw") and str(crit["fatal_flaw"]).upper() != "NONE":
+                        lines.append(f"**Fatal Flaw:** {crit['fatal_flaw']}")
+                    if crit.get("one_change"):
+                        lines.append(f"**One Change:** {crit['one_change']}")
+                    if crit.get("would_champion"):
+                        lines.append(f"**Would Champion:** {crit['would_champion']}")
+                    lines.append("")
+
+            if da:
+                lines.append(f"## Devil's Advocate")
+                lines.append("")
+                for crit in da:
+                    label = crit.get("concept_label", "?")
+                    lines.append(f"### Advocatus Diaboli \u2192 {label} \u2014 {crit.get('score', '?')}/10")
+                    if crit.get("fatal_flaw") and str(crit["fatal_flaw"]).upper() != "NONE":
+                        lines.append(f"**Fatal Flaw:** {crit['fatal_flaw']}")
+                    if crit.get("weaknesses"):
+                        lines.append("**Weaknesses:**")
+                        for w in crit["weaknesses"]:
+                            lines.append(f"- {w}")
+                    if crit.get("strengths"):
+                        lines.append("**Concessions:**")
+                        for s in crit["strengths"]:
+                            lines.append(f"- {s}")
+                    if crit.get("one_change"):
+                        lines.append(f"**Demanded Change:** {crit['one_change']}")
+                    lines.append("")
+
+        # --- STAGE 3: MODERATOR DIRECTION ---
         for entry in state.transcript_entries:
             if entry.get("round") == round_num and entry.get("direction"):
-                lines.extend(["## Moderator Direction", entry["direction"], ""])
+                lines.append("## Moderator Direction")
+                lines.append(entry["direction"])
+                lines.append("")
+
+                if entry.get("evaluator_notes"):
+                    lines.append("## Evaluator Assessment")
+                    lines.append(entry["evaluator_notes"])
+                    lines.append("")
+
+                if entry.get("one_more_thing"):
+                    lines.append(f"**\"One More Thing...\"** {entry['one_more_thing']}")
+                    lines.append("")
+
+                surviving = entry.get("surviving_concepts", [])
+                eliminated = entry.get("eliminated_concepts", [])
+                if surviving or eliminated:
+                    lines.append("### Decisions")
+                    for s in surviving:
+                        reason = f" \u2014 {s['reason']}" if s.get("reason") else ""
+                        lines.append(f"- **{s.get('name', '?')}** survives{reason}")
+                    for e in eliminated:
+                        reason = f" \u2014 {e['reason']}" if e.get("reason") else ""
+                        lines.append(f"- ~~{e.get('name', '?')}~~ eliminated{reason}")
+                    lines.append("")
+
+        # --- ERRORS ---
+        for entry in state.transcript_entries:
+            if entry.get("round") == round_num and entry.get("stage_name") == "participant_error":
+                lines.append(f"> \u26a0\ufe0f {entry.get('error', 'Unknown failure')}")
+                lines.append("")
+
+        return "\n".join(lines)
+
+    def generate_markdown_devils_advocate(self, state: SimulationState) -> str:
+        """Generate a dedicated Devil's Advocate report."""
+        lines = [
+            "# Advocatus Diaboli \u2014 Challenge Report",
+            f"**Simulation:** {state.config.name}",
+            f"**Rounds:** {len(state.rounds)}",
+            "",
+        ]
+
+        all_concepts = state.concepts.get("active", []) + state.concepts.get("eliminated", [])
+        has_da_content = False
+
+        for round_num in range(1, len(state.rounds) + 1):
+            da_crits = []
+            for entry in state.transcript_entries:
+                if entry.get("round") == round_num and entry.get("critiques"):
+                    da_crits.extend([c for c in entry["critiques"] if c.get("is_devils_advocate")])
+
+            if not da_crits:
+                continue
+
+            has_da_content = True
+            rnd = next((r for r in state.rounds if r.round_num == round_num), None)
+            mode = rnd.mode.upper() if rnd else "?"
+            lines.append(f"## Round {round_num} \u2014 {mode}")
+            lines.append("")
+
+            for crit in da_crits:
+                concept = next((c for c in all_concepts if c.id == crit.get("concept_id")), None)
+                cname = concept.name if concept else crit.get("concept_label", "?")
+                pname = concept.persona_name if concept else "?"
+
+                lines.append(f"### \u2192 {cname} (by {pname}) \u2014 {crit.get('score', '?')}/10")
+
+                if crit.get("fatal_flaw") and str(crit["fatal_flaw"]).upper() != "NONE":
+                    lines.append(f"**Fatal Flaw:** {crit['fatal_flaw']}")
+                if crit.get("weaknesses"):
+                    for w in crit["weaknesses"]:
+                        lines.append(f"- {w}")
+                if crit.get("one_change"):
+                    lines.append(f"**Demanded:** {crit['one_change']}")
+
+                # Check if creative addressed DA in evolution notes
+                if concept and concept.evolution_notes:
+                    evo = concept.evolution_notes.lower()
+                    if any(kw in evo for kw in ["devil", "advocate", "advocat", "diaboli"]):
+                        lines.append("")
+                        lines.append(f"**Creative Response:** {concept.evolution_notes[:400]}")
+
+                lines.append("")
+                lines.append("---")
+                lines.append("")
+
+        if not has_da_content:
+            lines.append("*No Devil's Advocate critiques found. Was the DA enabled for this simulation?*")
+
+        return "\n".join(lines)
+
+    def generate_production_package(self, state: SimulationState) -> str:
+        """Generate production-ready winner package with full history."""
+        active = state.concepts.get("active", [])
+        winner = next((c for c in active if c.status == "winner"), None)
+        if not winner and active:
+            winner = active[0]
+        if not winner:
+            return "# No winner determined"
+
+        runner = next((c for c in active if c.status == "runner_up"), None)
+
+        lines = [
+            f"# {winner.name}",
+            f"*{winner.tagline}*" if winner.tagline else "",
+            "",
+            f"**By:** {winner.persona_name}  ",
+            f"**Simulation:** {state.config.name} | {len(state.rounds)} rounds | {len(state.config.participants)} participants",
+            "",
+            "---",
+            "",
+        ]
+
+        # Full concept data
+        lines.append(self._concept_to_md(winner))
+        lines.append("")
+
+        # Score history
+        if winner.scores:
+            lines.append("## Score Progression")
+            for rnd, score in sorted(winner.scores.items(), key=lambda x: int(x[0])):
+                filled = round(score)
+                bar = "\u2588" * filled + "\u2591" * (10 - filled)
+                lines.append(f"Round {rnd}: `{bar}` {score}/10")
+            lines.append("")
+
+        # All critiques this concept received
+        winner_crits = []
+        for entry in state.transcript_entries:
+            if entry.get("critiques"):
+                for c in entry["critiques"]:
+                    if c.get("concept_id") == winner.id:
+                        c["_round"] = entry.get("round", 0)
+                        winner_crits.append(c)
+
+        if winner_crits:
+            lines.append("## Critique History")
+            for crit in sorted(winner_crits, key=lambda x: x.get("_round", 0)):
+                da_tag = " *(Devil's Advocate)*" if crit.get("is_devils_advocate") else ""
+                lines.append(f"### R{crit.get('_round', '?')} \u2014 {crit.get('critic_name', '?')}{da_tag} \u2014 {crit.get('score', '?')}/10")
+                if crit.get("strengths"):
+                    lines.append("**Strengths:** " + "; ".join(crit["strengths"][:3]))
+                if crit.get("weaknesses"):
+                    lines.append("**Weaknesses:** " + "; ".join(crit["weaknesses"][:3]))
+                if crit.get("fatal_flaw") and str(crit["fatal_flaw"]).upper() != "NONE":
+                    lines.append(f"**Fatal Flaw:** {crit['fatal_flaw']}")
+                if crit.get("one_change"):
+                    lines.append(f"**One Change:** {crit['one_change']}")
+                lines.append("")
+
+        # Runner up
+        if runner:
+            lines.extend(["---", "", "## Runner-Up", ""])
+            lines.append(self._concept_to_md(runner))
+            lines.append("")
+
+        # Eliminated
+        eliminated = state.concepts.get("eliminated", [])
+        if eliminated:
+            lines.extend(["---", "", "## Eliminated Concepts", ""])
+            for c in eliminated:
+                lines.append(f"- **{c.name}** by {c.persona_name} \u2014 *{c.tagline or ''}*")
+            lines.append("")
 
         return "\n".join(lines)
 
