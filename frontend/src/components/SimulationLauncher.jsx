@@ -57,32 +57,33 @@ const PRESET_DESCRIPTIONS = {
   assembly_line: 'Efficient 5-round production pipeline for rapid iteration.',
 };
 
-// Default model assignments per persona from the blueprint
+// Default model assignments per persona — V3.5 role-based cost/quality strategy
+// Opus ONLY for Moderator. Sonnet for Evaluator. Grok for DA. Mix for participants.
 const DEFAULT_MODELS = {
   // Marketing & Strategy
-  'david-ogilvy': 'google/gemini-3-pro',
-  'claude-hopkins': 'anthropic/claude-sonnet-4.6',
-  'leo-burnett': 'openai/gpt-5.2',
-  'mary-wells-lawrence': 'meta-llama/llama-4-maverick',
-  'gary-halbert': 'x-ai/grok-4',
+  'david-ogilvy': 'google/gemini-3-pro',           // $1.25/$10 — research king, 2M context
+  'claude-hopkins': 'anthropic/claude-sonnet-4.6',  // $3/$15 — scientific, precise
+  'leo-burnett': 'openai/gpt-5.1',                 // $5/$15 — warm, emotional creative
+  'mary-wells-lawrence': 'meta-llama/llama-4-maverick', // $0.20/$0.60 — bold, direct, budget
+  'gary-halbert': 'x-ai/grok-4',                   // $3/$15 — raw, provocative, urgent
   // Design & Visual
-  'paul-rand': 'google/gemini-3-pro',
-  'paula-scher': 'openai/gpt-5.2',
-  'saul-bass': 'anthropic/claude-sonnet-4.6',
-  'susan-kare': 'meta-llama/llama-4-maverick',
-  'rob-janoff': 'x-ai/grok-4',
-  'tobias-van-schneider': 'google/gemini-3-pro',
+  'paul-rand': 'google/gemini-3-pro',              // $1.25/$10 — systematic, intellectual
+  'paula-scher': 'openai/gpt-5.1',                 // $5/$15 — expressive, bold typography
+  'saul-bass': 'anthropic/claude-sonnet-4.6',       // $3/$15 — precise, iconic reduction
+  'susan-kare': 'meta-llama/llama-4-maverick',      // $0.20/$0.60 — human, accessible, budget
+  'rob-janoff': 'x-ai/grok-4',                     // $3/$15 — unconventional simplicity
+  'tobias-van-schneider': 'google/gemini-3-pro',    // $1.25/$10 — modern, digital-first
   // Business & Strategy
-  'elon-musk': 'x-ai/grok-4',
-  'jeff-bezos': 'google/gemini-3-pro',
-  'warren-buffett': 'anthropic/claude-sonnet-4.6',
-  'richard-branson': 'openai/gpt-5.2',
-  'dietrich-mateschitz': 'meta-llama/llama-4-maverick',
-  // Leadership
-  moderator: 'anthropic/claude-opus-4-6',
-  evaluator: 'anthropic/claude-opus-4-6',
-  // Devil's Advocate
-  'devils-advocate': 'anthropic/claude-sonnet-4.6',
+  'elon-musk': 'x-ai/grok-4',                      // $3/$15 — HIS OWN AI COMPANY
+  'jeff-bezos': 'anthropic/claude-sonnet-4.6',      // $3/$15 — methodical, customer-obsessed
+  'warren-buffett': 'google/gemini-3-pro',          // $1.25/$10 — patient analyst, 2M context
+  'richard-branson': 'meta-llama/llama-4-maverick', // $0.20/$0.60 — gut-instinct, budget
+  'dietrich-mateschitz': 'deepseek/deepseek-v3.2',  // $0.28/$0.42 — silent strategist, budget
+  // Leadership — Opus ONLY for Moderator
+  moderator: 'anthropic/claude-opus-4-6',           // $5/$25 — elimination decisions need depth
+  evaluator: 'anthropic/claude-sonnet-4.6',         // $3/$15 — structured scoring
+  // Devil's Advocate — Grok is naturally adversarial
+  'devils-advocate': 'x-ai/grok-4',                 // $3/$15 — provocative, NOT Claude
 };
 
 // Team display order and metadata
