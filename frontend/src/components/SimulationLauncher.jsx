@@ -334,10 +334,27 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
   const handleFileRead = useCallback((file) => {
     if (!file) return;
     const ext = file.name.split('.').pop().toLowerCase();
-    if (!['md', 'txt', 'text', 'markdown'].includes(ext)) {
-      alert('Supported formats: .md, .txt, .markdown');
+    if (!['md', 'txt', 'text', 'markdown', 'docx'].includes(ext)) {
+      alert('Supported brief formats: .md, .txt, .markdown, .docx');
       return;
     }
+
+    if (ext === 'docx') {
+      // Upload to server for extraction, then use extracted text as brief
+      const formData = new FormData();
+      formData.append('file', file);
+      api.uploadReference(file)
+        .then(data => {
+          if (data.extracted_text) {
+            if (brief.length > 0 && !window.confirm(`Replace current brief with "${file.name}"?`)) return;
+            setBrief(data.extracted_text);
+            setUploadedFileName(file.name);
+          }
+        })
+        .catch(err => console.error('Failed to extract .docx:', err));
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
       const content = e.target.result;
@@ -1104,7 +1121,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
         <section className="launcher-section">
           <label className="gc-label">
             Project Files
-            <HelpTooltip text="Upload any project material: brief documents (.md, .txt), reference websites (.html), images (.png, .jpg, .svg), PDFs, or ZIP archives. Text files (.md, .txt) will also auto-fill the brief above. All extracted text is sent as context to the AI participants." position="right" />
+            <HelpTooltip text="Upload any project material: brief documents (.md, .txt, .docx), reference websites (.html), images (.png, .jpg, .svg), PDFs, spreadsheets (.xlsx, .csv), or ZIP archives. Text files (.md, .txt) will also auto-fill the brief above. All extracted text is sent as context to the AI participants." position="right" />
           </label>
           <div className="ref-upload-area">
             <button
@@ -1118,7 +1135,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
             <input
               ref={refFileInputRef}
               type="file"
-              accept=".html,.htm,.zip,.png,.jpg,.jpeg,.gif,.svg,.webp,.pdf,.txt,.md,.css,.js,.json"
+              accept=".html,.htm,.zip,.png,.jpg,.jpeg,.gif,.svg,.webp,.pdf,.txt,.md,.css,.js,.json,.docx,.xlsx,.csv"
               style={{ display: 'none' }}
               onChange={async (e) => {
                 const file = e.target.files?.[0];
@@ -1207,6 +1224,16 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
                     </div>
                   );
                 })}
+              </div>
+            )}
+            {referenceFiles.length > 0 && (
+              <div style={{ marginTop: '8px', fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                {(() => {
+                  const totalChars = referenceFiles.reduce((sum, rf) => sum + (rf.extracted_text?.length || 0), 0);
+                  const estTokens = Math.round(totalChars / 4);
+                  const color = estTokens > 100000 ? 'var(--status-error)' : estTokens > 50000 ? 'var(--gc-gold)' : 'var(--status-success)';
+                  return <span>Context: <span style={{color, fontWeight: 600}}>{estTokens.toLocaleString()} tokens</span> (~{Math.round(totalChars / 1000)}K chars)</span>;
+                })()}
               </div>
             )}
             {referenceFiles.some(rf => rf.files?.includes('index.html')) && (
