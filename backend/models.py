@@ -154,6 +154,37 @@ class RoundResult(BaseModel):
     concepts_eliminated: int = 0
 
 
+# --- DA Training Models ---
+
+class DAInteraction(BaseModel):
+    """A single DA interaction for review in DA Arena."""
+    id: str
+    simulation_id: str
+    round_num: int
+    concept_name: str
+    concept_id: str = ""
+    concept_persona: str
+    # DA's attack
+    da_score: int = 5
+    da_fatal_flaw: str = ""
+    da_weaknesses: List[str] = []
+    da_strengths_conceded: List[str] = []
+    da_one_change: str = ""
+    # Defense (from DA Defense stage)
+    defense_text: str = ""
+    da_verdict: str = ""
+    da_verdict_details: str = ""
+    da_revised_score: Optional[int] = None
+    # Creative response (from evolution notes)
+    creative_response: str = ""
+    response_addressed_flaw: bool = False
+    # Human rating
+    rating: Optional[str] = None  # "brilliant", "effective", "weak", "unfair"
+    user_notes: str = ""
+    reviewed: bool = False
+    reviewed_at: Optional[str] = None
+
+
 # --- Simulation State ---
 
 class SimulationState(BaseModel):
@@ -172,6 +203,8 @@ class SimulationState(BaseModel):
     quality_gates: List[Dict[str, Any]] = []
     transcript_entries: List[Dict[str, Any]] = []
     event_log: List[Dict[str, Any]] = []
+    da_interactions: List[Dict[str, Any]] = []  # DA Arena interaction data
+    da_ratings: Dict[str, Dict[str, Any]] = {}  # interaction_id -> rating data
     archived: bool = False
 
 
