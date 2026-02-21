@@ -6,6 +6,8 @@ Same architecture as image_generator.py.
 
 import asyncio
 import json
+import re
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
@@ -259,6 +261,10 @@ class VideoGenerator:
         tier = VIDEO_QUALITY_TIERS.get(quality, VIDEO_QUALITY_TIERS["standard"])
         results = []
 
+        # V3: Create sim_dir before loop so media download can use it
+        sim_dir = self.output_dir / sim_id
+        sim_dir.mkdir(parents=True, exist_ok=True)
+
         for concept_data in concepts:
             model_key = self.select_model(concept_data, quality)
             image_url = concept_data.get("image_url")
@@ -277,12 +283,33 @@ class VideoGenerator:
                 result["quality_tier"] = quality
                 results.append(result)
 
+                # ── V3: Download video file to persist locally ──
+                if result.get("url"):
+                    try:
+                        media_dir = sim_dir / "media" / "videos"
+                        media_dir.mkdir(parents=True, exist_ok=True)
+                        safe_name = re.sub(r'[^a-z0-9_-]', '_', result["concept_name"].lower())[:50]
+                        filename = f"{safe_name}_{model_key}.mp4"
+                        filepath = media_dir / filename
+
+                        async with httpx.AsyncClient(timeout=180.0) as dl_client:
+                            vid_response = await dl_client.get(result["url"])
+                            vid_response.raise_for_status()
+                            filepath.write_bytes(vid_response.content)
+
+                        result["local_path"] = f"{sim_id}/media/videos/{filename}"
+                        result["filename"] = filename
+                        result["file_size"] = len(vid_response.content)
+                        result["generated_at"] = datetime.utcnow().isoformat()
+                        print(f"[Media] Downloaded video {filename} ({len(vid_response.content)} bytes)")
+                    except Exception as e:
+                        print(f"[Media] Warning: Failed to download video: {e}")
+                        result["local_path"] = None
+
             # Longer delay for video — avoid rate limiting
             await asyncio.sleep(3.0)
 
         # Save results
-        sim_dir = self.output_dir / sim_id
-        sim_dir.mkdir(parents=True, exist_ok=True)
         results_path = sim_dir / "generated_videos.json"
         results_path.write_text(json.dumps(results, indent=2), encoding="utf-8")
 

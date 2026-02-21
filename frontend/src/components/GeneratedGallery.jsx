@@ -65,6 +65,15 @@ export default function GeneratedGallery({ simId }) {
     return () => document.removeEventListener('keydown', handleKey);
   }, [lightboxImg]);
 
+  // V3: Prefer local file (persisted) over fal.ai URL (expires in ~24h)
+  const getMediaUrl = (item) => {
+    if (item.local_path && item.filename) {
+      const type = item.local_path.includes('video') ? 'videos' : 'images';
+      return `/api/simulation/${simId}/media/${type}/${item.filename}`;
+    }
+    return item.url; // Fallback to fal.ai URL
+  };
+
   const hasContent = images.length > 0 || videos.length > 0;
 
   if (loading) {
@@ -121,14 +130,21 @@ export default function GeneratedGallery({ simId }) {
               <div key={i} className="gg-card">
                 <div className="gg-card-img-wrap" onClick={() => setLightboxImg(img)}>
                   <img
-                    src={img.url}
+                    src={getMediaUrl(img)}
                     alt={img.concept_name || `Image ${i + 1}`}
                     className="gg-card-img"
                     loading="lazy"
                   />
                 </div>
                 <div className="gg-card-info">
-                  <div className="gg-card-name">{img.concept_name || `Concept ${i + 1}`}</div>
+                  <div className="gg-card-name">
+                    {img.concept_name || `Concept ${i + 1}`}
+                    {img.local_path ? (
+                      <span className="gc-badge gc-badge-green" style={{fontSize: '0.6em', marginLeft: 6}}>Local</span>
+                    ) : (
+                      <span className="gc-badge gc-badge-red" style={{fontSize: '0.6em', marginLeft: 6}}>Expires</span>
+                    )}
+                  </div>
                   {img.persona && (
                     <div className="gg-card-persona">by {img.persona}</div>
                   )}
@@ -153,7 +169,7 @@ export default function GeneratedGallery({ simId }) {
 
                 <div className="gg-card-actions">
                   <a
-                    href={img.url}
+                    href={getMediaUrl(img)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="gc-btn gc-btn-ghost gg-card-download"
@@ -179,14 +195,21 @@ export default function GeneratedGallery({ simId }) {
               <div key={i} className="gg-card">
                 <div className="gg-card-video-wrap">
                   <video
-                    src={vid.url}
+                    src={getMediaUrl(vid)}
                     className="gg-card-video"
                     controls
                     preload="metadata"
                   />
                 </div>
                 <div className="gg-card-info">
-                  <div className="gg-card-name">{vid.concept_name || `Video ${i + 1}`}</div>
+                  <div className="gg-card-name">
+                    {vid.concept_name || `Video ${i + 1}`}
+                    {vid.local_path ? (
+                      <span className="gc-badge gc-badge-green" style={{fontSize: '0.6em', marginLeft: 6}}>Local</span>
+                    ) : (
+                      <span className="gc-badge gc-badge-red" style={{fontSize: '0.6em', marginLeft: 6}}>Expires</span>
+                    )}
+                  </div>
                   {vid.persona && (
                     <div className="gg-card-persona">by {vid.persona}</div>
                   )}
@@ -219,7 +242,7 @@ export default function GeneratedGallery({ simId }) {
 
                 <div className="gg-card-actions">
                   <a
-                    href={vid.url}
+                    href={getMediaUrl(vid)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="gc-btn gc-btn-ghost gg-card-download"
@@ -242,7 +265,7 @@ export default function GeneratedGallery({ simId }) {
           </button>
           <div className="gg-lightbox-content" onClick={(e) => e.stopPropagation()}>
             <img
-              src={lightboxImg.url}
+              src={getMediaUrl(lightboxImg)}
               alt={lightboxImg.concept_name || 'Generated image'}
               className="gg-lightbox-img"
             />
