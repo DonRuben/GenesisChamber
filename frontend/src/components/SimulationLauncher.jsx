@@ -86,7 +86,7 @@ const DEFAULT_MODELS = {
 };
 
 // Team display order and metadata
-const TEAM_ORDER = ['marketing', 'design', 'business', 'leadership'];
+const TEAM_ORDER = ['marketing', 'design', 'business'];
 const TEAM_LABELS = {
   marketing: 'Marketing & Strategy',
   design: 'Design & Visual',
@@ -180,7 +180,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
       const defaults = marketing.slice(0, 3).map(s => s.id);
       setSelectedParticipants(defaults.length > 0
         ? defaults
-        : soulsData.filter(s => s.id !== 'steve-jobs' && s.id !== 'jony-ive').slice(0, 3).map(s => s.id)
+        : soulsData.filter(s => s.id !== 'devils-advocate').slice(0, 3).map(s => s.id)
       );
 
       // Load models (non-blocking — fallback to defaults if endpoint doesn't exist)
@@ -216,14 +216,33 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
     );
   };
 
-  // Group souls by team (excluding leadership — Jobs and Ive are handled separately)
+  // Group souls by team
+  // Leadership souls (Jobs, Ive) also appear in their cross_teams
   const soulsByTeam = (() => {
     const groups = {};
-    const participantSouls = souls.filter(s => s.id !== 'steve-jobs' && s.id !== 'jony-ive');
-    for (const soul of participantSouls) {
-      const team = soul.team || 'custom';
-      if (!groups[team]) groups[team] = [];
-      groups[team].push(soul);
+    for (const soul of souls) {
+      // Skip devils-advocate — always handled separately
+      if (soul.id === 'devils-advocate') continue;
+
+      const primaryTeam = soul.team || 'custom';
+
+      // Add to primary team (skip 'leadership' as a visible team —
+      // Jobs and Ive go into their functional teams instead)
+      if (primaryTeam !== 'leadership') {
+        if (!groups[primaryTeam]) groups[primaryTeam] = [];
+        groups[primaryTeam].push(soul);
+      }
+
+      // Also add to cross_teams (Jobs -> marketing, Ive -> design + marketing)
+      if (soul.cross_teams && soul.cross_teams.length > 0) {
+        for (const crossTeam of soul.cross_teams) {
+          if (!groups[crossTeam]) groups[crossTeam] = [];
+          // Avoid duplicates (if primary team = cross team)
+          if (!groups[crossTeam].find(s => s.id === soul.id)) {
+            groups[crossTeam].push(soul);
+          }
+        }
+      }
     }
     return groups;
   })();
@@ -613,7 +632,15 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
                           </span>
                         </div>
                         <div className="participant-info">
-                          <span className="participant-name">{soul.name}</span>
+                          <span className="participant-name">
+                            {soul.name}
+                            {soul.id === 'steve-jobs' && (
+                              <span className="gc-badge gc-badge-cyan" style={{fontSize: '9px', padding: '1px 6px', marginLeft: '6px'}}>Moderator</span>
+                            )}
+                            {soul.id === 'jony-ive' && (
+                              <span className="gc-badge gc-badge-cyan" style={{fontSize: '9px', padding: '1px 6px', marginLeft: '6px'}}>Evaluator</span>
+                            )}
+                          </span>
                           <span className="participant-model-label">
                             {getDisplayName(modelAssignments[soul.id] || 'anthropic/claude-sonnet-4.6')}
                           </span>
