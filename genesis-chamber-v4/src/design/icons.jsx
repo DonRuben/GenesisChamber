@@ -161,4 +161,28 @@ export const IC = {
   spark: icon(
     <><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></>
   ),
+  skull: icon(
+    <><circle cx="12" cy="10" r="6"/><path d="M10 21v-5M14 21v-5M8 19h8"/></>
+  ),
+  award: icon(
+    <><circle cx="12" cy="8" r="7"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/></>
+  ),
+  arrowLeft: icon(
+    <><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></>
+  ),
+  arrowRight: icon(
+    <><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></>
+  ),
+  chevUp: icon(
+    <path d="M18 15l-6-6-6 6"/>
+  ),
+  target: icon(
+    <><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></>
+  ),
+  scale: icon(
+    <><path d="M12 3v18"/><path d="M5 7l7-4 7 4"/><path d="M2 14l3-7 3 7a4.24 4.24 0 01-6 0zM16 14l3-7 3 7a4.24 4.24 0 01-6 0z"/></>
+  ),
+  info: icon(
+    <><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></>
+  ),
 };

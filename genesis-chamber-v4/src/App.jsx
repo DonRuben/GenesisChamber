@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import AppShell from './components/shell/AppShell';
 import Landing from './components/Landing';
 import LLMCouncil from './components/council/LLMCouncil';
+import { DAArena } from './components/arena';
 import { T, font } from './design/tokens';
 
 // ── Placeholder for routes not yet built ──
@@ -54,7 +55,7 @@ export default function App() {
           <Route path="council" element={<LLMCouncil />} />
           <Route path="launch" element={<Placeholder label="Simulation Launcher" color={T.flame} />} />
           <Route path="sim/:id" element={<Placeholder label="Dashboard" color={T.flame} />} />
-          <Route path="sim/:id/da" element={<Placeholder label="DA Arena" color={T.magenta} />} />
+          <Route path="sim/:id/da" element={<DAArena />} />
           <Route path="sim/:id/gallery" element={<Placeholder label="Gallery" color={T.purple} />} />
           <Route path="*" element={<Placeholder label="404 — Not Found" color={T.textMuted} />} />
         </Route>

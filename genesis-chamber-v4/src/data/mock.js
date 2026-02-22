@@ -63,3 +63,121 @@ export const MOCK_RANKINGS = [
   { model: 'GPT-4o', avgRank: 2.67, pct: 48, color: T.green },
   { model: 'DeepSeek R1', avgRank: 3.33, pct: 28, color: T.purple },
 ];
+
+// ── DA Arena — Mock Interactions ──
+export const MOCK_DA_INTERACTIONS = [
+  {
+    id: 1, round: 1,
+    concept: { name: 'Phoenix Rising', persona: 'Maya Chen', model: 'Claude Sonnet', modelColor: T.flame },
+    attack: {
+      da_score: 8, severity: 4, persona: 'skeptic',
+      fatal_flaw: 'Over-reliance on mythological symbolism limits audience connection to a niche demographic. The phoenix metaphor is culturally exclusive.',
+      weaknesses: ['Too abstract for mass market', 'Mythological gatekeeping', 'No concrete value proposition'],
+      one_change: 'Ground the phoenix metaphor in universal human experience of renewal, not Greek mythology.',
+    },
+    defense: {
+      text: 'The phoenix transcends cultures — it appears in Chinese, Egyptian, Greek, and Hindu traditions. It\'s not niche, it\'s universally understood as rebirth. Our execution uses the emotional core, not the academic reference.',
+      submitted: true,
+    },
+    verdict: { status: 'accepted_partial', label: 'Defense Accepted — Partially', details: 'Cultural breadth acknowledged, but execution still leans abstract. Needs concrete touchpoints.', revised_score: 7 },
+    rating: 'effective', reviewed: true,
+  },
+  {
+    id: 2, round: 1,
+    concept: { name: 'Urban Pulse', persona: 'Marcus Rivera', model: 'GPT-4o', modelColor: T.green },
+    attack: {
+      da_score: 6, severity: 3, persona: 'contrarian',
+      fatal_flaw: 'The heartbeat-city mashup is a design cliché used by hundreds of startups. Zero differentiation.',
+      weaknesses: ['Extremely common visual trope', 'Forgettable in portfolio context', 'No emotional depth beyond \'city = alive\''],
+      one_change: 'Find the arrhythmia — what makes THIS city\'s pulse irregular, broken, or beautiful?',
+    },
+    defense: { text: null, submitted: false },
+    verdict: { status: 'no_defense', label: 'No Defense Submitted', details: null, revised_score: 5 },
+    rating: null, reviewed: false,
+  },
+  {
+    id: 3, round: 2,
+    concept: { name: 'Phoenix Rising', persona: 'Maya Chen', model: 'Claude Sonnet', modelColor: T.flame },
+    attack: {
+      da_score: 9, severity: 5, persona: 'realist',
+      fatal_flaw: 'V2 evolution is incrementally better but still hasn\'t solved the tangibility problem. The audience can\'t FEEL digital ashes.',
+      weaknesses: ['Sensory gap: fire on screen is not fire felt', 'Animation dependency for concept integrity', 'Loses meaning in static applications'],
+      one_change: 'Make it work in a single still frame. If the concept needs motion to make sense, it\'s not strong enough.',
+    },
+    defense: {
+      text: 'A still frame of a phoenix mid-rise is already one of the most powerful images in visual history. The Criterion Collection built a logo on it. We don\'t need motion — we need composition.',
+      submitted: true,
+    },
+    verdict: { status: 'accepted_strong', label: 'Defense Accepted — Strong', details: 'Excellent reframe. The single-frame challenge was met convincingly.', revised_score: 8 },
+    rating: 'brilliant', reviewed: true,
+  },
+  {
+    id: 4, round: 2,
+    concept: { name: 'Zen Garden', persona: 'Dr. Sarah Kim', model: 'DeepSeek R1', modelColor: T.purple },
+    attack: {
+      da_score: 4, severity: 2, persona: 'purist',
+      fatal_flaw: 'Zen branding is the pumpkin spice of design — predictably inoffensive and terminally boring.',
+      weaknesses: ['Zen = safe = forgettable', 'Contradicts urgency-driven tech market', 'Passive aesthetic repels action-oriented buyers'],
+      one_change: 'Inject danger. Real zen practice involves discomfort. Show the rake dragging through stone, not the finished pattern.',
+    },
+    defense: {
+      text: 'The contradiction IS the brand. Technology that promises calm in chaos is the ultimate premium positioning. Apple proved this. We\'re not selling zen — we\'re selling the tension between chaos and order.',
+      submitted: true,
+    },
+    verdict: { status: 'accepted_partial', label: 'Defense Accepted — Partially', details: 'The chaos/order tension is valid but needs visual proof. Current execution is too peaceful.', revised_score: 5 },
+    rating: null, reviewed: false,
+  },
+  {
+    id: 5, round: 3,
+    concept: { name: 'Neon Dreams', persona: 'Alex Thompson', model: 'Gemini Flash', modelColor: '#3B82F6' },
+    attack: {
+      da_score: 3, severity: 5, persona: 'contrarian',
+      fatal_flaw: 'This is an AI image prompt, not a brand concept. \'Neon\' + \'Dreams\' + \'Retro\' = the most generated aesthetic in AI history. Zero creative authorship.',
+      weaknesses: ['Indistinguishable from AI slop', 'No brand strategy underneath', 'Aesthetic without substance', 'Will date in 6 months'],
+      one_change: 'Delete it. Start over. This isn\'t worth evolving.',
+    },
+    defense: {
+      text: 'The retro-future aesthetic resonates with Gen Z nostalgia for eras they never lived. The market data supports this trend. And the execution quality exceeds typical AI output by incorporating hand-drawn elements in the typography.',
+      submitted: true,
+    },
+    verdict: { status: 'insufficient', label: 'Defense Insufficient', details: 'Trend data doesn\'t justify creative mediocrity. The hand-drawn claim needs visual evidence.', revised_score: 3 },
+    rating: 'unfair', reviewed: true,
+  },
+];
+
+// ── DA Command Center Config ──
+export const DA_STYLES = [
+  { id: 'socratic', name: 'Socratic', icon: 'brain', description: 'Probing questions that expose assumptions and logical gaps', color: T.cyan },
+  { id: 'aggressive', name: 'Aggressive', icon: 'flame', description: 'Direct confrontation, no mercy — finds breaking points fast', color: T.magenta },
+  { id: 'balanced', name: 'Balanced', icon: 'scale', description: 'Structured critique with constructive counter-proposals', color: T.gold },
+];
+
+export const DA_FOCUS_AREAS = [
+  { id: 'feasibility', label: 'Feasibility', icon: 'target' },
+  { id: 'ethics', label: 'Ethics', icon: 'scale' },
+  { id: 'originality', label: 'Originality', icon: 'bolt' },
+  { id: 'market', label: 'Market Fit', icon: 'chat' },
+  { id: 'technical', label: 'Technical', icon: 'settings' },
+];
+
+export const DA_PRESETS = [
+  { id: 'light', name: 'Light Sparring', description: 'Gentle probing — great for early-stage ideas', intensity: 1, style: 'socratic', frequency: 2, focusAreas: ['feasibility', 'originality'] },
+  { id: 'full', name: 'Full Interrogation', description: 'Comprehensive stress-test across all dimensions', intensity: 2, style: 'balanced', frequency: 4, focusAreas: ['feasibility', 'ethics', 'originality', 'market', 'technical'] },
+  { id: 'trial', name: 'Devil\'s Trial', description: 'Maximum adversarial pressure — only the strongest survive', intensity: 3, style: 'aggressive', frequency: 5, focusAreas: ['feasibility', 'market', 'technical'] },
+];
+
+// ── DA Arena — Rating Config ──
+export const DA_RATINGS = [
+  { key: 'brilliant', label: 'Brilliant', color: T.gold, desc: 'DA pushed concept to greatness' },
+  { key: 'effective', label: 'Effective', color: T.green, desc: 'Useful challenge, good outcome' },
+  { key: 'weak', label: 'Weak', color: T.textMuted, desc: 'Challenge lacked depth' },
+  { key: 'unfair', label: 'Unfair', color: T.magenta, desc: 'Attack was unreasonable' },
+];
+
+// ── DA Persona Labels ──
+export const DA_PERSONAS = {
+  skeptic: { name: 'The Skeptic', color: T.persona.skeptic },
+  contrarian: { name: 'The Contrarian', color: T.persona.contrarian },
+  realist: { name: 'The Realist', color: T.persona.realist },
+  purist: { name: 'The Purist', color: T.persona.purist },
+};
