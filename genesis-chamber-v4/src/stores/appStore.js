@@ -22,7 +22,7 @@ export const useAppStore = create((set) => ({
   theme: getStoredTheme(),
   toggleTheme: () => set((s) => {
     const next = s.theme === 'dark' ? 'light' : 'dark';
-    try { localStorage.setItem('gc-v4-theme', next); } catch {}
+    try { localStorage.setItem('gc-v4-theme', next); } catch { /* ignored */ }
     document.documentElement.setAttribute('data-theme', next);
     return { theme: next };
   }),
