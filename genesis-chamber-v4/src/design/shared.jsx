@@ -175,6 +175,48 @@ export function Card({ children, accent, style: sx }) {
   );
 }
 
+/** Score change indicator — from → to with color coding */
+export function ScoreChange({ from, to }) {
+  const color = to > from ? T.green : to < from ? T.magenta : T.textMuted;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <span style={{
+        fontSize: 16, fontFamily: font.mono, fontWeight: 700,
+        color: from >= 7 ? T.magenta : T.gold,
+      }}>{from}</span>
+      <span style={{ fontSize: 10, color: T.textMuted }}>→</span>
+      <span style={{
+        fontSize: 16, fontFamily: font.mono, fontWeight: 700,
+        color: to >= 7 ? T.green : to >= 4 ? T.gold : T.magenta,
+      }}>{to}</span>
+    </div>
+  );
+}
+
+/** 5-segment aggression meter with level label */
+export function AggressionMeter({ severity }) {
+  const levels = ['Gentle', 'Moderate', 'Sharp', 'Fierce', 'Lethal'];
+  const lv = Math.min(Math.max(Math.round(severity) - 1, 0), 4);
+  const colors = [T.green, T.cyan, T.gold, T.flame, T.magenta];
+  return (
+    <div>
+      <MonoLabel style={{ marginBottom: 8 }}>AGGRESSION</MonoLabel>
+      <div style={{ display: 'flex', gap: 3, marginBottom: 6 }}>
+        {levels.map((_, i) => (
+          <div key={i} style={{
+            flex: 1, height: 4, borderRadius: 2,
+            background: i <= lv ? colors[lv] : T.surfaceRaised,
+            transition: 'background 0.15s',
+          }} />
+        ))}
+      </div>
+      <span style={{
+        fontSize: 11, fontFamily: font.mono, fontWeight: 600, color: colors[lv],
+      }}>{levels[lv]}</span>
+    </div>
+  );
+}
+
 /** Status badge — running, complete, paused, etc. */
 export function StatusBadge({ status }) {
   const config = {
