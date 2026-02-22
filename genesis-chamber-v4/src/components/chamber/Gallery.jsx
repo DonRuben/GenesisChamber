@@ -15,7 +15,7 @@ export default function Gallery() {
   const {
     simulation, galleryView, galleryFilter, gallerySearch,
     setGalleryView, setGalleryFilter, setGallerySearch,
-    setLightboxItem, lightboxItem, getFilteredMedia,
+    setLightboxItem, getFilteredMedia,
   } = useChamberStore();
 
   const media = getFilteredMedia();

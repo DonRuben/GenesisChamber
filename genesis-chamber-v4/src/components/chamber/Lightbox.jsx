@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { font, motion } from '../../design/tokens';
+import { font } from '../../design/tokens';
 import { useTokens } from '../../hooks/useTokens';
 import { IC } from '../../design/icons';
 import { Tag, ModelDot, Btn } from '../../design/shared';
@@ -15,15 +15,13 @@ export default function Lightbox() {
   const { lightboxItem, setLightboxItem, simulation } = useChamberStore();
   const media = simulation?.media || [];
 
-  if (!lightboxItem) return null;
-
-  const currentIndex = media.findIndex((m) => m.id === lightboxItem.id);
+  const currentIndex = lightboxItem ? media.findIndex((m) => m.id === lightboxItem.id) : -1;
   const hasPrev = currentIndex > 0;
-  const hasNext = currentIndex < media.length - 1;
+  const hasNext = currentIndex >= 0 && currentIndex < media.length - 1;
 
+  const close = () => setLightboxItem(null);
   const goPrev = () => hasPrev && setLightboxItem(media[currentIndex - 1]);
   const goNext = () => hasNext && setLightboxItem(media[currentIndex + 1]);
-  const close = () => setLightboxItem(null);
 
   useKeyboard({
     'Escape': close,
@@ -32,6 +30,8 @@ export default function Lightbox() {
   });
 
   useSwipe(lightboxRef, { onSwipeLeft: goNext, onSwipeRight: goPrev, onSwipeDown: close });
+
+  if (!lightboxItem) return null;
 
   const item = lightboxItem;
   const isVideo = item.type === 'video';

@@ -3,7 +3,7 @@ import { useTokens } from '../../hooks/useTokens';
 import { IC } from '../../design/icons';
 import { ScoreRing, TierBadge, Tag } from '../../design/shared';
 
-export default function ConceptCard({ concept, rank, isExpanded, onToggle }) {
+export default function ConceptCard({ concept, isExpanded, onToggle }) {
   const t = useTokens();
   const isWinner = concept.status === 'winner';
   const isEliminated = concept.status === 'eliminated';

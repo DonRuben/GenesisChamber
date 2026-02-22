@@ -12,7 +12,7 @@ export default function LauncherQuick() {
   const t = useTokens();
   const navigate = useNavigate();
   const {
-    launchStep, setLaunchStep, nextStep, prevStep,
+    launchStep, nextStep, prevStep,
     selectedPreset, setSelectedPreset, brief, setBrief,
     setLaunchMode,
   } = useChamberStore();

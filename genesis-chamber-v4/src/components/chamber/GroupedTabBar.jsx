@@ -64,7 +64,7 @@ export default function GroupedTabBar() {
       padding: '0 16px', borderBottom: `1px solid ${t.border}`,
       position: 'relative',
     }}>
-      {MOCK_TAB_GROUPS.map((group, gi) => {
+      {MOCK_TAB_GROUPS.map((group) => {
         const active = isGroupActive(group);
         const hasDropdown = group.tabs.length > 1;
 

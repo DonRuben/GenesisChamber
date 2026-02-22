@@ -1,5 +1,4 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { font } from '../../design/tokens';
 import { useTokens } from '../../hooks/useTokens';
 import { IC } from '../../design/icons';
 import { Btn } from '../../design/shared';

@@ -7,7 +7,6 @@
 import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { ModelDot } from '../../design/shared';
-import { useAppStore } from '../../stores/appStore';
 import { useCouncilStore } from '../../stores/councilStore';
 import { MODELS } from '../../data/mock';
 import { useTokens } from '../../hooks/useTokens';
