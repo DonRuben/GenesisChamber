@@ -151,6 +151,30 @@ export function Dots({ count = 5, active = 0, color = T.flame, size = 6 }) {
   );
 }
 
+/** Horizontal score progress bar */
+export function ScoreBar({ score, color, height = 4 }) {
+  return (
+    <div style={{ width: '100%', height, background: T.surfaceRaised, borderRadius: 2 }}>
+      <div style={{ width: `${score}%`, height: '100%', borderRadius: 2, background: color }} />
+    </div>
+  );
+}
+
+/** Bordered card container */
+export function Card({ children, accent, style: sx }) {
+  return (
+    <div style={{
+      background: T.surface,
+      borderLeft: `2px solid ${accent || T.border}`,
+      borderRadius: 8,
+      overflow: 'hidden',
+      ...sx,
+    }}>
+      {children}
+    </div>
+  );
+}
+
 /** Status badge — running, complete, paused, etc. */
 export function StatusBadge({ status }) {
   const config = {
