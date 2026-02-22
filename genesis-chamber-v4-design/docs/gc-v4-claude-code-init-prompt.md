@@ -1,7 +1,8 @@
 # Genesis Chamber V4 — Claude Code Init Prompt
 
 > **Paste this entire file as your first message in Claude Code.**
-> The full architecture blueprint is at `docs/gc-v4-claude-code-blueprint.md` — read it before writing any code.
+> The full architecture blueprint is at `genesis-chamber-v4-design/docs/gc-v4-claude-code-blueprint.md` — read it before writing any code.
+> **Repo:** `DonRuben/GenesisChamber` (branch: `master`)
 
 ---
 
@@ -33,10 +34,10 @@ npm install react-router-dom zustand
 
 ## REFERENCE FILES
 
-All design wireframes and documentation are in `docs/design-reference/`. These are the **source of truth** for every component's markup, data model, interaction pattern, and visual structure. Consult them before writing any implementation code.
+All design wireframes and documentation are in `genesis-chamber-v4-design/docs/design-reference/`. These are the **source of truth** for every component's markup, data model, interaction pattern, and visual structure. Consult them before writing any implementation code.
 
 ```
-docs/
+genesis-chamber-v4-design/docs/
 ├── gc-v4-claude-code-blueprint.md    ← ARCHITECTURE BIBLE (1333 lines) — read this FIRST
 ├── gc-v4-figma-tokens.json           ← Token values (colors, spacing, fonts, layout, motion)
 ├── gc-v4-design-system.pdf           ← Visual reference (component inventory, anatomy)
@@ -172,4 +173,4 @@ https://cdn.jsdelivr.net/gh/DonRuben/Hosting-Assets-Externally@main/Fonts/Font-%
 
 ## START
 
-Read `docs/gc-v4-claude-code-blueprint.md` first. Then Phase 1. Reference `docs/design-reference/*.jsx` for exact markup. Every pixel follows the 14 rules.
+Read `genesis-chamber-v4-design/docs/gc-v4-claude-code-blueprint.md` first. Then Phase 1. Reference `genesis-chamber-v4-design/docs/design-reference/*.jsx` for exact markup. Every pixel follows the 14 rules.
