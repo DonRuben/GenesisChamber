@@ -5,6 +5,7 @@
 // ─────────────────────────────────────────────────────────
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { useAppStore } from '../../stores/appStore';
@@ -46,17 +47,23 @@ function Logo({ collapsed, t }) {
 function ModeTabs({ collapsed, t }) {
   const mode = useAppStore((s) => s.mode);
   const setMode = useAppStore((s) => s.setMode);
+  const navigate = useNavigate();
 
   const modes = [
-    { key: 'council', label: 'LLM Council', icon: IC.council, color: t.cyan },
-    { key: 'genesis', label: 'Genesis Chamber', icon: IC.genesis, color: t.flame },
+    { key: 'council', label: 'LLM Council', icon: IC.council, color: t.cyan, path: '/council' },
+    { key: 'genesis', label: 'Genesis Chamber', icon: IC.genesis, color: t.flame, path: '/' },
   ];
+
+  const handleMode = (m) => {
+    setMode(m.key);
+    navigate(m.path);
+  };
 
   if (collapsed) {
     return (
       <div style={{ padding: '8px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
         {modes.map((m) => (
-          <button key={m.key} onClick={() => setMode(m.key)} title={m.label}
+          <button key={m.key} onClick={() => handleMode(m)} title={m.label}
             style={{
               width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'transparent', border: 'none', cursor: 'pointer',
@@ -75,7 +82,7 @@ function ModeTabs({ collapsed, t }) {
   return (
     <div style={{ padding: '12px 12px 0', display: 'flex', gap: 2, background: t.bg, borderRadius: 6, margin: '0 12px' }}>
       {modes.map((m) => (
-        <button key={m.key} onClick={() => setMode(m.key)}
+        <button key={m.key} onClick={() => handleMode(m)}
           style={{
             flex: 1, padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8,
             background: mode === m.key ? t.surface : 'transparent',
