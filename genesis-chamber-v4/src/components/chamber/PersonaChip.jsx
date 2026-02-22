@@ -1,6 +1,8 @@
-import { T, font, motion } from '../../design/tokens';
+import { font, motion } from '../../design/tokens';
+import { useTokens } from '../../hooks/useTokens';
 
 export default function PersonaChip({ persona, teamColor, selected, onToggle }) {
+  const t = useTokens();
   const { name, title, model } = persona;
   const initials = name.split(' ').map((w) => w[0]).join('').slice(0, 2);
 
@@ -8,8 +10,8 @@ export default function PersonaChip({ persona, teamColor, selected, onToggle }) 
     <button onClick={onToggle} style={{
       display: 'flex', alignItems: 'center', gap: 10,
       padding: '8px 12px', borderRadius: 8,
-      background: selected ? `${teamColor}0d` : T.surface,
-      border: `1px solid ${selected ? teamColor : T.border}`,
+      background: selected ? `${teamColor}0d` : t.surface,
+      border: `1px solid ${selected ? teamColor : t.border}`,
       cursor: 'pointer', width: '100%', textAlign: 'left',
       transition: `all ${motion.duration.fast} ${motion.easing.default}`,
     }}>
@@ -24,24 +26,24 @@ export default function PersonaChip({ persona, teamColor, selected, onToggle }) 
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontSize: 12, fontWeight: 600, color: T.text,
+          fontSize: 12, fontWeight: 600, color: t.text,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>{name}</div>
         <div style={{
-          fontSize: 9, fontFamily: font.mono, color: T.textMuted,
+          fontSize: 9, fontFamily: font.mono, color: t.textMuted,
           textTransform: 'uppercase', letterSpacing: '0.06em',
         }}>{title}</div>
       </div>
       <span style={{
-        fontSize: 9, fontFamily: font.mono, color: T.textMuted,
-        padding: '2px 6px', background: T.surfaceRaised, borderRadius: 3,
+        fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+        padding: '2px 6px', background: t.surfaceRaised, borderRadius: 3,
         whiteSpace: 'nowrap',
       }}>{model}</span>
       <div style={{
         width: 18, height: 18, borderRadius: 4, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: selected ? teamColor : 'transparent',
-        border: `1.5px solid ${selected ? teamColor : T.border}`,
+        border: `1.5px solid ${selected ? teamColor : t.border}`,
         transition: 'all 0.15s',
       }}>
         {selected && <span style={{ fontSize: 11, color: '#fff', fontWeight: 700 }}>{'\u2713'}</span>}

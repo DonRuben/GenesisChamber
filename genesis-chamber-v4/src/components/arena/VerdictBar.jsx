@@ -3,35 +3,38 @@
 // Dynamic color by verdict status, score change display
 // ─────────────────────────────────────────────────────────
 
-import { T, font } from '../../design/tokens';
+import { font } from '../../design/tokens';
+import { useTokens } from '../../hooks/useTokens';
 import { IC } from '../../design/icons';
 import { ScoreChange } from '../../design/shared';
 
-function verdictColor(status) {
-  if (status === 'accepted_strong') return T.da.verdict.strong;
-  if (status === 'accepted_partial') return T.da.verdict.partial;
-  if (status === 'insufficient') return T.da.verdict.insufficient;
-  return T.da.verdict.noDefense;
-}
-
 export default function VerdictBar({ attack, verdict }) {
+  const t = useTokens();
+
+  function verdictColor(status) {
+    if (status === 'accepted_strong') return t.da.verdict.strong;
+    if (status === 'accepted_partial') return t.da.verdict.partial;
+    if (status === 'insufficient') return t.da.verdict.insufficient;
+    return t.da.verdict.noDefense;
+  }
+
   const c = verdictColor(verdict.status);
 
   return (
     <div style={{
-      background: T.surface,
-      border: `1px solid ${T.border}`, borderRadius: 8,
+      background: t.surface,
+      border: `1px solid ${t.border}`, borderRadius: 8,
       borderLeft: `2px solid ${c}`,
       padding: '16px 24px',
       display: 'flex', alignItems: 'center', gap: 20,
     }}>
-      <span style={{ fontSize: 14, color: T.gold }}>{IC.award}</span>
+      <span style={{ fontSize: 14, color: t.gold }}>{IC.award}</span>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: T.text, marginBottom: 2 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: t.text, marginBottom: 2 }}>
           {verdict.label}
         </div>
         {verdict.details && (
-          <div style={{ fontSize: 12, color: T.textSoft, lineHeight: 1.5 }}>
+          <div style={{ fontSize: 12, color: t.textSoft, lineHeight: 1.5 }}>
             {verdict.details}
           </div>
         )}

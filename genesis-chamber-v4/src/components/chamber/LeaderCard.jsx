@@ -1,15 +1,17 @@
-import { T, font } from '../../design/tokens';
+import { font } from '../../design/tokens';
+import { useTokens } from '../../hooks/useTokens';
 
 export default function LeaderCard({ role, leader }) {
+  const t = useTokens();
   const { name, model, color } = leader;
   const initials = name.split(' ').map((w) => w[0]).join('').slice(0, 2);
-  const roleColor = role === 'Moderator' ? T.gold : role === 'Evaluator' ? T.cyan : T.magenta;
+  const roleColor = role === 'Moderator' ? t.gold : role === 'Evaluator' ? t.cyan : t.magenta;
 
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12,
       padding: '12px 16px', borderRadius: 8,
-      background: T.surface, border: `1px solid ${T.border}`,
+      background: t.surface, border: `1px solid ${t.border}`,
       borderLeft: `2px solid ${roleColor}`,
     }}>
       <div style={{
@@ -25,11 +27,11 @@ export default function LeaderCard({ role, leader }) {
           color: roleColor, textTransform: 'uppercase', letterSpacing: '0.12em',
           marginBottom: 2,
         }}>{role}</div>
-        <div style={{ fontSize: 13, fontWeight: 600, color: T.text }}>{name}</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: t.text }}>{name}</div>
       </div>
       <span style={{
-        fontSize: 9, fontFamily: font.mono, color: T.textMuted,
-        padding: '2px 8px', background: T.surfaceRaised, borderRadius: 3,
+        fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+        padding: '2px 8px', background: t.surfaceRaised, borderRadius: 3,
       }}>{model}</span>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { T, font, motion } from '../../design/tokens';
+import { font, motion } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { StepNav, Btn, MonoLabel, Toggle, Tag } from '../../design/shared';
 import { useChamberStore } from '../../stores/chamberStore';
@@ -8,8 +8,12 @@ import { MOCK_TEAMS, MOCK_LEADERSHIP } from '../../data/mock';
 import PersonaChip from './PersonaChip';
 import LeaderCard from './LeaderCard';
 import BriefInput from './BriefInput';
+import { useTokens } from '../../hooks/useTokens';
+import { useIsMobile } from '../../hooks/useMediaQuery';
 
 export default function LauncherCustom() {
+  const t = useTokens();
+  const mobile = useIsMobile();
   const navigate = useNavigate();
   const {
     launchStep, nextStep, prevStep,
@@ -28,16 +32,16 @@ export default function LauncherCustom() {
   };
 
   const summary = [
-    { label: 'Personas', value: count, color: count >= 3 ? T.green : T.magenta },
+    { label: 'Personas', value: count, color: count >= 3 ? t.green : t.magenta },
     { label: 'Rounds', value: count > 10 ? 8 : count > 6 ? 6 : 4 },
-    { label: 'DA', value: daEnabled ? 'Enabled' : 'Off', color: daEnabled ? T.magenta : T.textMuted },
+    { label: 'DA', value: daEnabled ? 'Enabled' : 'Off', color: daEnabled ? t.magenta : t.textMuted },
     { label: 'Est. Time', value: count > 10 ? '~90 min' : count > 6 ? '~45 min' : '~20 min' },
   ];
 
   const aggressionLevels = [
-    { id: 'analytical', label: 'Analytical', color: T.cyan },
-    { id: 'aggressive', label: 'Aggressive', color: T.flame },
-    { id: 'ruthless', label: 'Ruthless', color: T.magenta },
+    { id: 'analytical', label: 'Analytical', color: t.cyan },
+    { id: 'aggressive', label: 'Aggressive', color: t.flame },
+    { id: 'ruthless', label: 'Ruthless', color: t.magenta },
   ];
 
   return (
@@ -55,7 +59,7 @@ export default function LauncherCustom() {
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
             background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 11, fontFamily: font.mono, color: T.textMuted,
+            fontSize: 11, fontFamily: font.mono, color: t.textMuted,
           }}
         >
           <span style={{ fontSize: 14 }}>{IC.arrowLeft}</span> Back
@@ -67,10 +71,10 @@ export default function LauncherCustom() {
       <div style={{ flex: 1, overflow: 'auto' }}>
         {/* Step 0: Team Selection */}
         {launchStep === 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div className="gc-enter-right" key={0} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <MonoLabel icon={IC.users} style={{ marginBottom: 0 }}>Select Personas</MonoLabel>
-              <Tag color={count >= 3 ? T.green : T.magenta} label={`${count} / 16`} />
+              <Tag color={count >= 3 ? t.green : t.magenta} label={`${count} / 16`} />
             </div>
             {MOCK_TEAMS.map((team) => {
               const isExpanded = expandedTeam === team.id || expandedTeam === null;
@@ -78,7 +82,7 @@ export default function LauncherCustom() {
               const allSelected = teamIds.every((id) => selectedPersonas.has(id));
               return (
                 <div key={team.id} style={{
-                  border: `1px solid ${T.border}`, borderRadius: 8,
+                  border: `1px solid ${t.border}`, borderRadius: 8,
                   borderLeft: `2px solid ${team.color}`, overflow: 'hidden',
                 }}>
                   <button
@@ -86,14 +90,14 @@ export default function LauncherCustom() {
                     style={{
                       display: 'flex', alignItems: 'center', gap: 10,
                       width: '100%', padding: '12px 16px', cursor: 'pointer',
-                      background: T.surface, border: 'none', textAlign: 'left',
+                      background: t.surface, border: 'none', textAlign: 'left',
                     }}
                   >
-                    <span style={{ fontSize: 13, fontWeight: 600, color: T.text, flex: 1 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: t.text, flex: 1 }}>
                       {team.name}
                     </span>
                     <span style={{
-                      fontSize: 9, fontFamily: font.mono, color: T.textMuted,
+                      fontSize: 9, fontFamily: font.mono, color: t.textMuted,
                     }}>
                       {teamIds.filter((id) => selectedPersonas.has(id)).length}/{team.personas.length}
                     </span>
@@ -111,14 +115,14 @@ export default function LauncherCustom() {
                       {allSelected ? 'None' : 'All'}
                     </button>
                     <span style={{
-                      fontSize: 14, color: T.textMuted,
+                      fontSize: 14, color: t.textMuted,
                       transform: isExpanded ? 'rotate(180deg)' : 'rotate(0)',
                       transition: `transform ${motion.duration.fast}`,
                     }}>{IC.chevDown}</span>
                   </button>
                   {isExpanded && (
                     <div style={{
-                      display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                      display: 'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(260px, 1fr))',
                       gap: 6, padding: '8px 12px 12px',
                     }}>
                       {team.personas.map((p) => (
@@ -138,7 +142,7 @@ export default function LauncherCustom() {
 
         {/* Step 1: Leadership + DA */}
         {launchStep === 1 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div className="gc-enter-right" key={1} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <MonoLabel icon={IC.crown}>Leadership</MonoLabel>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
               <LeaderCard role="Moderator" leader={MOCK_LEADERSHIP.moderator} />
@@ -147,25 +151,25 @@ export default function LauncherCustom() {
 
             <div style={{
               marginTop: 8, padding: 20, borderRadius: 8,
-              background: T.surface, border: `1px solid ${T.border}`,
-              borderLeft: `2px solid ${T.magenta}`,
+              background: t.surface, border: `1px solid ${t.border}`,
+              borderLeft: `2px solid ${t.magenta}`,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                 <div>
-                  <MonoLabel icon={IC.skull} color={T.magenta} style={{ marginBottom: 4 }}>
+                  <MonoLabel icon={IC.skull} color={t.magenta} style={{ marginBottom: 4 }}>
                     Devil&apos;s Advocate
                   </MonoLabel>
-                  <p style={{ fontSize: 11, color: T.textSoft, margin: 0 }}>
+                  <p style={{ fontSize: 11, color: t.textSoft, margin: 0 }}>
                     Adversarial critique based on the Sanhedrin principle
                   </p>
                 </div>
-                <Toggle enabled={daEnabled} onChange={setDaEnabled} color={T.magenta} />
+                <Toggle enabled={daEnabled} onChange={setDaEnabled} color={t.magenta} />
               </div>
 
               {daEnabled && (
                 <div style={{
                   display: 'flex', flexDirection: 'column', gap: 12,
-                  paddingTop: 12, borderTop: `1px solid ${T.border}`,
+                  paddingTop: 12, borderTop: `1px solid ${t.border}`,
                   animation: 'fadeSlideUp 0.2s ease-out',
                 }}>
                   <LeaderCard role="Devil's Advocate" leader={MOCK_LEADERSHIP.da} />
@@ -178,10 +182,10 @@ export default function LauncherCustom() {
                           onClick={() => setDaAggression(id)}
                           style={{
                             flex: 1, padding: '8px 12px', borderRadius: 6, cursor: 'pointer',
-                            background: daAggression === id ? `${color}1a` : T.surfaceRaised,
-                            border: `1px solid ${daAggression === id ? color : T.border}`,
+                            background: daAggression === id ? `${color}1a` : t.surfaceRaised,
+                            border: `1px solid ${daAggression === id ? color : t.border}`,
                             fontSize: 11, fontFamily: font.mono, fontWeight: 600,
-                            color: daAggression === id ? color : T.textMuted,
+                            color: daAggression === id ? color : t.textMuted,
                             textTransform: 'uppercase', letterSpacing: '0.06em',
                           }}
                         >{label}</button>
@@ -189,10 +193,10 @@ export default function LauncherCustom() {
                     </div>
                   </div>
                   <div style={{
-                    fontSize: 9, fontFamily: font.mono, color: T.textMuted,
+                    fontSize: 9, fontFamily: font.mono, color: t.textMuted,
                     display: 'flex', alignItems: 'center', gap: 6,
                   }}>
-                    Model: <span style={{ color: T.magenta }}>{daModel}</span>
+                    Model: <span style={{ color: t.magenta }}>{daModel}</span>
                   </div>
                 </div>
               )}
@@ -202,20 +206,26 @@ export default function LauncherCustom() {
 
         {/* Step 2: Brief */}
         {launchStep === 2 && (
-          <BriefInput brief={brief} onBriefChange={setBrief} summary={summary} />
+          <div className="gc-enter-right" key={2}>
+            <BriefInput brief={brief} onBriefChange={setBrief} summary={summary} />
+          </div>
         )}
       </div>
 
       <div style={{
         display: 'flex', justifyContent: 'flex-end', gap: 8,
-        paddingTop: 16, borderTop: `1px solid ${T.border}`, marginTop: 24,
+        paddingTop: 16, borderTop: `1px solid ${t.border}`, marginTop: 24,
+        position: mobile ? 'sticky' : 'relative',
+        bottom: mobile ? 0 : undefined,
+        background: mobile ? t.bg : 'transparent',
+        zIndex: mobile ? 10 : undefined,
       }}>
         {launchStep < 2 ? (
-          <Btn color={T.cyan} disabled={!canProceed()} onClick={nextStep}>
+          <Btn color={t.cyan} disabled={!canProceed()} onClick={nextStep}>
             Continue <span style={{ fontSize: 14 }}>{IC.arrowRight}</span>
           </Btn>
         ) : (
-          <Btn color={T.gold} large disabled={!canProceed()} onClick={() => navigate('/sim/mock-1')}>
+          <Btn color={t.gold} large disabled={!canProceed()} onClick={() => navigate('/sim/mock-1')}>
             <span style={{ fontSize: 14 }}>{IC.rocket}</span> Launch Simulation
           </Btn>
         )}

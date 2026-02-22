@@ -1,13 +1,15 @@
 import { useNavigate } from 'react-router-dom';
-import { T, font } from '../../design/tokens';
+import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { StepNav, Btn, MonoLabel } from '../../design/shared';
 import { useChamberStore } from '../../stores/chamberStore';
 import { MOCK_PRESETS } from '../../data/mock';
 import PresetCard from './PresetCard';
 import BriefInput from './BriefInput';
+import { useTokens } from '../../hooks/useTokens';
 
 export default function LauncherQuick() {
+  const t = useTokens();
   const navigate = useNavigate();
   const {
     launchStep, setLaunchStep, nextStep, prevStep,
@@ -41,7 +43,7 @@ export default function LauncherQuick() {
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
             background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 11, fontFamily: font.mono, color: T.textMuted,
+            fontSize: 11, fontFamily: font.mono, color: t.textMuted,
           }}
         >
           <span style={{ fontSize: 14 }}>{IC.arrowLeft}</span> Back
@@ -52,8 +54,8 @@ export default function LauncherQuick() {
 
       <div style={{ flex: 1 }}>
         {launchStep === 0 && (
-          <>
-            <MonoLabel icon={IC.temple} color={T.cyan}>Choose a Preset</MonoLabel>
+          <div className="gc-enter-right" key={0}>
+            <MonoLabel icon={IC.temple} color={t.cyan}>Choose a Preset</MonoLabel>
             <div style={{
               display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
               gap: 12, marginTop: 4,
@@ -66,24 +68,26 @@ export default function LauncherQuick() {
                 />
               ))}
             </div>
-          </>
+          </div>
         )}
 
         {launchStep === 1 && (
-          <BriefInput brief={brief} onBriefChange={setBrief} summary={summary} />
+          <div className="gc-enter-right" key={1}>
+            <BriefInput brief={brief} onBriefChange={setBrief} summary={summary} />
+          </div>
         )}
       </div>
 
       <div style={{
         display: 'flex', justifyContent: 'flex-end', gap: 8,
-        paddingTop: 16, borderTop: `1px solid ${T.border}`, marginTop: 24,
+        paddingTop: 16, borderTop: `1px solid ${t.border}`, marginTop: 24,
       }}>
         {launchStep < 1 ? (
-          <Btn color={T.cyan} disabled={!canProceed} onClick={nextStep}>
+          <Btn color={t.cyan} disabled={!canProceed} onClick={nextStep}>
             Continue <span style={{ fontSize: 14 }}>{IC.arrowRight}</span>
           </Btn>
         ) : (
-          <Btn color={T.gold} large disabled={!canProceed} onClick={() => navigate('/sim/mock-1')}>
+          <Btn color={t.gold} large disabled={!canProceed} onClick={() => navigate('/sim/mock-1')}>
             <span style={{ fontSize: 14 }}>{IC.rocket}</span> Launch Simulation
           </Btn>
         )}

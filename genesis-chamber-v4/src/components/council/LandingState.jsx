@@ -5,16 +5,12 @@
 // ─────────────────────────────────────────────────────────
 
 import { useState } from 'react';
-import { T, TLight, font } from '../../design/tokens';
+import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { useAppStore } from '../../stores/appStore';
 import PresetBar from './PresetBar';
 import ChatInput from './ChatInput';
-
-function useTokens() {
-  const theme = useAppStore((s) => s.theme);
-  return theme === 'light' ? { ...T, ...TLight } : T;
-}
+import { useTokens } from '../../hooks/useTokens';
 
 export default function LandingState({ onPreset, onSubmit }) {
   const t = useTokens();
@@ -33,7 +29,7 @@ export default function LandingState({ onPreset, onSubmit }) {
       justifyContent: 'center', flex: 1, padding: '60px 24px',
       maxWidth: 720, margin: '0 auto', width: '100%',
     }}>
-      <div style={{ fontSize: 40, color: T.cyan, marginBottom: 16 }}>{IC.council}</div>
+      <div style={{ fontSize: 40, color: t.cyan, marginBottom: 16 }}>{IC.council}</div>
       <h1 style={{
         fontFamily: font.display, fontSize: 28, fontWeight: 700,
         color: t.text, letterSpacing: '-0.03em',

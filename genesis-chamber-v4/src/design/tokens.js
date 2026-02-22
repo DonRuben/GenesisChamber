@@ -19,6 +19,9 @@ export const T = {
   magenta: '#E5375E',
   green: '#34D399',
   purple: '#8B5CF6',
+  amber: '#F59E0B',
+  red: '#EF4444',
+  blue: '#3B82F6',
 
   // Text
   text: '#E8E6E3',
@@ -28,6 +31,7 @@ export const T = {
   // Borders
   border: 'rgba(255,255,255,0.06)',
   borderHover: 'rgba(255,255,255,0.12)',
+  borderStrong: 'rgba(255,255,255,0.18)',
 
   // DA Arena
   da: {
@@ -66,7 +70,7 @@ export const T = {
   },
 };
 
-// Light theme overrides
+// Light theme overrides — darkened accents for readability on white
 export const TLight = {
   bg: '#F2F2F7',
   surface: '#FFFFFF',
@@ -79,6 +83,18 @@ export const TLight = {
 
   border: 'rgba(0,0,0,0.08)',
   borderHover: 'rgba(0,0,0,0.15)',
+  borderStrong: 'rgba(0,0,0,0.18)',
+
+  // Accents darkened 15-20% for light backgrounds
+  flame: '#D4601A',
+  cyan: '#0099BB',
+  gold: '#CC9200',
+  magenta: '#C42E4E',
+  green: '#0A7A52',
+  purple: '#6D3FC0',
+  amber: '#B87400',
+  red: '#C42E2E',
+  blue: '#2563EB',
 };
 
 // Font stacks
@@ -119,19 +135,24 @@ export const radius = {
   full: 9999,
 };
 
-// Motion
+// Motion — Fibonacci timing + wireframe easings
 export const motion = {
   duration: {
     instant: '80ms',
     fast: '130ms',
-    normal: '200ms',
+    normal: '210ms',
     smooth: '340ms',
     dramatic: '550ms',
+    epic: '890ms',
   },
   easing: {
     default: 'cubic-bezier(0.16, 1, 0.3, 1)',
+    decelerate: 'cubic-bezier(0, 0, 0.2, 1)',
+    accelerate: 'cubic-bezier(0.4, 0, 1, 1)',
+    spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
     bounce: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-    sharp: 'cubic-bezier(0.4, 0, 0.2, 1)',
+    sharp: 'cubic-bezier(0.4, 0, 0.6, 1)',
+    dramatic: 'cubic-bezier(0.16, 1, 0.3, 1)',
   },
 };
 

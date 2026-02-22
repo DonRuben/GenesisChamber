@@ -1,13 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { T, font, motion } from '../../design/tokens';
+import { font, motion } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { StatusBadge } from '../../design/shared';
 import { useKeyboard } from '../../hooks/useKeyboard';
 import { useChamberStore } from '../../stores/chamberStore';
 import { MOCK_TAB_GROUPS } from '../../data/mock';
+import { useTokens } from '../../hooks/useTokens';
 
 export default function GroupedTabBar() {
+  const t = useTokens();
   const navigate = useNavigate();
   const { id } = useParams();
   const { simulation, activeTab, activeSubTab, setActiveTab } = useChamberStore();
@@ -59,7 +61,7 @@ export default function GroupedTabBar() {
   return (
     <div ref={barRef} style={{
       display: 'flex', alignItems: 'center', gap: 2,
-      padding: '0 16px', borderBottom: `1px solid ${T.border}`,
+      padding: '0 16px', borderBottom: `1px solid ${t.border}`,
       position: 'relative',
     }}>
       {MOCK_TAB_GROUPS.map((group, gi) => {
@@ -80,9 +82,9 @@ export default function GroupedTabBar() {
                 display: 'flex', alignItems: 'center', gap: 4,
                 padding: '10px 12px', cursor: 'pointer',
                 background: 'none', border: 'none',
-                borderBottom: `2px solid ${active ? T.cyan : 'transparent'}`,
+                borderBottom: `2px solid ${active ? t.cyan : 'transparent'}`,
                 fontSize: 11, fontFamily: font.mono, fontWeight: 600,
-                color: active ? T.text : T.textMuted,
+                color: active ? t.text : t.textMuted,
                 textTransform: 'uppercase', letterSpacing: '0.06em',
                 transition: `all ${motion.duration.fast}`,
               }}
@@ -90,7 +92,7 @@ export default function GroupedTabBar() {
               {group.label}
               {hasDropdown && (
                 <span style={{
-                  fontSize: 10, color: T.textMuted,
+                  fontSize: 10, color: t.textMuted,
                   transform: openDropdown === group.key ? 'rotate(180deg)' : 'rotate(0)',
                   transition: `transform ${motion.duration.fast}`,
                 }}>{IC.chevDown}</span>
@@ -102,7 +104,7 @@ export default function GroupedTabBar() {
               <div style={{
                 position: 'absolute', top: '100%', left: 0, zIndex: 50,
                 minWidth: 160, marginTop: 2, padding: 4,
-                background: T.surfaceRaised, border: `1px solid ${T.border}`,
+                background: t.surfaceRaised, border: `1px solid ${t.border}`,
                 borderRadius: 6, animation: 'fadeSlideUp 0.15s ease-out',
               }}>
                 {group.tabs.map((tab) => {
@@ -114,9 +116,9 @@ export default function GroupedTabBar() {
                       style={{
                         display: 'block', width: '100%', padding: '8px 12px',
                         cursor: 'pointer', textAlign: 'left', borderRadius: 4,
-                        background: tabActive ? `${T.cyan}0d` : 'transparent',
+                        background: tabActive ? `${t.cyan}0d` : 'transparent',
                         border: 'none',
-                        fontSize: 11, color: tabActive ? T.text : T.textSoft,
+                        fontSize: 11, color: tabActive ? t.text : t.textSoft,
                         fontWeight: tabActive ? 600 : 400,
                         transition: `background ${motion.duration.fast}`,
                       }}

@@ -1,19 +1,21 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { T, font } from '../../design/tokens';
+import { font } from '../../design/tokens';
+import { useTokens } from '../../hooks/useTokens';
 import { IC } from '../../design/icons';
 import { Btn } from '../../design/shared';
 import { useChamberStore } from '../../stores/chamberStore';
 
 export default function QuickActions() {
+  const t = useTokens();
   const navigate = useNavigate();
   const { id } = useParams();
   const setActiveTab = useChamberStore((s) => s.setActiveTab);
 
   const actions = [
-    { label: 'Council Detail', icon: IC.layers, color: T.cyan, onClick: () => setActiveTab('council', 'concepts') },
-    { label: 'Full Gallery', icon: IC.gallery, color: T.flame, onClick: () => navigate(`/sim/${id}/gallery`) },
-    { label: 'DA Arena', icon: IC.skull, color: T.magenta, onClick: () => navigate(`/sim/${id}/da`) },
-    { label: 'Export', icon: IC.exportArrow, color: T.gold, onClick: () => setActiveTab('export', 'output') },
+    { label: 'Council Detail', icon: IC.layers, color: t.cyan, onClick: () => setActiveTab('council', 'concepts') },
+    { label: 'Full Gallery', icon: IC.gallery, color: t.flame, onClick: () => navigate(`/sim/${id}/gallery`) },
+    { label: 'DA Arena', icon: IC.skull, color: t.magenta, onClick: () => navigate(`/sim/${id}/da`) },
+    { label: 'Export', icon: IC.exportArrow, color: t.gold, onClick: () => setActiveTab('export', 'output') },
   ];
 
   return (

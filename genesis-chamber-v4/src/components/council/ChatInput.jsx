@@ -5,15 +5,11 @@
 // ─────────────────────────────────────────────────────────
 
 import { useRef, useEffect } from 'react';
-import { T, TLight, font } from '../../design/tokens';
+import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { useAppStore } from '../../stores/appStore';
 import { useCouncilStore } from '../../stores/councilStore';
-
-function useTokens() {
-  const theme = useAppStore((s) => s.theme);
-  return theme === 'light' ? { ...T, ...TLight } : T;
-}
+import { useTokens } from '../../hooks/useTokens';
 
 export default function ChatInput({ value, onChange, onSubmit, placeholder, disabled }) {
   const t = useTokens();
@@ -64,7 +60,7 @@ export default function ChatInput({ value, onChange, onSubmit, placeholder, disa
         width: 40, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: 'transparent', border: 'none',
         cursor: hasText ? 'pointer' : 'default',
-        color: hasText ? T.flame : t.textMuted,
+        color: hasText ? t.flame : t.textMuted,
         fontSize: 16, flexShrink: 0, transition: 'color 0.15s',
       }}>{IC.send}</button>
     </div>

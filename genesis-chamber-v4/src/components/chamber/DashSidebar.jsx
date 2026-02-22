@@ -1,9 +1,10 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { T, font, motion } from '../../design/tokens';
+import { font, motion } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { StatusBadge } from '../../design/shared';
 import { useChamberStore } from '../../stores/chamberStore';
 import { MOCK_TAB_GROUPS } from '../../data/mock';
+import { useTokens } from '../../hooks/useTokens';
 
 const navIcons = {
   overview: IC.home, concepts: IC.layers, critiques: IC.evaluate,
@@ -12,6 +13,7 @@ const navIcons = {
 };
 
 export default function DashSidebar() {
+  const t = useTokens();
   const navigate = useNavigate();
   const { id } = useParams();
   const { simulation, activeTab, activeSubTab, setActiveTab } = useChamberStore();
@@ -42,14 +44,14 @@ export default function DashSidebar() {
   return (
     <div style={{
       width: 200, minWidth: 200, height: '100%',
-      background: T.surface, borderRight: `1px solid ${T.border}`,
+      background: t.surface, borderRight: `1px solid ${t.border}`,
       display: 'flex', flexDirection: 'column', padding: '16px 0',
       overflow: 'auto',
     }}>
       {/* Sim Name + Status */}
-      <div style={{ padding: '0 16px 16px', borderBottom: `1px solid ${T.border}` }}>
+      <div style={{ padding: '0 16px 16px', borderBottom: `1px solid ${t.border}` }}>
         <div style={{
-          fontSize: 13, fontWeight: 600, color: T.text,
+          fontSize: 13, fontWeight: 600, color: t.text,
           marginBottom: 6, lineHeight: 1.3,
         }}>
           {simulation?.name || 'Simulation'}
@@ -63,7 +65,7 @@ export default function DashSidebar() {
           <div key={group.key} style={{ marginBottom: 4 }}>
             {group.tabs.length > 1 && (
               <div style={{
-                fontSize: 9, fontFamily: font.mono, color: T.textMuted,
+                fontSize: 9, fontFamily: font.mono, color: t.textMuted,
                 textTransform: 'uppercase', letterSpacing: '0.12em',
                 padding: '8px 16px 4px',
               }}>{group.label}</div>
@@ -79,23 +81,23 @@ export default function DashSidebar() {
                   style={{
                     display: 'flex', alignItems: 'center', gap: 8,
                     width: '100%', padding: '8px 16px', cursor: 'pointer',
-                    background: active ? `${T.cyan}0d` : 'transparent',
-                    borderLeft: active ? `2px solid ${T.cyan}` : '2px solid transparent',
+                    background: active ? `${t.cyan}0d` : 'transparent',
+                    borderLeft: active ? `2px solid ${t.cyan}` : '2px solid transparent',
                     border: 'none', borderLeftStyle: 'solid',
-                    borderLeftWidth: 2, borderLeftColor: active ? T.cyan : 'transparent',
+                    borderLeftWidth: 2, borderLeftColor: active ? t.cyan : 'transparent',
                     textAlign: 'left',
                     transition: `all ${motion.duration.fast}`,
                   }}
                 >
-                  {icon && <span style={{ fontSize: 14, color: active ? T.cyan : T.textMuted }}>{icon}</span>}
+                  {icon && <span style={{ fontSize: 14, color: active ? t.cyan : t.textMuted }}>{icon}</span>}
                   <span style={{
-                    fontSize: 12, color: active ? T.text : T.textSoft,
+                    fontSize: 12, color: active ? t.text : t.textSoft,
                     fontWeight: active ? 600 : 400, flex: 1,
                   }}>{tab.label}</span>
                   {count > 0 && (
                     <span style={{
-                      fontSize: 9, fontFamily: font.mono, color: T.textMuted,
-                      padding: '1px 6px', background: T.surfaceRaised, borderRadius: 8,
+                      fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+                      padding: '1px 6px', background: t.surfaceRaised, borderRadius: 8,
                     }}>{count}</span>
                   )}
                 </button>

@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { T, font, motion } from '../../design/tokens';
+import { font, motion } from '../../design/tokens';
+import { useTokens } from '../../hooks/useTokens';
 import { IC } from '../../design/icons';
 import MediaCard from './MediaCard';
 
 export default function GalleryConceptView({ media, onItemClick }) {
+  const t = useTokens();
   const [collapsed, setCollapsed] = useState({});
 
   // Group by concept
@@ -27,12 +29,12 @@ export default function GalleryConceptView({ media, onItemClick }) {
       {sorted.map(([concept, group], i) => {
         const isCollapsed = collapsed[concept];
         const isEliminated = group.status === 'eliminated';
-        const borderColor = group.status === 'winner' ? T.gold : isEliminated ? T.magenta : T.cyan;
+        const borderColor = group.status === 'winner' ? t.gold : isEliminated ? t.magenta : t.cyan;
 
         return (
           <div key={concept} style={{
             borderLeft: `2px solid ${borderColor}`, borderRadius: 8,
-            background: T.surface, overflow: 'hidden',
+            background: t.surface, overflow: 'hidden',
             opacity: isEliminated ? 0.6 : 1,
           }}>
             <button
@@ -48,22 +50,22 @@ export default function GalleryConceptView({ media, onItemClick }) {
                 color: borderColor,
               }}>#{rankMap[group.status] || i + 1}</span>
               <span style={{
-                fontSize: 13, fontWeight: 600, color: T.text, flex: 1,
+                fontSize: 13, fontWeight: 600, color: t.text, flex: 1,
                 textDecoration: isEliminated ? 'line-through' : 'none',
               }}>{concept}</span>
               <span style={{
-                fontSize: 9, fontFamily: font.mono, color: T.textMuted,
+                fontSize: 9, fontFamily: font.mono, color: t.textMuted,
               }}>{group.creator}</span>
               <span style={{
                 fontSize: 14, fontFamily: font.mono, fontWeight: 700,
                 color: borderColor,
               }}>{group.score}</span>
               <span style={{
-                fontSize: 9, fontFamily: font.mono, color: T.textMuted,
-                padding: '2px 6px', background: T.surfaceRaised, borderRadius: 3,
+                fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+                padding: '2px 6px', background: t.surfaceRaised, borderRadius: 3,
               }}>{group.items.length} media</span>
               <span style={{
-                fontSize: 14, color: T.textMuted,
+                fontSize: 14, color: t.textMuted,
                 transform: isCollapsed ? 'rotate(0)' : 'rotate(180deg)',
                 transition: `transform ${motion.duration.fast}`,
               }}>{IC.chevDown}</span>

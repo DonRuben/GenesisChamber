@@ -1,9 +1,11 @@
-import { T, font } from '../../design/tokens';
+import { font } from '../../design/tokens';
+import { useTokens } from '../../hooks/useTokens';
 import { IC } from '../../design/icons';
 import { useChamberStore } from '../../stores/chamberStore';
 import ConceptCard from './ConceptCard';
 
 export default function ConceptGrid() {
+  const t = useTokens();
   const { simulation, expandedConceptId, setExpandedConceptId, showEliminated, setShowEliminated } = useChamberStore();
   const concepts = simulation?.concepts || [];
 
@@ -43,20 +45,20 @@ export default function ConceptGrid() {
           <div style={{
             display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0',
           }}>
-            <div style={{ flex: 1, height: 1, background: `${T.flame}33` }} />
+            <div style={{ flex: 1, height: 1, background: `${t.flame}33` }} />
             <button
               onClick={() => setShowEliminated(!showEliminated)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 background: 'none', border: 'none', cursor: 'pointer',
-                fontSize: 10, fontFamily: font.mono, color: T.textMuted,
+                fontSize: 10, fontFamily: font.mono, color: t.textMuted,
                 textTransform: 'uppercase', letterSpacing: '0.08em',
               }}
             >
-              <span style={{ fontSize: 14, color: T.magenta }}>{IC.skull}</span>
+              <span style={{ fontSize: 14, color: t.magenta }}>{IC.skull}</span>
               {showEliminated ? 'Hide' : 'Show'} Eliminated ({eliminated.length})
             </button>
-            <div style={{ flex: 1, height: 1, background: `${T.flame}33` }} />
+            <div style={{ flex: 1, height: 1, background: `${t.flame}33` }} />
           </div>
 
           {showEliminated && (

@@ -9,25 +9,27 @@ import Landing from './components/Landing';
 import LLMCouncil from './components/council/LLMCouncil';
 import { DAArena } from './components/arena';
 import { Launcher, Dashboard, Gallery } from './components/chamber';
-import { T, font } from './design/tokens';
+import { font } from './design/tokens';
+import { useTokens } from './hooks/useTokens';
 
 function NotFound() {
+  const t = useTokens();
   return (
     <div style={{
       flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexDirection: 'column', gap: 12,
     }}>
       <div style={{
-        padding: '24px 32px', background: T.surface,
-        border: `1px solid ${T.border}`, borderRadius: 8,
-        borderLeft: `2px solid ${T.textMuted}`, textAlign: 'center',
+        padding: '24px 32px', background: t.surface,
+        border: `1px solid ${t.border}`, borderRadius: 8,
+        borderLeft: `2px solid ${t.textMuted}`, textAlign: 'center',
       }}>
         <div style={{
           fontSize: 28, fontFamily: font.display, fontWeight: 700,
-          color: T.text, letterSpacing: '-0.03em',
+          color: t.text, letterSpacing: '-0.03em',
         }}>404</div>
         <div style={{
-          fontSize: 10, fontFamily: font.mono, color: T.textMuted,
+          fontSize: 10, fontFamily: font.mono, color: t.textMuted,
           marginTop: 8, letterSpacing: '0.04em', textTransform: 'uppercase',
         }}>Page not found</div>
       </div>

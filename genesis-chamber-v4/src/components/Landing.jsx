@@ -6,17 +6,13 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { T, TLight, font } from '../design/tokens';
+import { font } from '../design/tokens';
 import { IC } from '../design/icons';
 import { Tag, MonoLabel } from '../design/shared';
 import { useAppStore } from '../stores/appStore';
 import { RECENT_SIMS } from '../data/mock';
-
-// ── Resolve tokens for theme ──
-function useTokens() {
-  const theme = useAppStore((s) => s.theme);
-  return theme === 'light' ? { ...T, ...TLight } : T;
-}
+import { useTokens } from '../hooks/useTokens';
+import { useIsMobile } from '../hooks/useMediaQuery';
 
 // ── Mode Card ──
 function ModeCard({ title, subtitle, description, icon, accentColor, features, t }) {
@@ -24,7 +20,7 @@ function ModeCard({ title, subtitle, description, icon, accentColor, features, t
   const navigate = useNavigate();
 
   const handleClick = () => {
-    if (accentColor === T.cyan) navigate('/council');
+    if (accentColor === t.cyan) navigate('/council');
     else navigate('/launch');
   };
 
@@ -91,16 +87,16 @@ function RecentSimCard({ sim, t }) {
   return (
     <button style={{
       background: t.surface,
-      borderLeft: `2px solid ${sim.mode === 'council' ? T.cyan : T.flame}`,
+      borderLeft: `2px solid ${sim.mode === 'council' ? t.cyan : t.flame}`,
       borderTop: 'none', borderRight: 'none', borderBottom: 'none',
       borderRadius: 8, padding: '10px 13px', textAlign: 'left', cursor: 'pointer',
       display: 'flex', alignItems: 'center', gap: 13, width: '100%',
     }}>
       <div style={{
         width: 32, height: 32, borderRadius: 8,
-        background: `${sim.mode === 'council' ? T.cyan : T.flame}14`,
+        background: `${sim.mode === 'council' ? t.cyan : t.flame}14`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 16, color: sim.mode === 'council' ? T.cyan : T.flame, flexShrink: 0,
+        fontSize: 16, color: sim.mode === 'council' ? t.cyan : t.flame, flexShrink: 0,
       }}>
         {sim.mode === 'council' ? IC.brain : IC.bolt}
       </div>
@@ -113,7 +109,7 @@ function RecentSimCard({ sim, t }) {
           fontFamily: font.mono, fontSize: 10, color: t.textMuted, marginTop: 2,
         }}>{sim.date} · {sim.models}</div>
       </div>
-      <Tag label={sim.status} color={sim.status === 'complete' ? T.green : T.gold} />
+      <Tag label={sim.status} color={sim.status === 'complete' ? t.green : t.gold} />
     </button>
   );
 }
@@ -121,6 +117,7 @@ function RecentSimCard({ sim, t }) {
 // ── Main Landing Component ──
 export default function Landing() {
   const t = useTokens();
+  const mobile = useIsMobile();
 
   return (
     <div style={{
@@ -132,7 +129,7 @@ export default function Landing() {
       {/* Hero */}
       <div style={{ textAlign: 'center', marginBottom: 55 }}>
         <h1 style={{
-          fontFamily: font.display, fontSize: 44, fontWeight: 700,
+          fontFamily: font.display, fontSize: mobile ? 28 : 44, fontWeight: 700,
           color: t.text, margin: 0, letterSpacing: '-0.02em',
         }}>Genesis Chamber</h1>
         <p style={{
@@ -142,7 +139,7 @@ export default function Landing() {
 
       {/* Mode Cards */}
       <div style={{
-        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16,
+        display: 'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr', gap: 16,
         maxWidth: 640, width: '100%', marginBottom: 34,
       }}>
         <ModeCard
@@ -151,7 +148,7 @@ export default function Landing() {
           subtitle="Full multi-LLM simulation"
           description="5 AI models compete, critique, and evolve concepts through multiple rounds"
           icon={IC.brain}
-          accentColor={T.cyan}
+          accentColor={t.cyan}
           features={['Multi-Round', 'DA Arena', 'Media Gen']}
         />
         <ModeCard
@@ -160,7 +157,7 @@ export default function Landing() {
           subtitle="Instant concept generation"
           description="Fast single-round ideation with 3 models, no competitive rounds"
           icon={IC.bolt}
-          accentColor={T.flame}
+          accentColor={t.flame}
           features={['Single Round', '3 Models', 'Fast']}
         />
       </div>

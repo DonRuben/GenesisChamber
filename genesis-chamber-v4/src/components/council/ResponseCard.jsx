@@ -4,21 +4,17 @@
 // Ref: gc-v4-llm-council.jsx:249-306
 // ─────────────────────────────────────────────────────────
 
-import { T, TLight, font } from '../../design/tokens';
+import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { Tag, ModelDot } from '../../design/shared';
 import { useAppStore } from '../../stores/appStore';
 import { MODELS } from '../../data/mock';
-
-function useTokens() {
-  const theme = useAppStore((s) => s.theme);
-  return theme === 'light' ? { ...T, ...TLight } : T;
-}
+import { useTokens } from '../../hooks/useTokens';
 
 export default function ResponseCard({ response, index, revealed, isWinner, rank }) {
   const t = useTokens();
   const model = MODELS.find((m) => m.id === response.modelId);
-  const scoreColor = response.score >= 85 ? T.green : response.score >= 75 ? T.gold : t.textSoft;
+  const scoreColor = response.score >= 85 ? t.green : response.score >= 75 ? t.gold : t.textSoft;
 
   return (
     <div style={{
@@ -33,7 +29,7 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
             <>
               <ModelDot color={model.color} />
               <span style={{ fontSize: 12, fontWeight: 600, color: t.text }}>{model.name}</span>
-              {isWinner && <Tag color={T.gold}>{IC.trophy} BEST</Tag>}
+              {isWinner && <Tag color={t.gold}>{IC.trophy} BEST</Tag>}
             </>
           ) : (
             <>

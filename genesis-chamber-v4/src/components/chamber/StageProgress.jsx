@@ -1,6 +1,7 @@
-import { T, font, motion } from '../../design/tokens';
+import { font, motion } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { MOCK_STAGES } from '../../data/mock';
+import { useTokens } from '../../hooks/useTokens';
 
 const stageIcons = {
   plus: IC.plus, evaluate: IC.evaluate, shield: IC.shield,
@@ -8,6 +9,7 @@ const stageIcons = {
 };
 
 export default function StageProgress({ stages = MOCK_STAGES }) {
+  const t = useTokens();
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 0,
@@ -17,7 +19,7 @@ export default function StageProgress({ stages = MOCK_STAGES }) {
         const icon = stageIcons[stage.icon];
         const isComplete = stage.status === 'complete';
         const isActive = stage.status === 'active';
-        const color = isComplete || isActive ? stage.color : T.textMuted;
+        const color = isComplete || isActive ? stage.color : t.textMuted;
 
         return (
           <div key={stage.name} style={{ display: 'flex', alignItems: 'center' }}>
@@ -27,6 +29,7 @@ export default function StageProgress({ stages = MOCK_STAGES }) {
               background: isActive ? `${color}1a` : isComplete ? `${color}0d` : 'transparent',
               border: isActive ? `1px solid ${color}44` : '1px solid transparent',
               transition: `all ${motion.duration.normal}`,
+              transform: isActive ? 'scale(1.05)' : 'scale(1)',
             }}>
               <span style={{ fontSize: 12, color }}>
                 {isComplete ? IC.check : icon}
@@ -37,16 +40,15 @@ export default function StageProgress({ stages = MOCK_STAGES }) {
                 whiteSpace: 'nowrap',
               }}>{stage.name}</span>
               {isActive && (
-                <span style={{
+                <span className="gc-pulse" style={{
                   width: 6, height: 6, borderRadius: 3, background: color,
-                  animation: 'pulse 1.5s infinite',
                 }} />
               )}
             </div>
             {i < stages.length - 1 && (
               <div style={{
                 width: 16, height: 1,
-                background: isComplete ? `${stage.color}66` : T.border,
+                background: isComplete ? `${stage.color}66` : t.border,
                 transition: `background ${motion.duration.normal}`,
               }} />
             )}

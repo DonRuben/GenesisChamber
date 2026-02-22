@@ -1,0 +1,125 @@
+/* ─────────────────────────────────────────────────────────
+   GENESIS CHAMBER V4 — MOTION SYSTEM
+   13 named animations, 6 easings (via tokens.js),
+   Fibonacci timing, reduced-motion support
+   ───────────────────────────────────────────────────────── */
+
+/* ── Keyframes ── */
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(13px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeSlideRight {
+  from { opacity: 0; transform: translateX(-13px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes badgePop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  70%  { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+@keyframes accentPulse {
+  0%, 100% { border-left-color: currentColor; opacity: 1; }
+  50%      { border-left-color: currentColor; opacity: 0.4; }
+}
+
+@keyframes ratingPulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+@keyframes launchPulse {
+  0%   { transform: scale(1); border-color: rgba(242, 113, 35, 0.3); }
+  50%  { transform: scale(1.02); border-color: rgba(242, 113, 35, 0.7); }
+  100% { transform: scale(1); border-color: rgba(242, 113, 35, 0.3); }
+}
+
+@keyframes winnerReveal {
+  0%   { opacity: 0; transform: scale(0.96); border-left-width: 0px; }
+  60%  { opacity: 1; transform: scale(1.01); border-left-width: 3px; }
+  100% { opacity: 1; transform: scale(1); border-left-width: 2px; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+/* ── Utility Classes ── */
+
+.gc-enter {
+  animation: fadeSlideUp 210ms cubic-bezier(0, 0, 0.2, 1) both;
+}
+
+.gc-enter-right {
+  animation: fadeSlideRight 210ms cubic-bezier(0, 0, 0.2, 1) both;
+}
+
+.gc-scale-in {
+  animation: scaleIn 340ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.gc-badge-pop {
+  animation: badgePop 130ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.gc-skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+[data-theme="light"] .gc-skeleton {
+  background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 75%);
+  background-size: 200% 100%;
+}
+
+.gc-pulse {
+  animation: accentPulse 2s infinite ease-in-out;
+}
+
+.gc-winner-reveal {
+  animation: winnerReveal 550ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.gc-launch-pulse {
+  animation: launchPulse 890ms cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.gc-rating-pulse {
+  animation: ratingPulse 210ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Stagger children — up to 8 items with 50ms incremental delay */
+.gc-stagger > *:nth-child(1) { animation: fadeSlideUp 210ms cubic-bezier(0, 0, 0.2, 1) both; animation-delay: 0ms; }
+.gc-stagger > *:nth-child(2) { animation: fadeSlideUp 210ms cubic-bezier(0, 0, 0.2, 1) both; animation-delay: 50ms; }
+.gc-stagger > *:nth-child(3) { animation: fadeSlideUp 210ms cubic-bezier(0, 0, 0.2, 1) both; animation-delay: 100ms; }
+.gc-stagger > *:nth-child(4) { animation: fadeSlideUp 210ms cubic-bezier(0, 0, 0.2, 1) both; animation-delay: 150ms; }
+.gc-stagger > *:nth-child(5) { animation: fadeSlideUp 210ms cubic-bezier(0, 0, 0.2, 1) both; animation-delay: 200ms; }
+.gc-stagger > *:nth-child(6) { animation: fadeSlideUp 210ms cubic-bezier(0, 0, 0.2, 1) both; animation-delay: 250ms; }
+.gc-stagger > *:nth-child(7) { animation: fadeSlideUp 210ms cubic-bezier(0, 0, 0.2, 1) both; animation-delay: 300ms; }
+.gc-stagger > *:nth-child(8) { animation: fadeSlideUp 210ms cubic-bezier(0, 0, 0.2, 1) both; animation-delay: 350ms; }
+
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

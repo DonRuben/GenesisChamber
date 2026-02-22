@@ -4,15 +4,10 @@
 // Ref: gc-v4-llm-council.jsx:110-129
 // ─────────────────────────────────────────────────────────
 
-import { T, TLight } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { useAppStore } from '../../stores/appStore';
 import { PRESETS } from '../../data/mock';
-
-function useTokens() {
-  const theme = useAppStore((s) => s.theme);
-  return theme === 'light' ? { ...T, ...TLight } : T;
-}
+import { useTokens } from '../../hooks/useTokens';
 
 const PRESET_ICONS = {
   compare: IC.compare,

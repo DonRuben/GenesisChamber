@@ -4,17 +4,13 @@
 // Ref: gc-v4-llm-council.jsx:369-456
 // ─────────────────────────────────────────────────────────
 
-import { T, TLight, font } from '../../design/tokens';
+import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { ModelDot } from '../../design/shared';
 import { useAppStore } from '../../stores/appStore';
 import { useCouncilStore } from '../../stores/councilStore';
 import { MODELS } from '../../data/mock';
-
-function useTokens() {
-  const theme = useAppStore((s) => s.theme);
-  return theme === 'light' ? { ...T, ...TLight } : T;
-}
+import { useTokens } from '../../hooks/useTokens';
 
 export default function SettingsPanel() {
   const t = useTokens();
@@ -105,7 +101,7 @@ export default function SettingsPanel() {
             background: t.surfaceRaised, border: `1px solid ${t.border}`, borderRadius: 6,
             cursor: 'pointer',
           }}>
-          <span style={{ fontSize: 14, color: anonymized ? T.cyan : t.textMuted }}>
+          <span style={{ fontSize: 14, color: anonymized ? t.cyan : t.textMuted }}>
             {anonymized ? IC.eyeOff : IC.eye}
           </span>
           <div style={{ flex: 1, textAlign: 'left' }}>
@@ -116,7 +112,7 @@ export default function SettingsPanel() {
           </div>
           <div style={{
             width: 36, height: 20, borderRadius: 10, padding: 2,
-            background: anonymized ? T.cyan : t.surfaceHover,
+            background: anonymized ? t.cyan : t.surfaceHover,
             transition: 'background 0.15s',
           }}>
             <div style={{

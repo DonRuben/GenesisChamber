@@ -4,7 +4,7 @@
 // Ref: gc-v4-llm-council.jsx:190-363
 // ─────────────────────────────────────────────────────────
 
-import { T, TLight, font } from '../../design/tokens';
+import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { Tag, ModelDot } from '../../design/shared';
 import { useAppStore } from '../../stores/appStore';
@@ -13,11 +13,7 @@ import { MODELS, PRESETS, MOCK_RESPONSES } from '../../data/mock';
 import ResponseCard from './ResponseCard';
 import SynthesisPanel from './SynthesisPanel';
 import ChatInput from './ChatInput';
-
-function useTokens() {
-  const theme = useAppStore((s) => s.theme);
-  return theme === 'light' ? { ...T, ...TLight } : T;
-}
+import { useTokens } from '../../hooks/useTokens';
 
 export default function ConversationView() {
   const t = useTokens();
@@ -47,7 +43,7 @@ export default function ConversationView() {
           <div style={{
             fontSize: 16, fontWeight: 600, color: t.text, lineHeight: 1.6,
             padding: '16px 20px', background: t.surface, borderRadius: 8,
-            borderLeft: `2px solid ${T.cyan}`,
+            borderLeft: `2px solid ${t.cyan}`,
           }}>
             {question}
           </div>

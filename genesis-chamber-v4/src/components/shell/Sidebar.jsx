@@ -5,19 +5,11 @@
 // ─────────────────────────────────────────────────────────
 
 import { useState } from 'react';
-import { T, TLight, font } from '../../design/tokens';
+import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { useAppStore } from '../../stores/appStore';
 import { CONVERSATIONS } from '../../data/mock';
-
-// ── Resolve tokens based on theme ──
-function useTokens() {
-  const theme = useAppStore((s) => s.theme);
-  if (theme === 'light') {
-    return { ...T, ...TLight };
-  }
-  return T;
-}
+import { useTokens } from '../../hooks/useTokens';
 
 // ── Logo ──
 function Logo({ collapsed, t }) {
@@ -26,7 +18,7 @@ function Logo({ collapsed, t }) {
       <div style={{ padding: '20px 0', display: 'flex', justifyContent: 'center' }}>
         <span style={{
           fontFamily: font.display, fontSize: 20, fontWeight: 700,
-          color: T.flame, letterSpacing: '-0.03em',
+          color: t.flame, letterSpacing: '-0.03em',
         }}>G</span>
       </div>
     );
@@ -37,7 +29,7 @@ function Logo({ collapsed, t }) {
         fontFamily: font.display, fontSize: 16, fontWeight: 700,
         letterSpacing: '-0.03em', color: t.text,
       }}>
-        <span style={{ color: T.flame }}>Genesis</span>Chamber
+        <span style={{ color: t.flame }}>Genesis</span>Chamber
       </div>
       <div style={{
         fontSize: 8, fontFamily: font.mono, fontWeight: 500,
@@ -56,8 +48,8 @@ function ModeTabs({ collapsed, t }) {
   const setMode = useAppStore((s) => s.setMode);
 
   const modes = [
-    { key: 'council', label: 'LLM Council', icon: IC.council, color: T.cyan },
-    { key: 'genesis', label: 'Genesis Chamber', icon: IC.genesis, color: T.flame },
+    { key: 'council', label: 'LLM Council', icon: IC.council, color: t.cyan },
+    { key: 'genesis', label: 'Genesis Chamber', icon: IC.genesis, color: t.flame },
   ];
 
   if (collapsed) {
@@ -112,7 +104,7 @@ function NewConversationBtn({ collapsed, t }) {
           style={{
             width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: 'transparent', border: `1px solid ${t.border}`, borderRadius: 6,
-            borderLeft: `2px solid ${T.flame}`, cursor: 'pointer', color: T.flame, fontSize: 16,
+            borderLeft: `2px solid ${t.flame}`, cursor: 'pointer', color: t.flame, fontSize: 16,
             transition: 'border-color 0.15s',
           }}
         >
@@ -128,13 +120,13 @@ function NewConversationBtn({ collapsed, t }) {
         style={{
           width: '100%', padding: '11px 16px', display: 'flex', alignItems: 'center', gap: 10,
           background: 'transparent', border: `1px solid ${t.border}`, borderRadius: 6,
-          borderLeft: `2px solid ${T.flame}`, cursor: 'pointer',
+          borderLeft: `2px solid ${t.flame}`, cursor: 'pointer',
           transition: 'border-color 0.15s, background 0.15s',
         }}
         onMouseEnter={(e) => { e.currentTarget.style.background = t.surfaceRaised; e.currentTarget.style.borderColor = t.borderHover; }}
         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = t.border; }}
       >
-        <span style={{ fontSize: 15, color: T.flame }}>{IC.plus}</span>
+        <span style={{ fontSize: 15, color: t.flame }}>{IC.plus}</span>
         <span style={{ fontSize: 12, fontWeight: 600, color: t.text, letterSpacing: '0.01em' }}>New Conversation</span>
       </button>
     </div>
@@ -178,7 +170,7 @@ function ConversationList({ activeId, onSelect, collapsed, t }) {
               width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: activeId === c.id ? t.surfaceRaised : 'transparent',
               border: 'none', borderRadius: 4, cursor: 'pointer',
-              borderLeft: `2px solid ${activeId === c.id ? T.cyan : 'transparent'}`,
+              borderLeft: `2px solid ${activeId === c.id ? t.cyan : 'transparent'}`,
               color: activeId === c.id ? t.text : t.textMuted, fontSize: 14,
             }}
           >
@@ -206,7 +198,7 @@ function ConversationList({ activeId, onSelect, collapsed, t }) {
             width: '100%', padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 4,
             background: activeId === c.id ? t.surfaceRaised : 'transparent',
             border: 'none', cursor: 'pointer', textAlign: 'left',
-            borderLeft: `2px solid ${activeId === c.id ? T.cyan : 'transparent'}`,
+            borderLeft: `2px solid ${activeId === c.id ? t.cyan : 'transparent'}`,
             transition: 'all 0.13s',
           }}
           onMouseEnter={(e) => { if (activeId !== c.id) e.currentTarget.style.background = t.surfaceHover; }}

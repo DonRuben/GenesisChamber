@@ -7,7 +7,8 @@
 // ─────────────────────────────────────────────────────────
 
 import { useEffect, useCallback } from 'react';
-import { T, font } from '../../design/tokens';
+import { font } from '../../design/tokens';
+import { useTokens } from '../../hooks/useTokens';
 import { IC } from '../../design/icons';
 import { Tag, MonoLabel, ScoreRing, Dots, AggressionMeter } from '../../design/shared';
 import { useArenaStore } from '../../stores/arenaStore';
@@ -18,6 +19,7 @@ import TrainingReport, { computeStats } from './TrainingReport';
 
 // ── Round Timeline ──
 function RoundTimeline({ rounds, activeRound, onSelect, interactions }) {
+  const t = useTokens();
   return (
     <div style={{ display: 'flex', gap: 2, marginBottom: 24 }}>
       {rounds.map(r => {
@@ -26,15 +28,15 @@ function RoundTimeline({ rounds, activeRound, onSelect, interactions }) {
         return (
           <button key={r} onClick={() => onSelect(active ? null : r)} style={{
             flex: 1, padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 4,
-            background: active || !activeRound ? T.surface : 'transparent',
-            border: `1px solid ${active ? T.borderHover : T.border}`, borderRadius: 6,
-            borderLeft: `2px solid ${active ? T.magenta : 'transparent'}`,
+            background: active || !activeRound ? t.surface : 'transparent',
+            border: `1px solid ${active ? t.borderHover : t.border}`, borderRadius: 6,
+            borderLeft: `2px solid ${active ? t.magenta : 'transparent'}`,
             cursor: 'pointer', transition: 'all 0.13s',
           }}>
-            <MonoLabel color={active ? T.magenta : T.textMuted} style={{ marginBottom: 0 }}>
+            <MonoLabel color={active ? t.magenta : t.textMuted} style={{ marginBottom: 0 }}>
               Round {r}
             </MonoLabel>
-            <span style={{ fontSize: 11, fontFamily: font.mono, color: T.textSoft }}>
+            <span style={{ fontSize: 11, fontFamily: font.mono, color: t.textSoft }}>
               {ct} challenge{ct !== 1 ? 's' : ''}
             </span>
           </button>
@@ -46,12 +48,13 @@ function RoundTimeline({ rounds, activeRound, onSelect, interactions }) {
 
 // ── Sidebar Challenge List Item ──
 function ListItem({ inter, active, onClick }) {
+  const t = useTokens();
   const { attack: a, concept: c, verdict: v } = inter;
   return (
     <div onClick={onClick} style={{
       padding: '14px 16px', cursor: 'pointer',
-      background: active ? T.surfaceRaised : 'transparent',
-      borderLeft: `2px solid ${active ? T.magenta : 'transparent'}`,
+      background: active ? t.surfaceRaised : 'transparent',
+      borderLeft: `2px solid ${active ? t.magenta : 'transparent'}`,
       transition: 'all 0.13s',
     }}>
       <div style={{
@@ -59,24 +62,24 @@ function ListItem({ inter, active, onClick }) {
         marginBottom: 6,
       }}>
         <div style={{
-          fontSize: 12, fontWeight: 600, color: T.text, lineHeight: 1.4,
+          fontSize: 12, fontWeight: 600, color: t.text, lineHeight: 1.4,
           flex: 1, marginRight: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
           {c.name}
         </div>
-        <Dots count={5} active={a.severity} color={a.severity >= 4 ? T.magenta : T.textMuted} />
+        <Dots count={5} active={a.severity} color={a.severity >= 4 ? t.magenta : t.textMuted} />
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <div style={{ width: 6, height: 6, borderRadius: 3, background: c.modelColor, flexShrink: 0 }} />
-        <span style={{ fontSize: 11, fontFamily: font.mono, color: T.textMuted }}>{c.model}</span>
-        <span style={{ fontSize: 11, color: T.textMuted }}>·</span>
-        <span style={{ fontSize: 9, fontFamily: font.mono, color: T.textMuted, letterSpacing: '0.08em' }}>
+        <span style={{ fontSize: 11, fontFamily: font.mono, color: t.textMuted }}>{c.model}</span>
+        <span style={{ fontSize: 11, color: t.textMuted }}>·</span>
+        <span style={{ fontSize: 9, fontFamily: font.mono, color: t.textMuted, letterSpacing: '0.08em' }}>
           R{inter.round}
         </span>
         <span style={{ flex: 1 }} />
         <span style={{
           fontSize: 12, fontFamily: font.mono, fontWeight: 600,
-          color: v.revised_score >= 7 ? T.green : v.revised_score >= 4 ? T.gold : T.magenta,
+          color: v.revised_score >= 7 ? t.green : v.revised_score >= 4 ? t.gold : t.magenta,
         }}>
           {a.da_score}→{v.revised_score}
         </span>
@@ -87,6 +90,7 @@ function ListItem({ inter, active, onClick }) {
 
 // ── Main Component ──
 export default function DAArena() {
+  const t = useTokens();
   const interactions = useArenaStore(s => s.interactions);
   const ratings = useArenaStore(s => s.ratings);
   const selectedIndex = useArenaStore(s => s.selectedIndex);
@@ -129,18 +133,18 @@ export default function DAArena() {
   return (
     <div style={{
       flex: 1, display: 'flex', flexDirection: 'column',
-      fontFamily: font.body, color: T.text, animation: 'fadeSlideUp 0.3s ease-out',
+      fontFamily: font.body, color: t.text, animation: 'fadeSlideUp 0.3s ease-out',
     }}>
 
       {/* Header */}
       <div style={{
-        borderBottom: `1px solid ${T.border}`, padding: '14px 28px',
+        borderBottom: `1px solid ${t.border}`, padding: '14px 28px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <span style={{ fontSize: 20, color: T.magenta }}>{IC.swords}</span>
-          <MonoLabel color={T.textMuted} style={{ marginBottom: 0 }}>Devil's Advocate Arena</MonoLabel>
-          <Tag color={T.magenta}>{interactions.length} CHALLENGES</Tag>
+          <span style={{ fontSize: 20, color: t.magenta }}>{IC.swords}</span>
+          <MonoLabel color={t.textMuted} style={{ marginBottom: 0 }}>Devil's Advocate Arena</MonoLabel>
+          <Tag color={t.magenta}>{interactions.length} CHALLENGES</Tag>
         </div>
         <div style={{ display: 'flex', gap: 4 }}>
           {[
@@ -151,10 +155,10 @@ export default function DAArena() {
               padding: '7px 16px', borderRadius: 5,
               fontSize: 11, fontFamily: font.mono, fontWeight: 500,
               letterSpacing: '0.04em', textTransform: 'uppercase', cursor: 'pointer',
-              background: view === v.k ? T.surfaceRaised : 'transparent',
-              color: view === v.k ? T.text : T.textMuted,
-              border: `1px solid ${view === v.k ? T.borderHover : T.border}`,
-              borderLeft: `2px solid ${view === v.k ? T.magenta : 'transparent'}`,
+              background: view === v.k ? t.surfaceRaised : 'transparent',
+              color: view === v.k ? t.text : t.textMuted,
+              border: `1px solid ${view === v.k ? t.borderHover : t.border}`,
+              borderLeft: `2px solid ${view === v.k ? t.magenta : 'transparent'}`,
               transition: 'all 0.13s',
             }}>
               {v.l}
@@ -185,10 +189,10 @@ export default function DAArena() {
                 onClick={() => navigate(-1)}
                 disabled={selectedIndex === 0}
                 style={{
-                  background: 'transparent', border: `1px solid ${T.border}`,
+                  background: 'transparent', border: `1px solid ${t.border}`,
                   borderRadius: 5, padding: '5px 10px',
                   cursor: selectedIndex === 0 ? 'not-allowed' : 'pointer',
-                  color: selectedIndex === 0 ? T.textMuted : T.textSoft,
+                  color: selectedIndex === 0 ? t.textMuted : t.textSoft,
                   fontSize: 15, display: 'flex', alignItems: 'center',
                   opacity: selectedIndex === 0 ? 0.4 : 1,
                 }}
@@ -197,19 +201,19 @@ export default function DAArena() {
               </button>
               <div style={{ flex: 1, textAlign: 'center' }}>
                 <MonoLabel style={{ marginBottom: 2 }}>CHALLENGE {selectedIndex + 1} OF {total}</MonoLabel>
-                <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: t.text }}>
                   {cur.concept.name}
-                  <span style={{ color: T.textMuted, fontWeight: 400 }}> · {cur.concept.persona}</span>
+                  <span style={{ color: t.textMuted, fontWeight: 400 }}> · {cur.concept.persona}</span>
                 </div>
               </div>
               <button
                 onClick={() => navigate(1)}
                 disabled={selectedIndex === total - 1}
                 style={{
-                  background: 'transparent', border: `1px solid ${T.border}`,
+                  background: 'transparent', border: `1px solid ${t.border}`,
                   borderRadius: 5, padding: '5px 10px',
                   cursor: selectedIndex === total - 1 ? 'not-allowed' : 'pointer',
-                  color: selectedIndex === total - 1 ? T.textMuted : T.textSoft,
+                  color: selectedIndex === total - 1 ? t.textMuted : t.textSoft,
                   fontSize: 15, display: 'flex', alignItems: 'center',
                   opacity: selectedIndex === total - 1 ? 0.4 : 1,
                 }}
@@ -236,37 +240,37 @@ export default function DAArena() {
 
           {/* Right Sidebar */}
           <div style={{
-            flex: '0 0 320px', borderLeft: `1px solid ${T.border}`,
+            flex: '0 0 320px', borderLeft: `1px solid ${t.border}`,
             display: 'flex', flexDirection: 'column',
           }}>
             {/* Threat Score */}
             <div style={{
-              padding: '24px 20px', borderBottom: `1px solid ${T.border}`,
+              padding: '24px 20px', borderBottom: `1px solid ${t.border}`,
               display: 'flex', alignItems: 'center', gap: 18,
             }}>
-              <ScoreRing score={stats.threat} color={T.magenta} size={56} />
+              <ScoreRing score={stats.threat} color={t.magenta} size={56} />
               <div>
                 <MonoLabel style={{ marginBottom: 4 }}>THREAT SCORE</MonoLabel>
-                <div style={{ fontSize: 13, color: T.textSoft }}>
+                <div style={{ fontSize: 13, color: t.textSoft }}>
                   {stats.strong} strong · {stats.partial} partial · {stats.insuf} insuf
                 </div>
               </div>
             </div>
 
             {/* Aggression */}
-            <div style={{ padding: '16px 20px', borderBottom: `1px solid ${T.border}` }}>
+            <div style={{ padding: '16px 20px', borderBottom: `1px solid ${t.border}` }}>
               <AggressionMeter severity={stats.avgSev} />
             </div>
 
             {/* Stats Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1px solid ${T.border}` }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1px solid ${t.border}` }}>
               {[
-                { l: 'Defense Rate', v: stats.total > 0 ? `${Math.round(stats.defended / stats.total * 100)}%` : '—', c: T.green },
-                { l: 'Top Concept', v: stats.conceptScores[0]?.name || '—', c: T.gold },
+                { l: 'Defense Rate', v: stats.total > 0 ? `${Math.round(stats.defended / stats.total * 100)}%` : '—', c: t.green },
+                { l: 'Top Concept', v: stats.conceptScores[0]?.name || '—', c: t.gold },
               ].map((s, i) => (
                 <div key={s.l} style={{
                   padding: '14px 20px',
-                  borderRight: i === 0 ? `1px solid ${T.border}` : 'none',
+                  borderRight: i === 0 ? `1px solid ${t.border}` : 'none',
                 }}>
                   <MonoLabel style={{ marginBottom: 4 }}>{s.l}</MonoLabel>
                   <div style={{ fontSize: 13, fontWeight: 600, color: s.c }}>{s.v}</div>

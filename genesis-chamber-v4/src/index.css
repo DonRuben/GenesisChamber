@@ -4,6 +4,7 @@
    ───────────────────────────────────────────────────────── */
 
 @import './design/fonts.css';
+@import './design/gc-motion.css';
 
 /* ── Reset ── */
 *, *::before, *::after {
@@ -62,24 +63,16 @@ body {
   to { transform: translateX(0); }
 }
 
-@keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(13px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
+/* fadeSlideUp, scaleIn, pulse — moved to gc-motion.css */
 
 /* ── Light Mode Overrides ── */
 [data-theme="light"] {
   background: #F2F2F7;
+  color: #1A1A1E;
+}
+
+[data-theme="light"] ::selection {
+  background: rgba(212, 96, 26, 0.25);
   color: #1A1A1E;
 }
 
@@ -88,6 +81,14 @@ body {
 }
 [data-theme="light"] ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.2);
+}
+
+/* Prevent flash of wrong theme on initial load */
+@media (prefers-color-scheme: light) {
+  html:not([data-theme="dark"]) {
+    background: #F2F2F7;
+    color: #1A1A1E;
+  }
 }
 
 /* ── Mobile TopBar Visibility ── */

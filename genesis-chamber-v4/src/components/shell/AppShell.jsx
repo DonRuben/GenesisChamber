@@ -7,10 +7,11 @@
 
 import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import { T, TLight, font, layout } from '../../design/tokens';
+import { font, layout } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { useAppStore } from '../../stores/appStore';
 import { useIsMobile, useIsTablet } from '../../hooks/useMediaQuery';
+import { useTokens } from '../../hooks/useTokens';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 
@@ -45,7 +46,7 @@ export default function AppShell() {
   const [activeConv, setActiveConv] = useState(null);
 
   // Resolve tokens for current theme
-  const t = theme === 'light' ? { ...T, ...TLight } : T;
+  const t = useTokens();
 
   // Sync sidebar state with viewport
   useEffect(() => {

@@ -7,7 +7,13 @@ import { create } from 'zustand';
 
 const getStoredTheme = () => {
   try {
-    return localStorage.getItem('gc-v4-theme') || 'dark';
+    const stored = localStorage.getItem('gc-v4-theme');
+    if (stored) return stored;
+    // Respect system preference on first visit
+    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: light)').matches) {
+      return 'light';
+    }
+    return 'dark';
   } catch {
     return 'dark';
   }
