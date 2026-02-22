@@ -217,6 +217,119 @@ export function AggressionMeter({ severity }) {
   );
 }
 
+/** Tier badge — S/A/B/C grade */
+export function TierBadge({ tier, score }) {
+  const grade = tier || (score >= 90 ? 'S' : score >= 80 ? 'A' : score >= 65 ? 'B' : 'C');
+  const colors = { S: T.gold, A: T.green, B: T.cyan, C: T.textMuted };
+  const color = colors[grade] || T.textMuted;
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      width: 24, height: 24, borderRadius: 4,
+      fontSize: 11, fontFamily: font.mono, fontWeight: 700,
+      color, background: `${color}1a`, border: `1px solid ${color}33`,
+    }}>
+      {grade}
+    </span>
+  );
+}
+
+/** Reusable button */
+export function Btn({ children, color = T.cyan, secondary, disabled, large, onClick, style: sx }) {
+  const bg = secondary ? 'transparent' : `${color}1a`;
+  const border = secondary ? `1px solid ${color}44` : `1px solid ${color}33`;
+  return (
+    <button
+      onClick={disabled ? undefined : onClick}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 8,
+        padding: large ? '10px 20px' : '7px 14px',
+        borderRadius: 6, border, background: bg,
+        fontSize: large ? 13 : 11, fontFamily: font.mono, fontWeight: 600,
+        color: disabled ? T.textMuted : color,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.5 : 1,
+        transition: 'all 0.15s',
+        textTransform: 'uppercase', letterSpacing: '0.06em',
+        ...sx,
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+/** Numbered step navigation */
+export function StepNav({ current, total, labels = [] }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+      {Array.from({ length: total }, (_, i) => {
+        const done = i < current;
+        const active = i === current;
+        const color = active ? T.cyan : done ? T.green : T.textMuted;
+        return (
+          <div key={i} style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: 14,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 11, fontFamily: font.mono, fontWeight: 700,
+                color: active || done ? T.bg : color,
+                background: active || done ? color : 'transparent',
+                border: `1.5px solid ${color}`,
+                transition: 'all 0.2s',
+              }}>
+                {done ? '\u2713' : i + 1}
+              </div>
+              {labels[i] && (
+                <span style={{
+                  fontSize: 9, fontFamily: font.mono, color,
+                  textTransform: 'uppercase', letterSpacing: '0.08em',
+                  whiteSpace: 'nowrap',
+                }}>
+                  {labels[i]}
+                </span>
+              )}
+            </div>
+            {i < total - 1 && (
+              <div style={{
+                width: 32, height: 1.5, margin: '0 4px',
+                background: done ? T.green : T.border,
+                transition: 'background 0.2s',
+                alignSelf: labels[i] ? 'flex-start' : 'center',
+                marginTop: labels[i] ? 14 : 0,
+              }} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Toggle switch */
+export function Toggle({ enabled, onChange, color = T.cyan }) {
+  return (
+    <button
+      onClick={() => onChange(!enabled)}
+      style={{
+        width: 40, height: 22, borderRadius: 11, padding: 2,
+        background: enabled ? color : T.surfaceRaised,
+        border: `1px solid ${enabled ? color : T.border}`,
+        cursor: 'pointer', position: 'relative',
+        transition: 'all 0.2s',
+      }}
+    >
+      <div style={{
+        width: 16, height: 16, borderRadius: 8,
+        background: enabled ? '#fff' : T.textMuted,
+        transform: enabled ? 'translateX(18px)' : 'translateX(0)',
+        transition: 'transform 0.2s',
+      }} />
+    </button>
+  );
+}
+
 /** Status badge — running, complete, paused, etc. */
 export function StatusBadge({ status }) {
   const config = {

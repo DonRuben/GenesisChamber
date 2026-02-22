@@ -8,39 +8,28 @@ import AppShell from './components/shell/AppShell';
 import Landing from './components/Landing';
 import LLMCouncil from './components/council/LLMCouncil';
 import { DAArena } from './components/arena';
+import { Launcher, Dashboard, Gallery } from './components/chamber';
 import { T, font } from './design/tokens';
 
-// ── Placeholder for routes not yet built ──
-function Placeholder({ label, color = T.cyan }) {
+function NotFound() {
   return (
     <div style={{
       flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexDirection: 'column', gap: 12,
-      animation: 'fadeSlideUp 0.3s ease-out',
     }}>
       <div style={{
         padding: '24px 32px', background: T.surface,
         border: `1px solid ${T.border}`, borderRadius: 8,
-        borderLeft: `2px solid ${color}`, textAlign: 'center',
+        borderLeft: `2px solid ${T.textMuted}`, textAlign: 'center',
       }}>
         <div style={{
-          fontSize: 9, fontFamily: font.mono, color: T.textMuted,
-          textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8,
-        }}>
-          COMING IN PHASE 3+
-        </div>
-        <div style={{
-          fontSize: 18, fontFamily: font.display, fontWeight: 700,
+          fontSize: 28, fontFamily: font.display, fontWeight: 700,
           color: T.text, letterSpacing: '-0.03em',
-        }}>
-          {label}
-        </div>
+        }}>404</div>
         <div style={{
           fontSize: 10, fontFamily: font.mono, color: T.textMuted,
-          marginTop: 12, letterSpacing: '0.04em',
-        }}>
-          Content renders here
-        </div>
+          marginTop: 8, letterSpacing: '0.04em', textTransform: 'uppercase',
+        }}>Page not found</div>
       </div>
     </div>
   );
@@ -53,11 +42,11 @@ export default function App() {
         <Route element={<AppShell />}>
           <Route index element={<Landing />} />
           <Route path="council" element={<LLMCouncil />} />
-          <Route path="launch" element={<Placeholder label="Simulation Launcher" color={T.flame} />} />
-          <Route path="sim/:id" element={<Placeholder label="Dashboard" color={T.flame} />} />
+          <Route path="launch" element={<Launcher />} />
+          <Route path="sim/:id" element={<Dashboard />} />
           <Route path="sim/:id/da" element={<DAArena />} />
-          <Route path="sim/:id/gallery" element={<Placeholder label="Gallery" color={T.purple} />} />
-          <Route path="*" element={<Placeholder label="404 — Not Found" color={T.textMuted} />} />
+          <Route path="sim/:id/gallery" element={<Gallery />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
     </BrowserRouter>
