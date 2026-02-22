@@ -3,7 +3,6 @@
 // Dynamic color by verdict status, score change display
 // ─────────────────────────────────────────────────────────
 
-import { font } from '../../design/tokens';
 import { useTokens } from '../../hooks/useTokens';
 import { IC } from '../../design/icons';
 import { ScoreChange } from '../../design/shared';

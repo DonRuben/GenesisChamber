@@ -4,17 +4,21 @@
 // Ref: gc-v4-llm-council.jsx:140-185
 // ─────────────────────────────────────────────────────────
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
-import { useAppStore } from '../../stores/appStore';
 import { useCouncilStore } from '../../stores/councilStore';
 import { useTokens } from '../../hooks/useTokens';
 
-export default function ChatInput({ value, onChange, onSubmit, placeholder, disabled }) {
+export default forwardRef(function ChatInput({ value, onChange, onSubmit, placeholder, disabled }, ref) {
   const t = useTokens();
   const toggleSettings = useCouncilStore((s) => s.toggleSettings);
-  const ref = useRef(null);
+  const textareaRef = useRef(null);
+
+  // Expose focus via forwarded ref
+  useImperativeHandle(ref, () => ({
+    focus: () => textareaRef.current?.focus(),
+  }));
 
   const handleKey = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -24,9 +28,9 @@ export default function ChatInput({ value, onChange, onSubmit, placeholder, disa
   };
 
   useEffect(() => {
-    if (ref.current) {
-      ref.current.style.height = 'auto';
-      ref.current.style.height = Math.min(ref.current.scrollHeight, 160) + 'px';
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 160) + 'px';
     }
   }, [value]);
 
@@ -46,7 +50,7 @@ export default function ChatInput({ value, onChange, onSubmit, placeholder, disa
       }}>{IC.settings}</button>
 
       <textarea
-        ref={ref} value={value} onChange={(e) => onChange(e.target.value)}
+        ref={textareaRef} value={value} onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKey} placeholder={placeholder} disabled={disabled} rows={1}
         style={{
           flex: 1, padding: '13px 0', resize: 'none', overflow: 'hidden',
@@ -65,4 +69,4 @@ export default function ChatInput({ value, onChange, onSubmit, placeholder, disa
       }}>{IC.send}</button>
     </div>
   );
-}
+});

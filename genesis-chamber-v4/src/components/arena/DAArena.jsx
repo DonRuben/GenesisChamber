@@ -15,7 +15,8 @@ import { useArenaStore } from '../../stores/arenaStore';
 import ProsecutionPanel from './ProsecutionPanel';
 import DefensePanel from './DefensePanel';
 import VerdictBar from './VerdictBar';
-import TrainingReport, { computeStats } from './TrainingReport';
+import TrainingReport from './TrainingReport';
+import { computeStats } from './arenaUtils';
 
 // ── Round Timeline ──
 function RoundTimeline({ rounds, activeRound, onSelect, interactions }) {

@@ -80,7 +80,6 @@ export default function Dashboard() {
 }
 
 function CritiqueList() {
-  const t = useTokens();
   const simulation = useChamberStore((s) => s.simulation);
   const critiques = simulation?.critiques || [];
   return (

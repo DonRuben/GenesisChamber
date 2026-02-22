@@ -3,9 +3,8 @@
 // BrowserRouter with route definitions
 // ─────────────────────────────────────────────────────────
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AppShell from './components/shell/AppShell';
-import Landing from './components/Landing';
 import LLMCouncil from './components/council/LLMCouncil';
 import { DAArena } from './components/arena';
 import { Launcher, Dashboard, Gallery } from './components/chamber';
@@ -42,7 +41,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<AppShell />}>
-          <Route index element={<Landing />} />
+          <Route index element={<Navigate to="/launch" replace />} />
           <Route path="council" element={<LLMCouncil />} />
           <Route path="launch" element={<Launcher />} />
           <Route path="sim/:id" element={<Dashboard />} />
