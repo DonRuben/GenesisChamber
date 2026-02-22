@@ -185,4 +185,49 @@ export const IC = {
   info: icon(
     <><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></>
   ),
+
+  // ── Chamber — Launcher & Dashboard ──
+  temple: icon(
+    <><path d="M3 21h18"/><path d="M5 21V7l7-5 7 5v14"/><path d="M9 21v-5h6v5"/><path d="M10 11h4"/></>
+  ),
+  factory: icon(
+    <><path d="M2 20h20"/><path d="M6 20V10l4 3V10l4 3V6h4v14"/><path d="M2 20l4-10"/></>
+  ),
+  megaphone: icon(
+    <><path d="M18 4v12a2 2 0 01-2 2H8l-4 4V6a2 2 0 012-2h10a2 2 0 012 2z"/><path d="M12 8h.01"/></>
+  ),
+  clipboard: icon(
+    <><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><path d="M9 14l2 2 4-4"/></>
+  ),
+  download: icon(
+    <><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></>
+  ),
+  upload: icon(
+    <><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></>
+  ),
+  palette: icon(
+    <><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c.55 0 1-.45 1-1 0-.28-.11-.53-.29-.71a1.49 1.49 0 01-.3-.73C12.36 19.24 12.9 18.5 14 18.5h1.5c3.04 0 5.5-2.46 5.5-5.5C21 6.96 17.04 2 12 2z"/><circle cx="6.5" cy="11.5" r="1.5" fill="currentColor"/><circle cx="9.5" cy="7.5" r="1.5" fill="currentColor"/><circle cx="14.5" cy="7.5" r="1.5" fill="currentColor"/><circle cx="17.5" cy="11.5" r="1.5" fill="currentColor"/></>
+  ),
+  play: icon(
+    <polygon points="5,3 19,12 5,21" fill="currentColor" stroke="none" />,
+    true
+  ),
+  grid: icon(
+    <><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></>
+  ),
+  columns: icon(
+    <><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></>
+  ),
+  users: icon(
+    <><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></>
+  ),
+  briefcase: icon(
+    <><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/><path d="M2 12h20"/></>
+  ),
+  layers: icon(
+    <><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></>
+  ),
+  fileText: icon(
+    <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></>
+  ),
 };

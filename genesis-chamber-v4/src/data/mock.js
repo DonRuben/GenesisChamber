@@ -181,3 +181,199 @@ export const DA_PERSONAS = {
   realist: { name: 'The Realist', color: T.persona.realist },
   purist: { name: 'The Purist', color: T.persona.purist },
 };
+
+// ─────────────────────────────────────────────────────────
+// CHAMBER DATA — Launcher, Dashboard, Gallery
+// ─────────────────────────────────────────────────────────
+
+// ── Simulation Presets ──
+export const MOCK_PRESETS = [
+  { id: 'quick_test', name: 'Quick Test', desc: 'Fast 3-round creative sprint — ideal for early exploration', icon: 'bolt', color: T.cyan, time: '~15 min', participants: 5, rounds: 3 },
+  { id: 'message_lab', name: 'Message Lab', desc: '6-round messaging deep-dive with quality gates', icon: 'megaphone', color: T.flame, time: '~45 min', participants: 8, rounds: 6 },
+  { id: 'genesis_chamber', name: 'Genesis Chamber', desc: 'Full 8-round simulation — maximum creative depth', icon: 'temple', color: T.gold, time: '~90 min', participants: 16, rounds: 8 },
+  { id: 'assembly_line', name: 'Assembly Line', desc: '5-round production-focused pipeline with tight eliminations', icon: 'factory', color: T.green, time: '~30 min', participants: 10, rounds: 5 },
+];
+
+// ── Teams & Personas ──
+export const MOCK_TEAMS = [
+  {
+    id: 'marketing', name: 'Marketing & Strategy', color: T.flame,
+    personas: [
+      { id: 'david-ogilvy', name: 'David Ogilvy', title: 'Father of Advertising', era: '1960s', model: 'gemini-3-pro' },
+      { id: 'claude-hopkins', name: 'Claude Hopkins', title: 'Scientific Advertising', era: '1920s', model: 'claude-sonnet' },
+      { id: 'leo-burnett', name: 'Leo Burnett', title: 'Heartland Storyteller', era: '1950s', model: 'gpt-5.1' },
+      { id: 'mary-wells', name: 'Mary Wells Lawrence', title: 'Creative Revolution', era: '1960s', model: 'llama-4' },
+      { id: 'gary-halbert', name: 'Gary Halbert', title: 'Prince of Print', era: '1980s', model: 'grok-4' },
+    ],
+  },
+  {
+    id: 'design', name: 'Design & Visual', color: T.purple,
+    personas: [
+      { id: 'paul-rand', name: 'Paul Rand', title: 'Corporate Identity Pioneer', era: '1960s', model: 'gemini-3-pro' },
+      { id: 'paula-scher', name: 'Paula Scher', title: 'Typographic Powerhouse', era: '1990s', model: 'gpt-5.1' },
+      { id: 'saul-bass', name: 'Saul Bass', title: 'Title Sequence Master', era: '1960s', model: 'claude-sonnet' },
+      { id: 'susan-kare', name: 'Susan Kare', title: 'Pixel Art Pioneer', era: '1980s', model: 'llama-4' },
+      { id: 'rob-janoff', name: 'Rob Janoff', title: 'Apple Logo Creator', era: '1977', model: 'grok-4' },
+      { id: 'tobias-vs', name: 'Tobias van Schneider', title: 'Dark UI Visionary', era: '2010s', model: 'gemini-3-pro' },
+    ],
+  },
+  {
+    id: 'business', name: 'Business & Strategy', color: T.cyan,
+    personas: [
+      { id: 'elon-musk', name: 'Elon Musk', title: 'First Principles Thinker', era: '2000s', model: 'grok-4' },
+      { id: 'jeff-bezos', name: 'Jeff Bezos', title: 'Customer Obsessed', era: '2000s', model: 'claude-sonnet' },
+      { id: 'warren-buffett', name: 'Warren Buffett', title: 'Value Investor', era: '1970s', model: 'gemini-3-pro' },
+      { id: 'richard-branson', name: 'Richard Branson', title: 'Brand Maverick', era: '1980s', model: 'llama-4' },
+      { id: 'dietrich-mateschitz', name: 'Dietrich Mateschitz', title: 'Category Creator', era: '1987', model: 'deepseek' },
+    ],
+  },
+];
+
+// ── Leadership ──
+export const MOCK_LEADERSHIP = {
+  moderator: { id: 'steve-jobs', name: 'Steve Jobs', title: 'Moderator', model: 'claude-opus', color: '#6B7280' },
+  evaluator: { id: 'jony-ive', name: 'Jony Ive', title: 'Evaluator', model: 'claude-sonnet', color: '#9CA3AF' },
+  da: { id: 'devils-advocate', name: 'Advocatus Diaboli', title: "Devil's Advocate", model: 'grok-4', color: T.magenta },
+};
+
+// ── Simulation Stages ──
+export const MOCK_STAGES = [
+  { name: 'Create', color: T.green, icon: 'plus', status: 'complete' },
+  { name: 'Critique', color: T.gold, icon: 'evaluate', status: 'complete' },
+  { name: 'DA Defense', color: T.magenta, icon: 'shield', status: 'complete' },
+  { name: 'Synthesize', color: '#EF4444', icon: 'brain', status: 'complete' },
+  { name: 'Refine', color: T.cyan, icon: 'refresh', status: 'complete' },
+  { name: 'Present', color: T.purple, icon: 'star', status: 'complete' },
+];
+
+// ── Full Mock Simulation ──
+export const MOCK_SIMULATION = {
+  id: 'mock-1',
+  name: 'AquaLux Premium Water Launch',
+  status: 'complete',
+  brief: 'Create a luxury mineral water brand that competes with Voss and Fiji in the premium hydration market. Target: affluent millennials and Gen-Z health-conscious consumers. Must include brand name, visual identity direction, and hero campaign concept. Key differentiator: sourced from volcanic springs in Iceland with proprietary mineral enrichment.',
+  config: {
+    preset: 'genesis_chamber',
+    rounds: 4,
+    stages: 5,
+    devils_advocate: true,
+    da_aggression: 'aggressive',
+  },
+  concepts: [
+    {
+      id: 'c1', name: 'Volcanic Essence', persona: 'David Ogilvy', personaId: 'david-ogilvy',
+      model: 'gemini-3-pro', modelColor: T.flame, status: 'winner', score: 92,
+      headline: 'Born in Fire. Purified by Ice.', tagline: 'The water that remembers.',
+      idea: 'A luxury water brand that tells the geological story of each bottle — 1,000-year volcanic filtration visualized through minimalist packaging with lava-flow typography.',
+      visual_direction: 'Black matte bottle, gold cap, volcanic cross-section on label. Photography: macro shots of volcanic glass with water droplets.',
+      image_prompt: 'Ultra-premium black matte water bottle, gold metallic cap, minimalist volcanic cross-section label design, studio photography, dark background, water droplets on surface, luxury product photography',
+      strengths: ['Compelling origin story', 'Strong visual identity', 'Premium positioning'],
+      round: 4, eliminated: false,
+    },
+    {
+      id: 'c2', name: 'Glacier Protocol', persona: 'Paula Scher', personaId: 'paula-scher',
+      model: 'gpt-5.1', modelColor: T.green, status: 'surviving', score: 85,
+      headline: 'Engineered by Nature. Perfected by Obsession.', tagline: 'Precision hydration.',
+      idea: 'A tech-forward water brand targeting biohackers and performance enthusiasts, with QR-coded mineral analysis on every bottle.',
+      visual_direction: 'Crystal clear bottle, sans-serif typography, data-visualization label showing mineral composition.',
+      image_prompt: 'Crystal clear premium water bottle with data visualization label, mineral composition infographic, clean modern design, white studio background',
+      strengths: ['Strong tech angle', 'Unique QR concept', 'Clear differentiation'],
+      round: 4, eliminated: false,
+    },
+    {
+      id: 'c3', name: 'Still Life', persona: 'Saul Bass', personaId: 'saul-bass',
+      model: 'claude-sonnet', modelColor: '#3B82F6', status: 'surviving', score: 78,
+      headline: 'Be Still.', tagline: 'Water. Nothing more.',
+      idea: 'Anti-marketing approach: radical minimalism. No claims. No story. Just the purest water in the purest bottle. The absence of branding IS the brand.',
+      visual_direction: 'Completely clear bottle, no label, embossed logo only. Campaign: white space with single water droplet.',
+      image_prompt: 'Ultra minimal clear glass water bottle with no label, subtle embossed logo, single water droplet, vast white space, zen luxury minimalism',
+      strengths: ['Bold positioning', 'Memorable simplicity', 'Anti-marketing freshness'],
+      round: 3, eliminated: false,
+    },
+    {
+      id: 'c4', name: 'Nordic Myth', persona: 'Leo Burnett', personaId: 'leo-burnett',
+      model: 'gpt-5.1', modelColor: T.green, status: 'eliminated', score: 62,
+      headline: 'Drink the Legend.', tagline: 'From the wells of Yggdrasil.',
+      idea: 'Norse mythology-infused brand with Viking heritage storytelling. Limited editions tied to seasonal Norse festivals.',
+      visual_direction: 'Frosted blue glass, runic typography, Viking-inspired geometric patterns.',
+      image_prompt: 'Frosted blue glass water bottle with runic typography and Viking geometric patterns, moody atmospheric lighting',
+      strengths: ['Rich storytelling', 'Cultural depth'],
+      weaknesses: ['Niche appeal', 'Culturally exclusionary', 'Mythological fatigue in market'],
+      eliminatedRound: 2, round: 2, eliminated: true,
+    },
+    {
+      id: 'c5', name: 'H2Luxe', persona: 'Elon Musk', personaId: 'elon-musk',
+      model: 'grok-4', modelColor: T.magenta, status: 'eliminated', score: 45,
+      headline: 'Water, Reimagined.', tagline: 'The Tesla of hydration.',
+      idea: 'Subscription-based smart water with IoT-connected bottle tracking hydration. Gamified wellness.',
+      visual_direction: 'LED-integrated bottle, app interface mockups, futuristic metallic finish.',
+      image_prompt: 'Futuristic smart water bottle with subtle LED elements, metallic finish, dark tech aesthetic',
+      strengths: ['Innovative tech integration'],
+      weaknesses: ['Over-engineered', 'Lost the luxury angle', 'Subscription fatigue'],
+      eliminatedRound: 1, round: 1, eliminated: true,
+    },
+  ],
+  critiques: [
+    {
+      id: 'cr1', conceptName: 'Volcanic Essence', round: 3, criticsCount: 4,
+      strengths: ['Origin story is emotionally resonant', 'Packaging concept is production-ready', 'Price point naturally justified by volcanic narrative'],
+      weaknesses: ['Volcanic imagery may conflict with "pure water" perception', 'Lava-flow typography risks illegibility'],
+      oneChange: 'Soften volcanic visual to suggest geological patience rather than eruption — think basalt columns, not lava.',
+    },
+    {
+      id: 'cr2', conceptName: 'Glacier Protocol', round: 3, criticsCount: 4,
+      strengths: ['QR mineral analysis is genuinely innovative', 'Tech-forward position is underserved in premium water', 'Appeals to data-driven affluent consumers'],
+      weaknesses: ['May feel cold/clinical for emotional purchase', 'QR feature requires app — friction point'],
+      oneChange: 'Add a sensory element — texture, weight, or sound — to bridge the gap between data and feeling.',
+    },
+    {
+      id: 'cr3', conceptName: 'Still Life', round: 2, criticsCount: 4,
+      strengths: ['Radically bold positioning', 'Unforgettable shelf presence', 'Anti-marketing is timely'],
+      weaknesses: ['No-label concept faces regulatory issues in most markets', 'Zero brand recall for repeat purchase', 'Requires massive awareness spend to work'],
+      oneChange: 'Find one micro-element of branding that whispers rather than shouts — a subtle emboss, a cap texture, something tactile.',
+    },
+  ],
+  participants: [
+    { id: 'david-ogilvy', name: 'David Ogilvy', model: 'gemini-3-pro', modelColor: T.flame, concept: 'Volcanic Essence', score: 92, status: 'winner' },
+    { id: 'paula-scher', name: 'Paula Scher', model: 'gpt-5.1', modelColor: T.green, concept: 'Glacier Protocol', score: 85, status: 'surviving' },
+    { id: 'saul-bass', name: 'Saul Bass', model: 'claude-sonnet', modelColor: '#3B82F6', concept: 'Still Life', score: 78, status: 'surviving' },
+    { id: 'leo-burnett', name: 'Leo Burnett', model: 'gpt-5.1', modelColor: T.green, concept: 'Nordic Myth', score: 62, status: 'eliminated' },
+    { id: 'elon-musk', name: 'Elon Musk', model: 'grok-4', modelColor: T.magenta, concept: 'H2Luxe', score: 45, status: 'eliminated' },
+  ],
+  media: [
+    { id: 'm1', type: 'image', concept: 'Volcanic Essence', creator: 'David Ogilvy', model: 'Recraft V4', modelColor: T.flame, prompt: 'Ultra-premium black matte water bottle, gold metallic cap, minimalist volcanic cross-section label design', status: 'winner', score: 92, aspect: '4/5' },
+    { id: 'm2', type: 'image', concept: 'Volcanic Essence', creator: 'David Ogilvy', model: 'Flux 2 Pro', modelColor: T.flame, prompt: 'Luxury water brand hero shot, volcanic landscape, premium product photography', status: 'winner', score: 92, aspect: '1/1' },
+    { id: 'm3', type: 'image', concept: 'Glacier Protocol', creator: 'Paula Scher', model: 'Seedream 4.5', modelColor: T.green, prompt: 'Crystal clear premium water bottle with data visualization label', status: 'surviving', score: 85, aspect: '4/5' },
+    { id: 'm4', type: 'image', concept: 'Glacier Protocol', creator: 'Paula Scher', model: 'Ideogram V3', modelColor: T.green, prompt: 'Tech-forward water brand typography and QR code label design', status: 'surviving', score: 85, aspect: '1/1' },
+    { id: 'm5', type: 'image', concept: 'Still Life', creator: 'Saul Bass', model: 'Recraft V4', modelColor: '#3B82F6', prompt: 'Ultra minimal clear glass water bottle, no label, single water droplet, white space', status: 'surviving', score: 78, aspect: '3/4' },
+    { id: 'm6', type: 'video', concept: 'Volcanic Essence', creator: 'David Ogilvy', model: 'Kling 3.0', modelColor: T.flame, prompt: 'Slow reveal of premium water bottle emerging from volcanic rock, cinematic lighting', status: 'winner', score: 92, aspect: '16/9', duration: '5s' },
+    { id: 'm7', type: 'video', concept: 'Glacier Protocol', creator: 'Paula Scher', model: 'Veo 3.1', modelColor: T.green, prompt: 'Data particles flowing around crystal water bottle, sci-fi product reveal', status: 'surviving', score: 85, aspect: '16/9', duration: '4s' },
+    { id: 'm8', type: 'image', concept: 'Nordic Myth', creator: 'Leo Burnett', model: 'Flux 2 Pro', modelColor: T.green, prompt: 'Frosted blue glass bottle with runic typography, moody atmospheric lighting', status: 'eliminated', score: 62, aspect: '4/5' },
+    { id: 'm9', type: 'image', concept: 'H2Luxe', creator: 'Elon Musk', model: 'Nano Banana', modelColor: T.magenta, prompt: 'Futuristic smart water bottle with LED elements, metallic finish', status: 'eliminated', score: 45, aspect: '1/1' },
+  ],
+  stats: { rounds: 4, totalConcepts: 5, daAttacks: 8, imagesGenerated: 7, videosGenerated: 2 },
+  winner: 'c1',
+};
+
+// ── Dashboard Tab Groups ──
+export const MOCK_TAB_GROUPS = [
+  { key: 'hero', label: 'Overview', tabs: [{ key: 'overview', label: 'Overview' }] },
+  {
+    key: 'council', label: 'Council',
+    tabs: [
+      { key: 'concepts', label: 'Concepts' },
+      { key: 'critiques', label: 'Critiques' },
+      { key: 'direction', label: 'Direction' },
+      { key: 'transcript', label: 'Transcript' },
+    ],
+  },
+  {
+    key: 'media', label: 'Media',
+    tabs: [
+      { key: 'gallery', label: 'Gallery' },
+      { key: 'generated', label: 'Generated' },
+    ],
+  },
+  { key: 'da', label: 'DA Arena', tabs: [{ key: 'da-arena', label: 'DA Arena' }] },
+  { key: 'export', label: 'Export', tabs: [{ key: 'output', label: 'Output' }] },
+];
