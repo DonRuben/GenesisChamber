@@ -1,0 +1,119 @@
+{
+  "color": {
+    "bg": "#111113",
+    "surface": "#18181B",
+    "surfaceRaised": "#1F1F23",
+    "surfaceHover": "#26262B",
+    "flame": "#F27123",
+    "cyan": "#00D9FF",
+    "gold": "#D4A853",
+    "magenta": "#E5375E",
+    "green": "#34D399",
+    "purple": "#8B5CF6",
+    "text": "#E8E6E3",
+    "textSoft": "#A1A1AA",
+    "textMuted": "#63636E",
+    "border": "rgba(255,255,255,0.06)",
+    "borderHover": "rgba(255,255,255,0.12)",
+    "da": {
+      "prosecution": "#E5375E",
+      "defense": "#00D9FF",
+      "verdict": {
+        "strong": "#34D399",
+        "partial": "#D4A853",
+        "insufficient": "#E5375E",
+        "noDefense": "#63636E"
+      }
+    },
+    "persona": {
+      "skeptic": "#00D9FF",
+      "contrarian": "#E5375E",
+      "realist": "#D4A853",
+      "purist": "#8B5CF6"
+    },
+    "council": {
+      "preset": {
+        "compare": "#00D9FF",
+        "analyze": "#34D399",
+        "brainstorm": "#D4A853",
+        "evaluate": "#8B5CF6",
+        "debate": "#E5375E"
+      }
+    },
+    "model": {
+      "claude": "#F27123",
+      "gpt4o": "#34D399",
+      "gemini": "#00D9FF",
+      "llama": "#8B5CF6",
+      "mistral": "#D4A853",
+      "grok": "#E5375E"
+    }
+  },
+  "font": {
+    "display": "'OmniPresent', 'Inter', system-ui, -apple-system, sans-serif",
+    "body": "'Inter', system-ui, -apple-system, sans-serif",
+    "mono": "'JetBrains Mono', 'SF Mono', Menlo, monospace"
+  },
+  "fontSize": {
+    "xs": "9px",
+    "sm": "11px",
+    "base": "13px",
+    "md": "15px",
+    "lg": "18px",
+    "xl": "24px",
+    "xxl": "36px"
+  },
+  "spacing": {
+    "xs": "4px",
+    "sm": "8px",
+    "md": "12px",
+    "lg": "16px",
+    "xl": "24px",
+    "xxl": "36px",
+    "xxxl": "48px"
+  },
+  "radius": {
+    "sm": "4px",
+    "md": "6px",
+    "lg": "8px",
+    "xl": "12px",
+    "full": "9999px"
+  },
+  "layout": {
+    "sidebar": {
+      "hidden": "0px",
+      "collapsed": "56px",
+      "expanded": "260px",
+      "transition": "width 300ms cubic-bezier(0.16, 1, 0.3, 1)"
+    },
+    "topBar": {
+      "height": "48px"
+    },
+    "courtroom": {
+      "sidebarWidth": "320px",
+      "gap": "12px"
+    }
+  },
+  "motion": {
+    "duration": {
+      "instant": "80ms",
+      "fast": "130ms",
+      "normal": "200ms",
+      "smooth": "340ms",
+      "dramatic": "550ms"
+    },
+    "easing": {
+      "default": "cubic-bezier(0.16, 1, 0.3, 1)",
+      "bounce": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+      "sharp": "cubic-bezier(0.4, 0, 0.2, 1)"
+    }
+  },
+  "_meta": {
+    "version": "4.0.2",
+    "components": 17,
+    "icons": 35,
+    "animations": 17,
+    "themes": 2,
+    "designPhilosophy": "Tobias van Schneider \u2014 Editorial, flat, typographic"
+  }
+}
