@@ -16,14 +16,11 @@ export default function LLMCouncil() {
   const setPreset = useCouncilStore((s) => s.setPreset);
 
   const handlePreset = (p) => {
-    setPreset(p.key);
-    setQuestion(p.placeholder);
-    setView('conversation');
+    setPreset(p);
   };
 
   const handleSubmit = (q) => {
     setQuestion(q);
-    setPreset(null);
     setView('conversation');
   };
 

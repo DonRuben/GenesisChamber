@@ -7,9 +7,8 @@
 import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { Tag, ModelDot } from '../../design/shared';
-import { useAppStore } from '../../stores/appStore';
 import { useCouncilStore } from '../../stores/councilStore';
-import { MODELS, PRESETS, MOCK_RESPONSES } from '../../data/mock';
+import { MODELS, MOCK_RESPONSES } from '../../data/mock';
 import ResponseCard from './ResponseCard';
 import SynthesisPanel from './SynthesisPanel';
 import ChatInput from './ChatInput';
@@ -27,7 +26,7 @@ export default function ConversationView() {
   const ranked = [...MOCK_RESPONSES].sort((a, b) => b.score - a.score);
   const winner = ranked[0];
   const displayResponses = revealed ? ranked : MOCK_RESPONSES;
-  const presetData = preset ? PRESETS.find((p) => p.key === preset) : null;
+  const presetData = preset;
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
@@ -37,7 +36,7 @@ export default function ConversationView() {
         <div style={{ marginBottom: 32 }}>
           {presetData && (
             <div style={{ marginBottom: 10 }}>
-              <Tag color={presetData.color}>{preset}</Tag>
+              <Tag color={presetData.color}>{presetData.label}</Tag>
             </div>
           )}
           <div style={{

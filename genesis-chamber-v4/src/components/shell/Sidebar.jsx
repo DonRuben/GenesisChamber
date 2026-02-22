@@ -51,7 +51,7 @@ function ModeTabs({ collapsed, t }) {
 
   const modes = [
     { key: 'council', label: 'LLM Council', icon: IC.council, color: t.cyan, path: '/council' },
-    { key: 'genesis', label: 'Genesis Chamber', icon: IC.genesis, color: t.flame, path: '/' },
+    { key: 'genesis', label: 'Genesis Chamber', icon: IC.genesis, color: t.flame, path: '/launch' },
   ];
 
   const handleMode = (m) => {

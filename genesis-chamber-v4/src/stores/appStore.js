@@ -21,7 +21,7 @@ const getStoredTheme = () => {
 
 export const useAppStore = create((set) => ({
   // Mode: 'council' or 'genesis'
-  mode: 'council',
+  mode: 'genesis',
   setMode: (mode) => set({ mode }),
 
   // Theme: 'dark' or 'light'
