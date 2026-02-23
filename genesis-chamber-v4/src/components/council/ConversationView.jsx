@@ -60,39 +60,46 @@ function PreviousRoundSummary({ message }) {
 function ResponseTabBar({ tabs, selectedTab, onSelect, t }) {
   return (
     <div style={{
-      display: 'flex', gap: 6, marginBottom: 16, overflowX: 'auto',
-      paddingBottom: 4, flexWrap: 'wrap',
+      position: 'sticky', top: 0, zIndex: 10,
+      background: t.bg,
+      paddingTop: 8, paddingBottom: 8, marginBottom: 8,
+      borderBottom: `1px solid ${t.border}`,
     }}>
-      {tabs.map((tab) => {
-        const isActive = selectedTab === tab.id;
-        const accent = tab.color || t.cyan;
-        return (
-          <button
-            key={tab.id}
-            onClick={() => onSelect(tab.id)}
-            style={{
-              padding: '6px 14px', borderRadius: 6, cursor: 'pointer',
-              background: isActive ? `${accent}1a` : 'transparent',
-              border: `1px solid ${isActive ? accent : t.border}`,
-              fontSize: 10, fontFamily: font.mono, fontWeight: 600,
-              color: isActive ? accent : t.textMuted,
-              textTransform: 'uppercase', letterSpacing: '0.06em',
-              display: 'flex', alignItems: 'center', gap: 6,
-              transition: 'all 0.13s', whiteSpace: 'nowrap',
-            }}
-          >
-            {tab.dot && <ModelDot color={tab.dot} size={6} />}
-            {tab.icon && <span style={{ fontSize: 12 }}>{tab.icon}</span>}
-            {tab.label}
-            {tab.pulse && (
-              <div style={{
-                width: 6, height: 6, borderRadius: 3,
-                background: accent, animation: 'pulse 1.5s infinite',
-              }} />
-            )}
-          </button>
-        );
-      })}
+      <div style={{
+        display: 'flex', gap: 6, overflowX: 'auto',
+        paddingBottom: 4, flexWrap: 'wrap',
+      }}>
+        {tabs.map((tab) => {
+          const isActive = selectedTab === tab.id;
+          const accent = tab.color || t.cyan;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => onSelect(tab.id)}
+              style={{
+                padding: '6px 14px', borderRadius: 6, cursor: 'pointer',
+                background: isActive ? `${accent}1a` : 'transparent',
+                border: `1px solid ${isActive ? accent : t.border}`,
+                fontSize: 10, fontFamily: font.mono, fontWeight: 600,
+                color: isActive ? accent : t.textMuted,
+                textTransform: 'uppercase', letterSpacing: '0.06em',
+                display: 'flex', alignItems: 'center', gap: 6,
+                transition: 'all 0.13s', whiteSpace: 'nowrap',
+              }}
+            >
+              {tab.dot && <ModelDot color={tab.dot} size={6} />}
+              {tab.icon && <span style={{ fontSize: 12 }}>{tab.icon}</span>}
+              {tab.label}
+              {tab.pulse && (
+                <div style={{
+                  width: 6, height: 6, borderRadius: 3,
+                  background: accent, animation: 'pulse 1.5s infinite',
+                }} />
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

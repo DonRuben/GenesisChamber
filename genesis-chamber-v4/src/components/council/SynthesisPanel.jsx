@@ -5,7 +5,7 @@
 // ─────────────────────────────────────────────────────────
 
 import { useState } from 'react';
-import { font } from '../../design/tokens';
+import { font, motion } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { ModelDot } from '../../design/shared';
 import { useCouncilStore } from '../../stores/councilStore';
@@ -23,6 +23,7 @@ export default function SynthesisPanel() {
   const toggleSynthesis = useCouncilStore((s) => s.toggleSynthesis);
   const backendOnline = useAppStore((s) => s.backendOnline);
   const [copied, setCopied] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   // Live data
   const stage3Result = useCouncilStore((s) => s.stage3Result);
@@ -86,6 +87,11 @@ export default function SynthesisPanel() {
   if (!synthesis) return null;
 
   const wordCount = synthesis.split(/\s+/).filter(Boolean).length;
+  const SYNTH_WORD_LIMIT = 300;
+  const isLong = wordCount > SYNTH_WORD_LIMIT;
+  const truncatedSynthesis = isLong && !expanded
+    ? synthesis.split(/\s+/).slice(0, SYNTH_WORD_LIMIT).join(' ') + '...'
+    : synthesis;
 
   return (
     <div className="gc-enter" style={{
@@ -110,7 +116,40 @@ export default function SynthesisPanel() {
         </div>
       </div>
 
-      <Markdown>{synthesis}</Markdown>
+      {/* Synthesis text — contained with expand/collapse */}
+      <div style={{ position: 'relative' }}>
+        <div style={{
+          maxHeight: isLong ? (expanded ? 5000 : 400) : undefined,
+          overflow: isLong && !expanded ? 'hidden' : undefined,
+          transition: isLong ? `max-height ${motion.duration.smooth} ${motion.easing.default}` : undefined,
+        }}>
+          <Markdown>{truncatedSynthesis}</Markdown>
+        </div>
+        {isLong && !expanded && (
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0, height: 60,
+            background: `linear-gradient(transparent, ${t.surface})`,
+            pointerEvents: 'none',
+          }} />
+        )}
+      </div>
+
+      {/* Expand / Collapse control */}
+      {isLong && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            marginTop: expanded ? 12 : 4, padding: '6px 12px',
+            background: 'transparent', border: `1px solid ${t.border}`, borderRadius: 5,
+            cursor: 'pointer', fontSize: 10, fontFamily: font.mono,
+            color: t.textSoft, textTransform: 'uppercase', letterSpacing: '0.06em',
+          }}
+        >
+          <span style={{ fontSize: 12 }}>{expanded ? IC.chevUp : IC.chevDown}</span>
+          {expanded ? 'Collapse' : 'Read full synthesis'}
+        </button>
+      )}
 
       {/* Citations / Sources */}
       {annotations.length > 0 && (
