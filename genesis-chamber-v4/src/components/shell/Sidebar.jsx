@@ -238,8 +238,9 @@ function ConversationList({ activeId, onSelect, collapsed, t }) {
 }
 
 // ── Footer Icon Button ──
-function FooterBtn({ onClick, title, icon, t, rotating }) {
+function FooterBtn({ onClick, title, icon, t, rotating, color, hoverColor, active }) {
   const [hovered, setHovered] = useState(false);
+  const iconColor = (active || hovered) ? (hoverColor || t.cyan) : (color || t.textMuted);
   return (
     <button
       onClick={onClick} title={title}
@@ -248,7 +249,7 @@ function FooterBtn({ onClick, title, icon, t, rotating }) {
       style={{
         width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: hovered ? t.surfaceHover : 'transparent',
-        border: 'none', cursor: 'pointer', color: t.textMuted, fontSize: 20,
+        border: 'none', cursor: 'pointer', color: iconColor, fontSize: 20,
         borderRadius: 6,
         transform: hovered ? 'scale(1.05)' : rotating ? 'rotate(180deg)' : 'scale(1)',
         transition: 'all 150ms',
@@ -264,6 +265,7 @@ function SidebarFooter({ collapsed, t }) {
   const toggleTheme = useAppStore((s) => s.toggleTheme);
   const toggleSidebar = useAppStore((s) => s.toggleSidebar);
   const toggleConfigModal = useAppStore((s) => s.toggleConfigModal);
+  const showConfigModal = useAppStore((s) => s.showConfigModal);
   const theme = useAppStore((s) => s.theme);
   const backendOnline = useAppStore((s) => s.backendOnline);
   const [themeRotating, setThemeRotating] = useState(false);
@@ -282,9 +284,9 @@ function SidebarFooter({ collapsed, t }) {
         background: t.surfaceRaised,
       }}>
         <ConnectionDot online={backendOnline} collapsed />
-        <FooterBtn onClick={toggleConfigModal} title="Settings" icon={IC.settings} t={t} />
-        <FooterBtn onClick={handleThemeToggle} title={theme === 'dark' ? 'Light mode' : 'Dark mode'} icon={theme === 'dark' ? IC.sun : IC.moon} t={t} rotating={themeRotating} />
-        <FooterBtn onClick={toggleSidebar} title="Expand sidebar" icon={IC.panelRight} t={t} />
+        <FooterBtn onClick={toggleConfigModal} title="Settings" icon={IC.settings} t={t} color={t.textMuted} hoverColor={t.cyan} active={showConfigModal} />
+        <FooterBtn onClick={handleThemeToggle} title={theme === 'dark' ? 'Light mode' : 'Dark mode'} icon={theme === 'dark' ? IC.sun : IC.moon} t={t} color={t.cyan} hoverColor={t.cyan} rotating={themeRotating} />
+        <FooterBtn onClick={toggleSidebar} title="Expand sidebar" icon={IC.panelRight} t={t} color={t.textSoft} hoverColor={t.cyan} />
       </div>
     );
   }
@@ -305,9 +307,9 @@ function SidebarFooter({ collapsed, t }) {
         </span>
       </div>
       <div style={{ display: 'flex', gap: 4 }}>
-        <FooterBtn onClick={toggleConfigModal} title="Settings" icon={IC.settings} t={t} />
-        <FooterBtn onClick={handleThemeToggle} title={theme === 'dark' ? 'Light mode' : 'Dark mode'} icon={theme === 'dark' ? IC.sun : IC.moon} t={t} rotating={themeRotating} />
-        <FooterBtn onClick={toggleSidebar} title="Collapse sidebar" icon={IC.panelLeft} t={t} />
+        <FooterBtn onClick={toggleConfigModal} title="Settings" icon={IC.settings} t={t} color={t.textMuted} hoverColor={t.cyan} active={showConfigModal} />
+        <FooterBtn onClick={handleThemeToggle} title={theme === 'dark' ? 'Light mode' : 'Dark mode'} icon={theme === 'dark' ? IC.sun : IC.moon} t={t} color={t.cyan} hoverColor={t.cyan} rotating={themeRotating} />
+        <FooterBtn onClick={toggleSidebar} title="Collapse sidebar" icon={IC.panelLeft} t={t} color={t.textSoft} hoverColor={t.cyan} />
       </div>
     </div>
   );
