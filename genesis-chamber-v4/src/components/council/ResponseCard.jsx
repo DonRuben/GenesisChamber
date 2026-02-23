@@ -1,22 +1,37 @@
 // ─────────────────────────────────────────────────────────
 // GENESIS CHAMBER V4 — RESPONSE CARD
 // Anonymous or revealed model response
-// Ref: gc-v4-llm-council.jsx:249-306
+// Accepts both mock format and backend API format
 // ─────────────────────────────────────────────────────────
 
+import { useState } from 'react';
 import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { Tag, ModelDot } from '../../design/shared';
-import { MODELS } from '../../data/mock';
+import { MODELS, MODEL_MAP } from '../../data/mock';
 import { useTokens } from '../../hooks/useTokens';
 
-export default function ResponseCard({ response, index, revealed, isWinner, rank }) {
+export default function ResponseCard({ response, index, revealed, isWinner, rank, score }) {
   const t = useTokens();
-  const model = MODELS.find((m) => m.id === response.modelId);
-  const scoreColor = response.score >= 85 ? t.green : response.score >= 75 ? t.gold : t.textSoft;
+  const [showThinking, setShowThinking] = useState(false);
+
+  // Accept both mock format {modelId, text, score} and backend format {model, response, reasoning}
+  const modelId = response.model || response.modelId;
+  const text = response.response || response.text;
+  const displayScore = score ?? response.score ?? null;
+  const reasoning = response.reasoning || response.reasoning_details;
+
+  // Look up model info
+  const model = MODEL_MAP?.[modelId]
+    || MODELS.find((m) => m.id === modelId)
+    || { name: modelId?.split('/').pop() || 'Unknown', color: t.textMuted, letter: '?' };
+
+  const scoreColor = displayScore != null
+    ? (displayScore >= 85 ? t.green : displayScore >= 75 ? t.gold : t.textSoft)
+    : t.textMuted;
 
   return (
-    <div style={{
+    <div className="gc-enter" style={{
       background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8,
       borderLeft: `2px solid ${revealed ? model.color : t.textMuted}`,
       padding: '20px 24px', transition: 'border-color 0.2s',
@@ -51,22 +66,52 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
               #{rank}
             </span>
           )}
-          <span style={{ fontSize: 16, fontFamily: font.mono, fontWeight: 700, color: scoreColor }}>
-            {response.score}
-          </span>
+          {displayScore != null && (
+            <span style={{ fontSize: 16, fontFamily: font.mono, fontWeight: 700, color: scoreColor }}>
+              {displayScore}
+            </span>
+          )}
         </div>
       </div>
 
+      {/* Thinking/reasoning expandable */}
+      {reasoning && (
+        <button
+          onClick={() => setShowThinking(!showThinking)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10,
+            padding: '4px 8px', background: `${t.purple}12`, border: `1px solid ${t.purple}33`,
+            borderRadius: 4, cursor: 'pointer', fontSize: 10, fontFamily: font.mono,
+            color: t.purple, textTransform: 'uppercase', letterSpacing: '0.06em',
+          }}
+        >
+          {IC.brain} {showThinking ? 'Hide' : 'Show'} Thinking
+        </button>
+      )}
+      {showThinking && reasoning && (
+        <div style={{
+          fontSize: 11, color: t.textMuted, lineHeight: 1.6, marginBottom: 12,
+          padding: '10px 14px', background: t.surfaceRaised, borderRadius: 6,
+          fontFamily: font.mono, maxHeight: 200, overflow: 'auto',
+          borderLeft: `2px solid ${t.purple}`,
+        }}>
+          {typeof reasoning === 'string' ? reasoning : JSON.stringify(reasoning, null, 2)}
+        </div>
+      )}
+
       {/* Response text */}
-      <div style={{ fontSize: 13, color: t.textSoft, lineHeight: 1.7 }}>{response.text}</div>
+      <div style={{ fontSize: 13, color: t.textSoft, lineHeight: 1.7 }}>{text}</div>
 
       {/* Footer */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 14 }}>
-        <button style={{
-          display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px',
-          background: 'transparent', border: 'none', cursor: 'pointer',
-          fontSize: 11, color: t.textMuted, fontFamily: font.mono,
-        }}>
+        <button
+          onClick={() => navigator.clipboard?.writeText(text)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px',
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            fontSize: 11, color: t.textMuted, fontFamily: font.mono,
+          }}
+        >
           <span style={{ fontSize: 12 }}>{IC.copy}</span> Copy
         </button>
       </div>

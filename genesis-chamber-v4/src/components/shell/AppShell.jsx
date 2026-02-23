@@ -12,6 +12,7 @@ import { IC } from '../../design/icons';
 import { useAppStore } from '../../stores/appStore';
 import { useIsMobile, useIsTablet } from '../../hooks/useMediaQuery';
 import { useTokens } from '../../hooks/useTokens';
+import { useBackendStatus } from '../../hooks/useBackendStatus';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 
@@ -39,6 +40,8 @@ export default function AppShell() {
   const theme = useAppStore((s) => s.theme);
   const sidebarState = useAppStore((s) => s.sidebarState);
   const setSidebar = useAppStore((s) => s.setSidebar);
+  const backendOnline = useAppStore((s) => s.backendOnline);
+  const loadSidebarData = useAppStore((s) => s.loadSidebarData);
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
 
@@ -47,6 +50,14 @@ export default function AppShell() {
 
   // Resolve tokens for current theme
   const t = useTokens();
+
+  // Start backend health check polling
+  useBackendStatus();
+
+  // Load sidebar data when backend comes online
+  useEffect(() => {
+    if (backendOnline === true) loadSidebarData();
+  }, [backendOnline, loadSidebarData]);
 
   // Sync sidebar state with viewport
   useEffect(() => {

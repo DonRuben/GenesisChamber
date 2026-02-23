@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { StepNav, Btn, MonoLabel } from '../../design/shared';
 import { useChamberStore } from '../../stores/chamberStore';
+import { useAppStore } from '../../stores/appStore';
 import { MOCK_PRESETS } from '../../data/mock';
+import * as api from '../../services/api';
 import PresetCard from './PresetCard';
 import BriefInput from './BriefInput';
 import { useTokens } from '../../hooks/useTokens';
@@ -11,10 +14,12 @@ import { useTokens } from '../../hooks/useTokens';
 export default function LauncherQuick() {
   const t = useTokens();
   const navigate = useNavigate();
+  const [launching, setLaunching] = useState(false);
+  const backendOnline = useAppStore((s) => s.backendOnline);
   const {
     launchStep, nextStep, prevStep,
     selectedPreset, setSelectedPreset, brief, setBrief,
-    setLaunchMode,
+    setLaunchMode, handleSimSSEEvent, resetLive,
   } = useChamberStore();
 
   const preset = MOCK_PRESETS.find((p) => p.id === selectedPreset);
@@ -27,6 +32,31 @@ export default function LauncherQuick() {
   ] : null;
 
   const canProceed = launchStep === 0 ? !!selectedPreset : brief.trim().length > 10;
+
+  const handleLaunch = async () => {
+    if (!backendOnline) {
+      navigate('/sim/mock-1');
+      return;
+    }
+    setLaunching(true);
+    resetLive();
+    try {
+      const config = {
+        preset_type: selectedPreset,
+        creative_brief: brief,
+      };
+      await api.startSimulationStream(config, (type, data) => {
+        handleSimSSEEvent(type, data);
+        if (type === 'simulation_started' && data.sim_id) {
+          useAppStore.getState().addSimulation({ id: data.sim_id, name: brief.slice(0, 50) || 'Quick Simulation', status: 'running' });
+          navigate(`/sim/${data.sim_id}`);
+        }
+      });
+    } catch (err) {
+      setLaunching(false);
+      useChamberStore.setState({ liveError: err.message, liveStatus: 'failed' });
+    }
+  };
 
   return (
     <div style={{
@@ -87,8 +117,8 @@ export default function LauncherQuick() {
             Continue <span style={{ fontSize: 14 }}>{IC.arrowRight}</span>
           </Btn>
         ) : (
-          <Btn color={t.gold} large disabled={!canProceed} onClick={() => navigate('/sim/mock-1')}>
-            <span style={{ fontSize: 14 }}>{IC.rocket}</span> Launch Simulation
+          <Btn color={t.gold} large disabled={!canProceed || launching} onClick={handleLaunch}>
+            <span style={{ fontSize: 14 }}>{IC.rocket}</span> {launching ? 'Launching...' : 'Launch Simulation'}
           </Btn>
         )}
       </div>

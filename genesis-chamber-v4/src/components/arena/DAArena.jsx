@@ -7,11 +7,15 @@
 // ─────────────────────────────────────────────────────────
 
 import { useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
 import { font } from '../../design/tokens';
 import { useTokens } from '../../hooks/useTokens';
 import { IC } from '../../design/icons';
 import { Tag, MonoLabel, ScoreRing, Dots, AggressionMeter } from '../../design/shared';
 import { useArenaStore } from '../../stores/arenaStore';
+import { useAppStore } from '../../stores/appStore';
+import { transformDAInteraction } from '../../services/transformers';
+import * as api from '../../services/api';
 import ProsecutionPanel from './ProsecutionPanel';
 import DefensePanel from './DefensePanel';
 import VerdictBar from './VerdictBar';
@@ -92,6 +96,8 @@ function ListItem({ inter, active, onClick }) {
 // ── Main Component ──
 export default function DAArena() {
   const t = useTokens();
+  const { id } = useParams();
+  const backendOnline = useAppStore(s => s.backendOnline);
   const interactions = useArenaStore(s => s.interactions);
   const ratings = useArenaStore(s => s.ratings);
   const selectedIndex = useArenaStore(s => s.selectedIndex);
@@ -101,6 +107,31 @@ export default function DAArena() {
   const setRating = useArenaStore(s => s.setRating);
   const setRoundFilter = useArenaStore(s => s.setRoundFilter);
   const setView = useArenaStore(s => s.setView);
+  // Fetch real DA interactions when online
+  useEffect(() => {
+    if (!backendOnline || !id || id === 'mock-1') return;
+    let cancelled = false;
+    const fetchDA = async () => {
+      try {
+        let data = await api.getDAInteractions(id);
+        if ((!data || data.length === 0) && !cancelled) {
+          await api.extractDAInteractions(id);
+          data = await api.getDAInteractions(id);
+        }
+        if (cancelled) return;
+        if (data && data.length > 0) {
+          const transformed = data.map(d => transformDAInteraction(d)).filter(Boolean);
+          if (transformed.length > 0) {
+            useArenaStore.getState().setInteractions(transformed);
+          }
+        }
+      } catch {
+        // Fall back to mock data
+      }
+    };
+    fetchDA();
+    return () => { cancelled = true; };
+  }, [backendOnline, id]);
 
   const filtered = roundFilter
     ? interactions.filter(i => i.round === roundFilter)
@@ -111,8 +142,13 @@ export default function DAArena() {
   const currentRating = cur ? (ratings[cur.id] ?? cur.rating) : null;
 
   const rate = useCallback((key) => {
-    if (cur) setRating(cur.id, key);
-  }, [cur, setRating]);
+    if (!cur) return;
+    setRating(cur.id, key);
+    // Persist to backend
+    if (backendOnline && id && id !== 'mock-1') {
+      api.rateDAInteraction(id, cur.id, key).catch(() => {});
+    }
+  }, [cur, setRating, backendOnline, id]);
 
   // Keyboard navigation
   useEffect(() => {

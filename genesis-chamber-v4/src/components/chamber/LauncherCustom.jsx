@@ -4,7 +4,9 @@ import { font, motion } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { StepNav, Btn, MonoLabel, Toggle, Tag } from '../../design/shared';
 import { useChamberStore } from '../../stores/chamberStore';
+import { useAppStore } from '../../stores/appStore';
 import { MOCK_TEAMS, MOCK_LEADERSHIP } from '../../data/mock';
+import * as api from '../../services/api';
 import PersonaChip from './PersonaChip';
 import LeaderCard from './LeaderCard';
 import BriefInput from './BriefInput';
@@ -15,14 +17,17 @@ export default function LauncherCustom() {
   const t = useTokens();
   const mobile = useIsMobile();
   const navigate = useNavigate();
+  const [launching, setLaunching] = useState(false);
+  const backendOnline = useAppStore((s) => s.backendOnline);
   const {
     launchStep, nextStep, prevStep,
     selectedPersonas, togglePersona, selectAllTeam, deselectAllTeam,
     brief, setBrief, daEnabled, setDaEnabled, daAggression, setDaAggression,
     expandedTeam, setExpandedTeam, setLaunchMode,
+    handleSimSSEEvent, resetLive,
   } = useChamberStore();
 
-  const [daModel] = useState('grok-4');
+  const [daModel] = useState('x-ai/grok-4.1-fast');
   const count = selectedPersonas.size;
 
   const canProceed = () => {
@@ -37,6 +42,40 @@ export default function LauncherCustom() {
     { label: 'DA', value: daEnabled ? 'Enabled' : 'Off', color: daEnabled ? t.magenta : t.textMuted },
     { label: 'Est. Time', value: count > 10 ? '~90 min' : count > 6 ? '~45 min' : '~20 min' },
   ];
+
+  const handleLaunch = async () => {
+    if (!backendOnline) {
+      navigate('/sim/mock-1');
+      return;
+    }
+    setLaunching(true);
+    resetLive();
+    try {
+      // Build participants from selected personas across all teams
+      const allPersonas = MOCK_TEAMS.flatMap((team) => team.personas);
+      const participants = allPersonas
+        .filter((p) => selectedPersonas.has(p.id))
+        .map((p) => ({ id: p.id, name: p.name, model: p.model }));
+
+      const config = {
+        creative_brief: brief,
+        participants,
+        devils_advocate: daEnabled,
+        da_aggression: daEnabled ? daAggression : undefined,
+        rounds: count > 10 ? 8 : count > 6 ? 6 : 4,
+      };
+      await api.startSimulationStream(config, (type, data) => {
+        handleSimSSEEvent(type, data);
+        if (type === 'simulation_started' && data.sim_id) {
+          useAppStore.getState().addSimulation({ id: data.sim_id, name: brief.slice(0, 50) || 'Custom Simulation', status: 'running' });
+          navigate(`/sim/${data.sim_id}`);
+        }
+      });
+    } catch (err) {
+      setLaunching(false);
+      useChamberStore.setState({ liveError: err.message, liveStatus: 'failed' });
+    }
+  };
 
   const aggressionLevels = [
     { id: 'analytical', label: 'Analytical', color: t.cyan },
@@ -225,8 +264,8 @@ export default function LauncherCustom() {
             Continue <span style={{ fontSize: 14 }}>{IC.arrowRight}</span>
           </Btn>
         ) : (
-          <Btn color={t.gold} large disabled={!canProceed()} onClick={() => navigate('/sim/mock-1')}>
-            <span style={{ fontSize: 14 }}>{IC.rocket}</span> Launch Simulation
+          <Btn color={t.gold} large disabled={!canProceed() || launching} onClick={handleLaunch}>
+            <span style={{ fontSize: 14 }}>{IC.rocket}</span> {launching ? 'Launching...' : 'Launch Simulation'}
           </Btn>
         )}
       </div>

@@ -13,13 +13,13 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 # Council members - list of OpenRouter model identifiers
 COUNCIL_MODELS = [
     "openai/gpt-5.2",
-    "google/gemini-3-pro",
+    "google/gemini-3.1-pro-preview",
     "anthropic/claude-sonnet-4.6",
-    "x-ai/grok-4",
+    "x-ai/grok-4.1-fast",
 ]
 
 # Chairman model - synthesizes final response
-CHAIRMAN_MODEL = "google/gemini-3-pro"
+CHAIRMAN_MODEL = "google/gemini-3.1-pro-preview"
 
 # OpenRouter API endpoint
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
@@ -201,7 +201,7 @@ DEFAULT_PARTICIPANTS = {
     # --- Marketing & Strategy Team ---
     "david-ogilvy": {
         "name": "David Ogilvy",
-        "model": "google/gemini-3-pro",
+        "model": "google/gemini-3.1-pro-preview",
         "soul_document": "souls/david-ogilvy.md",
         "role": "participant",
         "team": "marketing",
@@ -241,7 +241,7 @@ DEFAULT_PARTICIPANTS = {
     },
     "gary-halbert": {
         "name": "Gary Halbert",
-        "model": "x-ai/grok-4",
+        "model": "x-ai/grok-4.1-fast",
         "soul_document": "souls/gary-halbert.md",
         "role": "participant",
         "team": "marketing",
@@ -252,7 +252,7 @@ DEFAULT_PARTICIPANTS = {
     # --- Design & Visual Team ---
     "paul-rand": {
         "name": "Paul Rand",
-        "model": "google/gemini-3-pro",
+        "model": "google/gemini-3.1-pro-preview",
         "soul_document": "souls/paul-rand.md",
         "role": "participant",
         "team": "design",
@@ -292,7 +292,7 @@ DEFAULT_PARTICIPANTS = {
     },
     "rob-janoff": {
         "name": "Rob Janoff",
-        "model": "x-ai/grok-4",
+        "model": "x-ai/grok-4.1-fast",
         "soul_document": "souls/rob-janoff.md",
         "role": "participant",
         "team": "design",
@@ -302,7 +302,7 @@ DEFAULT_PARTICIPANTS = {
     },
     "tobias-van-schneider": {
         "name": "Tobias van Schneider",
-        "model": "google/gemini-3-pro",
+        "model": "google/gemini-3.1-pro-preview",
         "soul_document": "souls/tobias-van-schneider.md",
         "role": "participant",
         "team": "design",
@@ -313,7 +313,7 @@ DEFAULT_PARTICIPANTS = {
     # --- Business & Strategy Team ---
     "elon-musk": {
         "name": "Elon Musk",
-        "model": "x-ai/grok-4",
+        "model": "x-ai/grok-4.1-fast",
         "soul_document": "souls/elon-musk.md",
         "role": "participant",
         "team": "business",
@@ -333,7 +333,7 @@ DEFAULT_PARTICIPANTS = {
     },
     "warren-buffett": {
         "name": "Warren Buffett",
-        "model": "google/gemini-3-pro",
+        "model": "google/gemini-3.1-pro-preview",
         "soul_document": "souls/warren-buffett.md",
         "role": "participant",
         "team": "business",
@@ -404,7 +404,7 @@ DEFAULT_EVALUATOR = {
 # OPTIONAL — activated per simulation via the devils_advocate toggle.
 DEFAULT_DEVILS_ADVOCATE = {
     "name": "Advocatus Diaboli",
-    "model": "x-ai/grok-4",
+    "model": "x-ai/grok-4.1-fast",
     "soul_document": "souls/devils-advocate.md",
     "role": "devils_advocate",
     "team": "leadership",

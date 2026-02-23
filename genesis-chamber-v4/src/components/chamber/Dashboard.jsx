@@ -1,6 +1,11 @@
+import { useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import { font } from '../../design/tokens';
 import { useChamberStore } from '../../stores/chamberStore';
+import { useAppStore } from '../../stores/appStore';
 import { useIsMobile } from '../../hooks/useMediaQuery';
+import { transformSimulationState } from '../../services/transformers';
+import * as api from '../../services/api';
 import DashSidebar from './DashSidebar';
 import StageProgress from './StageProgress';
 import GroupedTabBar from './GroupedTabBar';
@@ -14,7 +19,37 @@ import { useTokens } from '../../hooks/useTokens';
 export default function Dashboard() {
   const t = useTokens();
   const mobile = useIsMobile();
+  const { id } = useParams();
+  const backendOnline = useAppStore((s) => s.backendOnline);
+  const setSimulation = useChamberStore((s) => s.setSimulation);
   const { activeTab, activeSubTab, dashSidebarOpen, simulation } = useChamberStore();
+  const pollRef = useRef(null);
+
+  useEffect(() => {
+    if (!backendOnline || !id || id === 'mock-1') return;
+
+    let cancelled = false;
+    const fetchState = async () => {
+      try {
+        const data = await api.getSimulationState(id);
+        if (cancelled) return;
+        const transformed = transformSimulationState(data);
+        if (transformed) setSimulation(transformed);
+        // Poll if still running
+        if (data.status === 'running' || data.status === 'starting') {
+          pollRef.current = setTimeout(fetchState, 10000);
+        }
+      } catch {
+        // Silently fail — mock data remains
+      }
+    };
+    fetchState();
+
+    return () => {
+      cancelled = true;
+      if (pollRef.current) clearTimeout(pollRef.current);
+    };
+  }, [backendOnline, id, setSimulation]);
 
   const renderContent = () => {
     if (activeTab === 'overview' && !activeSubTab) {

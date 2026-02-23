@@ -1,8 +1,12 @@
+import { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { font } from '../../design/tokens';
 import { useTokens } from '../../hooks/useTokens';
 import { IC } from '../../design/icons';
 import { MonoLabel, Btn, Tag } from '../../design/shared';
 import { useChamberStore } from '../../stores/chamberStore';
+import { useAppStore } from '../../stores/appStore';
+import * as api from '../../services/api';
 import GalleryGrid from './GalleryGrid';
 import GalleryConceptView from './GalleryConceptView';
 import GalleryCompareView from './GalleryCompareView';
@@ -12,11 +16,45 @@ const viewIcons = { grid: IC.grid, concept: IC.layers, compare: IC.columns };
 
 export default function Gallery() {
   const t = useTokens();
+  const { id } = useParams();
+  const backendOnline = useAppStore((s) => s.backendOnline);
   const {
     simulation, galleryView, galleryFilter, gallerySearch,
     setGalleryView, setGalleryFilter, setGallerySearch,
     setLightboxItem, getFilteredMedia,
   } = useChamberStore();
+
+  // Fetch real media when online
+  useEffect(() => {
+    if (!backendOnline || !id || id === 'mock-1') return;
+    let cancelled = false;
+    const fetchMedia = async () => {
+      try {
+        const data = await api.getGeneratedContent(id);
+        if (cancelled || !data?.length) return;
+        const mediaItems = data.map((m, i) => ({
+          id: m.id || `m${i}`,
+          type: m.type || 'image',
+          concept: m.concept_name || m.concept || '',
+          creator: m.creator || m.persona || '',
+          model: m.gen_model || m.model || '',
+          modelColor: '#6B7280',
+          prompt: m.prompt || '',
+          status: m.status || 'surviving',
+          score: m.score || 0,
+          aspect: m.aspect || '4/5',
+          duration: m.duration || null,
+          url: m.url || m.file_path || null,
+        }));
+        const sim = useChamberStore.getState().simulation;
+        useChamberStore.getState().setSimulation({ ...sim, media: mediaItems });
+      } catch {
+        // Fall back to mock media
+      }
+    };
+    fetchMedia();
+    return () => { cancelled = true; };
+  }, [backendOnline, id]);
 
   const media = getFilteredMedia();
   const allMedia = simulation?.media || [];
@@ -104,7 +142,11 @@ export default function Gallery() {
         </div>
 
         {/* Download */}
-        <Btn color={t.gold} secondary>
+        <Btn color={t.gold} secondary onClick={() => {
+          if (backendOnline && id && id !== 'mock-1') {
+            window.open(api.getDownloadAllUrl(id), '_blank');
+          }
+        }}>
           {IC.download} ZIP
         </Btn>
       </div>

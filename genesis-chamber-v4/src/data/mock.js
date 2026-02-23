@@ -24,11 +24,14 @@ export const RECENT_SIMS = [
 
 // ── LLM Council Models ──
 export const MODELS = [
-  { id: 'claude', name: 'Claude Sonnet', color: T.flame, letter: 'C' },
-  { id: 'gpt4o', name: 'GPT-4o', color: T.green, letter: 'G' },
-  { id: 'gemini', name: 'Gemini 2.0 Flash', color: '#3B82F6', letter: 'Gm' },
-  { id: 'deepseek', name: 'DeepSeek R1', color: T.purple, letter: 'D' },
+  { id: 'openai/gpt-5.2', name: 'GPT-5.2', color: '#34D399', letter: 'G' },
+  { id: 'google/gemini-3.1-pro-preview', name: 'Gemini 3.1 Pro', color: '#00D9FF', letter: 'Gm' },
+  { id: 'anthropic/claude-sonnet-4.6', name: 'Claude Sonnet 4.6', color: '#F27123', letter: 'C' },
+  { id: 'x-ai/grok-4.1-fast', name: 'Grok 4.1', color: '#E5375E', letter: 'Gk' },
 ];
+
+// ── Model lookup map ──
+export const MODEL_MAP = Object.fromEntries(MODELS.map(m => [m.id, m]));
 
 // ── LLM Council Presets ──
 export const PRESETS = [
@@ -41,10 +44,10 @@ export const PRESETS = [
 
 // ── LLM Council Mock Responses ──
 export const MOCK_RESPONSES = [
-  { modelId: 'claude', text: "The key differentiator lies in the execution model. React's virtual DOM reconciliation is well-understood and battle-tested, but Svelte's compile-time approach eliminates the runtime overhead entirely. For a dashboard with frequent state updates, Svelte's surgical DOM updates yield measurably better frame rates. However, React's ecosystem depth — particularly for complex data visualization with D3 integration — remains unmatched. My recommendation: Svelte for greenfield dashboards under 50 components; React for enterprise-scale with heavy charting requirements.", score: 88 },
-  { modelId: 'gpt4o', text: "From a developer experience standpoint, Svelte reduces boilerplate by approximately 40% compared to React for equivalent functionality. The reactive declarations ($:) replace useState/useEffect patterns with more intuitive syntax. But the trade-off is significant: React's job market is 10× larger, component libraries like shadcn/ui have no Svelte equivalent at the same quality tier, and React Server Components offer a server-first paradigm Svelte hasn't matched. For your dashboard rebuild: if the team knows React, stay with React. The productivity gains from Svelte don't offset the migration cost and ecosystem gap.", score: 82 },
-  { modelId: 'gemini', text: "The performance benchmarks tell a clear story: Svelte outperforms React by 2-3× in initial render and 1.5× in updates for typical dashboard patterns. But benchmarks aren't production. In real-world dashboards, the bottleneck is rarely the framework — it's data fetching, chart rendering, and WebSocket management. Both frameworks handle these comparably. The deciding factor should be team velocity: which framework lets your specific team ship quality code faster? That's an organizational question, not a technical one.", score: 85 },
-  { modelId: 'deepseek', text: "Consider the long-term architecture. React 19 with Server Components and the new compiler eliminates most performance criticism — automatic memoization, streaming SSR, and reduced bundle sizes make the framework gap negligible. Svelte 5 with runes also converges toward a similar reactivity model. The frameworks are converging. Your decision should weight: (1) existing codebase investment, (2) team expertise distribution, (3) dependency on third-party component ecosystems. For most production dashboards, React remains the pragmatic choice despite Svelte's elegance.", score: 79 },
+  { modelId: 'anthropic/claude-sonnet-4.6', text: "The key differentiator lies in the execution model. React's virtual DOM reconciliation is well-understood and battle-tested, but Svelte's compile-time approach eliminates the runtime overhead entirely. For a dashboard with frequent state updates, Svelte's surgical DOM updates yield measurably better frame rates. However, React's ecosystem depth — particularly for complex data visualization with D3 integration — remains unmatched. My recommendation: Svelte for greenfield dashboards under 50 components; React for enterprise-scale with heavy charting requirements.", score: 88 },
+  { modelId: 'openai/gpt-5.2', text: "From a developer experience standpoint, Svelte reduces boilerplate by approximately 40% compared to React for equivalent functionality. The reactive declarations ($:) replace useState/useEffect patterns with more intuitive syntax. But the trade-off is significant: React's job market is 10× larger, component libraries like shadcn/ui have no Svelte equivalent at the same quality tier, and React Server Components offer a server-first paradigm Svelte hasn't matched. For your dashboard rebuild: if the team knows React, stay with React. The productivity gains from Svelte don't offset the migration cost and ecosystem gap.", score: 82 },
+  { modelId: 'google/gemini-3.1-pro-preview', text: "The performance benchmarks tell a clear story: Svelte outperforms React by 2-3× in initial render and 1.5× in updates for typical dashboard patterns. But benchmarks aren't production. In real-world dashboards, the bottleneck is rarely the framework — it's data fetching, chart rendering, and WebSocket management. Both frameworks handle these comparably. The deciding factor should be team velocity: which framework lets your specific team ship quality code faster? That's an organizational question, not a technical one.", score: 85 },
+  { modelId: 'x-ai/grok-4.1-fast', text: "Consider the long-term architecture. React 19 with Server Components and the new compiler eliminates most performance criticism — automatic memoization, streaming SSR, and reduced bundle sizes make the framework gap negligible. Svelte 5 with runes also converges toward a similar reactivity model. The frameworks are converging. Your decision should weight: (1) existing codebase investment, (2) team expertise distribution, (3) dependency on third-party component ecosystems. For most production dashboards, React remains the pragmatic choice despite Svelte's elegance.", score: 79 },
 ];
 
 export const MOCK_SYNTHESIS = "The council reaches consensus on a nuanced position: **Svelte offers superior developer experience and raw performance**, while **React provides ecosystem depth and hiring advantages**. The pragmatic recommendation depends on context — greenfield projects with small teams favor Svelte; enterprise environments with existing React investment should stay the course. Key insight from the debate: framework performance gaps are narrowing rapidly, making ecosystem and team factors the decisive criteria.";
@@ -58,10 +61,10 @@ export const STAGE_CONFIG = {
 
 // ── Rankings ──
 export const MOCK_RANKINGS = [
-  { model: 'Claude Sonnet', avgRank: 1.33, pct: 100, color: T.flame },
-  { model: 'Gemini 2.0 Flash', avgRank: 1.67, pct: 82, color: '#3B82F6' },
-  { model: 'GPT-4o', avgRank: 2.67, pct: 48, color: T.green },
-  { model: 'DeepSeek R1', avgRank: 3.33, pct: 28, color: T.purple },
+  { model: 'Claude Sonnet 4.6', avgRank: 1.33, pct: 100, color: '#F27123' },
+  { model: 'Gemini 3.1 Pro', avgRank: 1.67, pct: 82, color: '#00D9FF' },
+  { model: 'GPT-5.2', avgRank: 2.67, pct: 48, color: '#34D399' },
+  { model: 'Grok 4.1', avgRank: 3.33, pct: 28, color: '#E5375E' },
 ];
 
 // ── DA Arena — Mock Interactions ──
@@ -199,41 +202,41 @@ export const MOCK_TEAMS = [
   {
     id: 'marketing', name: 'Marketing & Strategy', color: T.flame,
     personas: [
-      { id: 'david-ogilvy', name: 'David Ogilvy', title: 'Father of Advertising', era: '1960s', model: 'gemini-3-pro' },
-      { id: 'claude-hopkins', name: 'Claude Hopkins', title: 'Scientific Advertising', era: '1920s', model: 'claude-sonnet' },
-      { id: 'leo-burnett', name: 'Leo Burnett', title: 'Heartland Storyteller', era: '1950s', model: 'gpt-5.1' },
-      { id: 'mary-wells', name: 'Mary Wells Lawrence', title: 'Creative Revolution', era: '1960s', model: 'llama-4' },
-      { id: 'gary-halbert', name: 'Gary Halbert', title: 'Prince of Print', era: '1980s', model: 'grok-4' },
+      { id: 'david-ogilvy', name: 'David Ogilvy', title: 'Father of Advertising', era: '1960s', model: 'google/gemini-3.1-pro-preview' },
+      { id: 'claude-hopkins', name: 'Claude Hopkins', title: 'Scientific Advertising', era: '1920s', model: 'anthropic/claude-sonnet-4.6' },
+      { id: 'leo-burnett', name: 'Leo Burnett', title: 'Heartland Storyteller', era: '1950s', model: 'openai/gpt-5.1' },
+      { id: 'mary-wells', name: 'Mary Wells Lawrence', title: 'Creative Revolution', era: '1960s', model: 'meta-llama/llama-4-maverick' },
+      { id: 'gary-halbert', name: 'Gary Halbert', title: 'Prince of Print', era: '1980s', model: 'x-ai/grok-4.1-fast' },
     ],
   },
   {
     id: 'design', name: 'Design & Visual', color: T.purple,
     personas: [
-      { id: 'paul-rand', name: 'Paul Rand', title: 'Corporate Identity Pioneer', era: '1960s', model: 'gemini-3-pro' },
-      { id: 'paula-scher', name: 'Paula Scher', title: 'Typographic Powerhouse', era: '1990s', model: 'gpt-5.1' },
-      { id: 'saul-bass', name: 'Saul Bass', title: 'Title Sequence Master', era: '1960s', model: 'claude-sonnet' },
-      { id: 'susan-kare', name: 'Susan Kare', title: 'Pixel Art Pioneer', era: '1980s', model: 'llama-4' },
-      { id: 'rob-janoff', name: 'Rob Janoff', title: 'Apple Logo Creator', era: '1977', model: 'grok-4' },
-      { id: 'tobias-vs', name: 'Tobias van Schneider', title: 'Dark UI Visionary', era: '2010s', model: 'gemini-3-pro' },
+      { id: 'paul-rand', name: 'Paul Rand', title: 'Corporate Identity Pioneer', era: '1960s', model: 'google/gemini-3.1-pro-preview' },
+      { id: 'paula-scher', name: 'Paula Scher', title: 'Typographic Powerhouse', era: '1990s', model: 'openai/gpt-5.1' },
+      { id: 'saul-bass', name: 'Saul Bass', title: 'Title Sequence Master', era: '1960s', model: 'anthropic/claude-sonnet-4.6' },
+      { id: 'susan-kare', name: 'Susan Kare', title: 'Pixel Art Pioneer', era: '1980s', model: 'meta-llama/llama-4-maverick' },
+      { id: 'rob-janoff', name: 'Rob Janoff', title: 'Apple Logo Creator', era: '1977', model: 'x-ai/grok-4.1-fast' },
+      { id: 'tobias-vs', name: 'Tobias van Schneider', title: 'Dark UI Visionary', era: '2010s', model: 'google/gemini-3.1-pro-preview' },
     ],
   },
   {
     id: 'business', name: 'Business & Strategy', color: T.cyan,
     personas: [
-      { id: 'elon-musk', name: 'Elon Musk', title: 'First Principles Thinker', era: '2000s', model: 'grok-4' },
-      { id: 'jeff-bezos', name: 'Jeff Bezos', title: 'Customer Obsessed', era: '2000s', model: 'claude-sonnet' },
-      { id: 'warren-buffett', name: 'Warren Buffett', title: 'Value Investor', era: '1970s', model: 'gemini-3-pro' },
-      { id: 'richard-branson', name: 'Richard Branson', title: 'Brand Maverick', era: '1980s', model: 'llama-4' },
-      { id: 'dietrich-mateschitz', name: 'Dietrich Mateschitz', title: 'Category Creator', era: '1987', model: 'deepseek' },
+      { id: 'elon-musk', name: 'Elon Musk', title: 'First Principles Thinker', era: '2000s', model: 'x-ai/grok-4.1-fast' },
+      { id: 'jeff-bezos', name: 'Jeff Bezos', title: 'Customer Obsessed', era: '2000s', model: 'anthropic/claude-sonnet-4.6' },
+      { id: 'warren-buffett', name: 'Warren Buffett', title: 'Value Investor', era: '1970s', model: 'google/gemini-3.1-pro-preview' },
+      { id: 'richard-branson', name: 'Richard Branson', title: 'Brand Maverick', era: '1980s', model: 'meta-llama/llama-4-maverick' },
+      { id: 'dietrich-mateschitz', name: 'Dietrich Mateschitz', title: 'Category Creator', era: '1987', model: 'deepseek/deepseek-v3.2' },
     ],
   },
 ];
 
 // ── Leadership ──
 export const MOCK_LEADERSHIP = {
-  moderator: { id: 'steve-jobs', name: 'Steve Jobs', title: 'Moderator', model: 'claude-opus', color: '#6B7280' },
-  evaluator: { id: 'jony-ive', name: 'Jony Ive', title: 'Evaluator', model: 'claude-sonnet', color: '#9CA3AF' },
-  da: { id: 'devils-advocate', name: 'Advocatus Diaboli', title: "Devil's Advocate", model: 'grok-4', color: T.magenta },
+  moderator: { id: 'steve-jobs', name: 'Steve Jobs', title: 'Moderator', model: 'anthropic/claude-opus-4-6', color: '#6B7280' },
+  evaluator: { id: 'jony-ive', name: 'Jony Ive', title: 'Evaluator', model: 'anthropic/claude-sonnet-4.6', color: '#9CA3AF' },
+  da: { id: 'devils-advocate', name: 'Advocatus Diaboli', title: "Devil's Advocate", model: 'x-ai/grok-4.1-fast', color: T.magenta },
 };
 
 // ── Simulation Stages ──
@@ -262,7 +265,7 @@ export const MOCK_SIMULATION = {
   concepts: [
     {
       id: 'c1', name: 'Volcanic Essence', persona: 'David Ogilvy', personaId: 'david-ogilvy',
-      model: 'gemini-3-pro', modelColor: T.flame, status: 'winner', score: 92,
+      model: 'google/gemini-3.1-pro-preview', modelColor: '#00D9FF', status: 'winner', score: 92,
       headline: 'Born in Fire. Purified by Ice.', tagline: 'The water that remembers.',
       idea: 'A luxury water brand that tells the geological story of each bottle — 1,000-year volcanic filtration visualized through minimalist packaging with lava-flow typography.',
       visual_direction: 'Black matte bottle, gold cap, volcanic cross-section on label. Photography: macro shots of volcanic glass with water droplets.',
@@ -272,7 +275,7 @@ export const MOCK_SIMULATION = {
     },
     {
       id: 'c2', name: 'Glacier Protocol', persona: 'Paula Scher', personaId: 'paula-scher',
-      model: 'gpt-5.1', modelColor: T.green, status: 'surviving', score: 85,
+      model: 'openai/gpt-5.1', modelColor: '#34D399', status: 'surviving', score: 85,
       headline: 'Engineered by Nature. Perfected by Obsession.', tagline: 'Precision hydration.',
       idea: 'A tech-forward water brand targeting biohackers and performance enthusiasts, with QR-coded mineral analysis on every bottle.',
       visual_direction: 'Crystal clear bottle, sans-serif typography, data-visualization label showing mineral composition.',
@@ -282,7 +285,7 @@ export const MOCK_SIMULATION = {
     },
     {
       id: 'c3', name: 'Still Life', persona: 'Saul Bass', personaId: 'saul-bass',
-      model: 'claude-sonnet', modelColor: '#3B82F6', status: 'surviving', score: 78,
+      model: 'anthropic/claude-sonnet-4.6', modelColor: '#F27123', status: 'surviving', score: 78,
       headline: 'Be Still.', tagline: 'Water. Nothing more.',
       idea: 'Anti-marketing approach: radical minimalism. No claims. No story. Just the purest water in the purest bottle. The absence of branding IS the brand.',
       visual_direction: 'Completely clear bottle, no label, embossed logo only. Campaign: white space with single water droplet.',
@@ -292,7 +295,7 @@ export const MOCK_SIMULATION = {
     },
     {
       id: 'c4', name: 'Nordic Myth', persona: 'Leo Burnett', personaId: 'leo-burnett',
-      model: 'gpt-5.1', modelColor: T.green, status: 'eliminated', score: 62,
+      model: 'openai/gpt-5.1', modelColor: '#34D399', status: 'eliminated', score: 62,
       headline: 'Drink the Legend.', tagline: 'From the wells of Yggdrasil.',
       idea: 'Norse mythology-infused brand with Viking heritage storytelling. Limited editions tied to seasonal Norse festivals.',
       visual_direction: 'Frosted blue glass, runic typography, Viking-inspired geometric patterns.',
@@ -303,7 +306,7 @@ export const MOCK_SIMULATION = {
     },
     {
       id: 'c5', name: 'H2Luxe', persona: 'Elon Musk', personaId: 'elon-musk',
-      model: 'grok-4', modelColor: T.magenta, status: 'eliminated', score: 45,
+      model: 'x-ai/grok-4.1-fast', modelColor: '#E5375E', status: 'eliminated', score: 45,
       headline: 'Water, Reimagined.', tagline: 'The Tesla of hydration.',
       idea: 'Subscription-based smart water with IoT-connected bottle tracking hydration. Gamified wellness.',
       visual_direction: 'LED-integrated bottle, app interface mockups, futuristic metallic finish.',
@@ -334,22 +337,22 @@ export const MOCK_SIMULATION = {
     },
   ],
   participants: [
-    { id: 'david-ogilvy', name: 'David Ogilvy', model: 'gemini-3-pro', modelColor: T.flame, concept: 'Volcanic Essence', score: 92, status: 'winner' },
-    { id: 'paula-scher', name: 'Paula Scher', model: 'gpt-5.1', modelColor: T.green, concept: 'Glacier Protocol', score: 85, status: 'surviving' },
-    { id: 'saul-bass', name: 'Saul Bass', model: 'claude-sonnet', modelColor: '#3B82F6', concept: 'Still Life', score: 78, status: 'surviving' },
-    { id: 'leo-burnett', name: 'Leo Burnett', model: 'gpt-5.1', modelColor: T.green, concept: 'Nordic Myth', score: 62, status: 'eliminated' },
-    { id: 'elon-musk', name: 'Elon Musk', model: 'grok-4', modelColor: T.magenta, concept: 'H2Luxe', score: 45, status: 'eliminated' },
+    { id: 'david-ogilvy', name: 'David Ogilvy', model: 'google/gemini-3.1-pro-preview', modelColor: '#00D9FF', concept: 'Volcanic Essence', score: 92, status: 'winner' },
+    { id: 'paula-scher', name: 'Paula Scher', model: 'openai/gpt-5.1', modelColor: '#34D399', concept: 'Glacier Protocol', score: 85, status: 'surviving' },
+    { id: 'saul-bass', name: 'Saul Bass', model: 'anthropic/claude-sonnet-4.6', modelColor: '#F27123', concept: 'Still Life', score: 78, status: 'surviving' },
+    { id: 'leo-burnett', name: 'Leo Burnett', model: 'openai/gpt-5.1', modelColor: '#34D399', concept: 'Nordic Myth', score: 62, status: 'eliminated' },
+    { id: 'elon-musk', name: 'Elon Musk', model: 'x-ai/grok-4.1-fast', modelColor: '#E5375E', concept: 'H2Luxe', score: 45, status: 'eliminated' },
   ],
   media: [
-    { id: 'm1', type: 'image', concept: 'Volcanic Essence', creator: 'David Ogilvy', model: 'Recraft V4', modelColor: T.flame, prompt: 'Ultra-premium black matte water bottle, gold metallic cap, minimalist volcanic cross-section label design', status: 'winner', score: 92, aspect: '4/5' },
-    { id: 'm2', type: 'image', concept: 'Volcanic Essence', creator: 'David Ogilvy', model: 'Flux 2 Pro', modelColor: T.flame, prompt: 'Luxury water brand hero shot, volcanic landscape, premium product photography', status: 'winner', score: 92, aspect: '1/1' },
-    { id: 'm3', type: 'image', concept: 'Glacier Protocol', creator: 'Paula Scher', model: 'Seedream 4.5', modelColor: T.green, prompt: 'Crystal clear premium water bottle with data visualization label', status: 'surviving', score: 85, aspect: '4/5' },
-    { id: 'm4', type: 'image', concept: 'Glacier Protocol', creator: 'Paula Scher', model: 'Ideogram V3', modelColor: T.green, prompt: 'Tech-forward water brand typography and QR code label design', status: 'surviving', score: 85, aspect: '1/1' },
-    { id: 'm5', type: 'image', concept: 'Still Life', creator: 'Saul Bass', model: 'Recraft V4', modelColor: '#3B82F6', prompt: 'Ultra minimal clear glass water bottle, no label, single water droplet, white space', status: 'surviving', score: 78, aspect: '3/4' },
-    { id: 'm6', type: 'video', concept: 'Volcanic Essence', creator: 'David Ogilvy', model: 'Kling 3.0', modelColor: T.flame, prompt: 'Slow reveal of premium water bottle emerging from volcanic rock, cinematic lighting', status: 'winner', score: 92, aspect: '16/9', duration: '5s' },
-    { id: 'm7', type: 'video', concept: 'Glacier Protocol', creator: 'Paula Scher', model: 'Veo 3.1', modelColor: T.green, prompt: 'Data particles flowing around crystal water bottle, sci-fi product reveal', status: 'surviving', score: 85, aspect: '16/9', duration: '4s' },
-    { id: 'm8', type: 'image', concept: 'Nordic Myth', creator: 'Leo Burnett', model: 'Flux 2 Pro', modelColor: T.green, prompt: 'Frosted blue glass bottle with runic typography, moody atmospheric lighting', status: 'eliminated', score: 62, aspect: '4/5' },
-    { id: 'm9', type: 'image', concept: 'H2Luxe', creator: 'Elon Musk', model: 'Nano Banana', modelColor: T.magenta, prompt: 'Futuristic smart water bottle with LED elements, metallic finish', status: 'eliminated', score: 45, aspect: '1/1' },
+    { id: 'm1', type: 'image', concept: 'Volcanic Essence', creator: 'David Ogilvy', model: 'Recraft V4', modelColor: '#00D9FF', prompt: 'Ultra-premium black matte water bottle, gold metallic cap, minimalist volcanic cross-section label design', status: 'winner', score: 92, aspect: '4/5' },
+    { id: 'm2', type: 'image', concept: 'Volcanic Essence', creator: 'David Ogilvy', model: 'Flux 2 Pro', modelColor: '#00D9FF', prompt: 'Luxury water brand hero shot, volcanic landscape, premium product photography', status: 'winner', score: 92, aspect: '1/1' },
+    { id: 'm3', type: 'image', concept: 'Glacier Protocol', creator: 'Paula Scher', model: 'Seedream 4.5', modelColor: '#34D399', prompt: 'Crystal clear premium water bottle with data visualization label', status: 'surviving', score: 85, aspect: '4/5' },
+    { id: 'm4', type: 'image', concept: 'Glacier Protocol', creator: 'Paula Scher', model: 'Ideogram V3', modelColor: '#34D399', prompt: 'Tech-forward water brand typography and QR code label design', status: 'surviving', score: 85, aspect: '1/1' },
+    { id: 'm5', type: 'image', concept: 'Still Life', creator: 'Saul Bass', model: 'Recraft V4', modelColor: '#F27123', prompt: 'Ultra minimal clear glass water bottle, no label, single water droplet, white space', status: 'surviving', score: 78, aspect: '3/4' },
+    { id: 'm6', type: 'video', concept: 'Volcanic Essence', creator: 'David Ogilvy', model: 'Kling 3.0', modelColor: '#00D9FF', prompt: 'Slow reveal of premium water bottle emerging from volcanic rock, cinematic lighting', status: 'winner', score: 92, aspect: '16/9', duration: '5s' },
+    { id: 'm7', type: 'video', concept: 'Glacier Protocol', creator: 'Paula Scher', model: 'Veo 3.1', modelColor: '#34D399', prompt: 'Data particles flowing around crystal water bottle, sci-fi product reveal', status: 'surviving', score: 85, aspect: '16/9', duration: '4s' },
+    { id: 'm8', type: 'image', concept: 'Nordic Myth', creator: 'Leo Burnett', model: 'Flux 2 Pro', modelColor: '#34D399', prompt: 'Frosted blue glass bottle with runic typography, moody atmospheric lighting', status: 'eliminated', score: 62, aspect: '4/5' },
+    { id: 'm9', type: 'image', concept: 'H2Luxe', creator: 'Elon Musk', model: 'Nano Banana', modelColor: '#E5375E', prompt: 'Futuristic smart water bottle with LED elements, metallic finish', status: 'eliminated', score: 45, aspect: '1/1' },
   ],
   stats: { rounds: 4, totalConcepts: 5, daAttacks: 8, imagesGenerated: 7, videosGenerated: 2 },
   winner: 'c1',

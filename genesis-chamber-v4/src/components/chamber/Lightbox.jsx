@@ -88,16 +88,30 @@ export default function Lightbox() {
           flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: 40,
         }}>
-          <div style={{
-            maxWidth: 600, maxHeight: '80vh', aspectRatio: item.aspect || '4/5',
-            background: t.surfaceRaised, borderRadius: 8,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            width: '100%',
-          }}>
-            <span style={{ fontSize: 48, color: t.textMuted }}>
-              {isVideo ? IC.play : IC.gallery}
-            </span>
-          </div>
+          {item.url ? (
+            isVideo ? (
+              <video
+                src={item.url} controls autoPlay
+                style={{ maxWidth: 600, maxHeight: '80vh', borderRadius: 8, width: '100%' }}
+              />
+            ) : (
+              <img
+                src={item.url} alt={item.concept}
+                style={{ maxWidth: 600, maxHeight: '80vh', borderRadius: 8, width: '100%', objectFit: 'contain' }}
+              />
+            )
+          ) : (
+            <div style={{
+              maxWidth: 600, maxHeight: '80vh', aspectRatio: item.aspect || '4/5',
+              background: t.surfaceRaised, borderRadius: 8,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '100%',
+            }}>
+              <span style={{ fontSize: 48, color: t.textMuted }}>
+                {isVideo ? IC.play : IC.gallery}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Right panel — metadata */}

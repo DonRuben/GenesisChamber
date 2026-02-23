@@ -1,12 +1,12 @@
 // ─────────────────────────────────────────────────────────
 // GENESIS CHAMBER V4 — SETTINGS PANEL
-// Slide-in panel: active models + anonymization toggle
-// Ref: gc-v4-llm-council.jsx:369-456
+// Slide-in panel: active models + thinking mode + web search
+// + chairman model + anonymization toggle
 // ─────────────────────────────────────────────────────────
 
 import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
-import { ModelDot } from '../../design/shared';
+import { ModelDot, Toggle } from '../../design/shared';
 import { useCouncilStore } from '../../stores/councilStore';
 import { MODELS } from '../../data/mock';
 import { useTokens } from '../../hooks/useTokens';
@@ -19,8 +19,20 @@ export default function SettingsPanel() {
   const setAnonymized = useCouncilStore((s) => s.setAnonymized);
   const activeModels = useCouncilStore((s) => s.activeModels);
   const toggleModel = useCouncilStore((s) => s.toggleModel);
+  const thinkingMode = useCouncilStore((s) => s.thinkingMode);
+  const setThinkingMode = useCouncilStore((s) => s.setThinkingMode);
+  const enableWebSearch = useCouncilStore((s) => s.enableWebSearch);
+  const setEnableWebSearch = useCouncilStore((s) => s.setEnableWebSearch);
+  const chairmanModel = useCouncilStore((s) => s.chairmanModel);
+  const setChairmanModel = useCouncilStore((s) => s.setChairmanModel);
 
   if (!settingsOpen) return null;
+
+  const thinkingModes = [
+    { id: 'off', label: 'Off', color: t.textMuted },
+    { id: 'thinking', label: 'Thinking', color: t.cyan },
+    { id: 'deep', label: 'Deep', color: t.gold },
+  ];
 
   return (
     <div style={{
@@ -86,6 +98,85 @@ export default function SettingsPanel() {
               </button>
             );
           })}
+        </div>
+
+        {/* Thinking Mode */}
+        <div style={{
+          fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+          textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12,
+        }}>THINKING MODE</div>
+
+        <div style={{ display: 'flex', gap: 6, marginBottom: 28 }}>
+          {thinkingModes.map(({ id, label, color }) => (
+            <button
+              key={id}
+              onClick={() => setThinkingMode(id)}
+              style={{
+                flex: 1, padding: '8px 12px', borderRadius: 6, cursor: 'pointer',
+                background: thinkingMode === id ? `${color}1a` : t.surfaceRaised,
+                border: `1px solid ${thinkingMode === id ? color : t.border}`,
+                fontSize: 11, fontFamily: font.mono, fontWeight: 600,
+                color: thinkingMode === id ? color : t.textMuted,
+                textTransform: 'uppercase', letterSpacing: '0.06em',
+              }}
+            >{label}</button>
+          ))}
+        </div>
+
+        {/* Internet Search */}
+        <div style={{
+          fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+          textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12,
+        }}>INTERNET SEARCH</div>
+
+        <button onClick={() => setEnableWebSearch(!enableWebSearch)}
+          style={{
+            width: '100%', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10,
+            background: t.surfaceRaised, border: `1px solid ${t.border}`, borderRadius: 6,
+            cursor: 'pointer', marginBottom: 28,
+          }}>
+          <span style={{ fontSize: 14, color: enableWebSearch ? t.cyan : t.textMuted }}>
+            {IC.search}
+          </span>
+          <div style={{ flex: 1, textAlign: 'left' }}>
+            <div style={{ fontSize: 12, fontWeight: 500, color: t.text }}>Web Search</div>
+            <div style={{ fontSize: 11, color: t.textMuted, marginTop: 2 }}>
+              {enableWebSearch ? 'Models can search the web' : 'No internet access'}
+            </div>
+          </div>
+          <Toggle enabled={enableWebSearch} onChange={setEnableWebSearch} color={t.cyan} />
+        </button>
+
+        {/* Chairman Model */}
+        <div style={{
+          fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+          textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12,
+        }}>CHAIRMAN MODEL</div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 28 }}>
+          {MODELS.filter((m) => activeModels.includes(m.id)).map((m) => (
+            <button key={m.id} onClick={() => setChairmanModel(m.id)}
+              style={{
+                padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10,
+                background: chairmanModel === m.id ? t.surfaceRaised : 'transparent',
+                border: `1px solid ${chairmanModel === m.id ? t.borderHover : t.border}`,
+                borderLeft: `2px solid ${chairmanModel === m.id ? t.gold : 'transparent'}`,
+                borderRadius: 6, cursor: 'pointer', transition: 'all 0.13s',
+              }}>
+              <ModelDot color={m.color} size={6} />
+              <span style={{
+                fontSize: 11, fontWeight: 500,
+                color: chairmanModel === m.id ? t.text : t.textMuted,
+                flex: 1, textAlign: 'left',
+              }}>{m.name}</span>
+              {chairmanModel === m.id && (
+                <span style={{
+                  fontSize: 8, fontFamily: font.mono, fontWeight: 600,
+                  color: t.gold, textTransform: 'uppercase', letterSpacing: '0.08em',
+                }}>CHAIRMAN</span>
+              )}
+            </button>
+          ))}
         </div>
 
         {/* Anonymization toggle */}

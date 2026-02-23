@@ -1,21 +1,43 @@
 // ─────────────────────────────────────────────────────────
 // GENESIS CHAMBER V4 — SYNTHESIS PANEL
 // Collapsible council verdict with score rankings
-// Ref: gc-v4-llm-council.jsx:310-352
+// Store-driven with mock fallback
 // ─────────────────────────────────────────────────────────
 
 import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { ModelDot } from '../../design/shared';
 import { useCouncilStore } from '../../stores/councilStore';
-import { MODELS, MOCK_RESPONSES, MOCK_SYNTHESIS } from '../../data/mock';
+import { useAppStore } from '../../stores/appStore';
+import { MODELS, MODEL_MAP, MOCK_RESPONSES, MOCK_SYNTHESIS } from '../../data/mock';
+import { SkeletonSynthesis } from '../../design/skeletons';
 import { useTokens } from '../../hooks/useTokens';
 
 export default function SynthesisPanel() {
   const t = useTokens();
   const showSynthesis = useCouncilStore((s) => s.showSynthesis);
   const toggleSynthesis = useCouncilStore((s) => s.toggleSynthesis);
-  const ranked = [...MOCK_RESPONSES].sort((a, b) => b.score - a.score);
+  const backendOnline = useAppStore((s) => s.backendOnline);
+
+  // Live data
+  const stage3Result = useCouncilStore((s) => s.stage3Result);
+  const stage2Results = useCouncilStore((s) => s.stage2Results);
+  const loading = useCouncilStore((s) => s.loading);
+  const currentStage = useCouncilStore((s) => s.currentStage);
+
+  const synthesis = stage3Result?.response
+    || (backendOnline === false ? MOCK_SYNTHESIS : null);
+
+  // Build rankings from stage2 or mock
+  const rankData = stage2Results?.aggregateRankings
+    || (backendOnline === false
+      ? [...MOCK_RESPONSES].sort((a, b) => b.score - a.score)
+      : null);
+
+  // Show skeleton during stage3 loading
+  if (loading && currentStage === 'stage3') {
+    return <SkeletonSynthesis />;
+  }
 
   if (!showSynthesis) {
     return (
@@ -36,8 +58,10 @@ export default function SynthesisPanel() {
     );
   }
 
+  if (!synthesis) return null;
+
   return (
-    <div style={{
+    <div className="gc-enter" style={{
       background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8,
       borderLeft: `2px solid ${t.gold}`, padding: '24px 24px',
     }}>
@@ -49,23 +73,49 @@ export default function SynthesisPanel() {
         }}>COUNCIL SYNTHESIS</span>
       </div>
 
-      <div style={{ fontSize: 13, color: t.textSoft, lineHeight: 1.7 }}>{MOCK_SYNTHESIS}</div>
+      <div style={{ fontSize: 13, color: t.textSoft, lineHeight: 1.7 }}>{synthesis}</div>
+
+      {/* Thinking for synthesis */}
+      {stage3Result?.reasoning && (
+        <details style={{ marginTop: 12 }}>
+          <summary style={{
+            fontSize: 10, fontFamily: font.mono, color: t.purple,
+            cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.06em',
+          }}>
+            Chairman Thinking
+          </summary>
+          <div style={{
+            fontSize: 11, color: t.textMuted, lineHeight: 1.6, marginTop: 8,
+            padding: '10px 14px', background: t.surfaceRaised, borderRadius: 6,
+            fontFamily: font.mono, maxHeight: 200, overflow: 'auto',
+            borderLeft: `2px solid ${t.purple}`,
+          }}>
+            {stage3Result.reasoning}
+          </div>
+        </details>
+      )}
 
       {/* Score summary */}
-      <div style={{ marginTop: 18, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-        {ranked.map((r, i) => {
-          const m = MODELS.find((mod) => mod.id === r.modelId);
-          const scoreColor = r.score >= 85 ? t.green : r.score >= 75 ? t.gold : t.textSoft;
-          return (
-            <div key={r.modelId} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 11, fontFamily: font.mono, fontWeight: 700, color: t.textMuted }}>#{i + 1}</span>
-              <ModelDot color={m.color} size={6} />
-              <span style={{ fontSize: 11, fontFamily: font.mono, color: t.textSoft }}>{m.name.split(' ')[0]}</span>
-              <span style={{ fontSize: 12, fontFamily: font.mono, fontWeight: 700, color: scoreColor }}>{r.score}</span>
-            </div>
-          );
-        })}
-      </div>
+      {rankData && (
+        <div style={{ marginTop: 18, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          {rankData.map((r, i) => {
+            const modelId = r.model || r.model_name || r.modelId;
+            const m = MODEL_MAP?.[modelId]
+              || MODELS.find((mod) => mod.id === modelId)
+              || { name: modelId?.split('/').pop() || 'Unknown', color: t.textMuted };
+            const score = r.pct ?? r.score ?? 0;
+            const scoreColor = score >= 85 ? t.green : score >= 75 ? t.gold : t.textSoft;
+            return (
+              <div key={modelId || i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 11, fontFamily: font.mono, fontWeight: 700, color: t.textMuted }}>#{i + 1}</span>
+                <ModelDot color={m.color} size={6} />
+                <span style={{ fontSize: 11, fontFamily: font.mono, color: t.textSoft }}>{m.name?.split(' ')[0]}</span>
+                <span style={{ fontSize: 12, fontFamily: font.mono, fontWeight: 700, color: scoreColor }}>{score}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { font, motion } from '../design/tokens';
 import { IC } from '../design/icons';
 import { Tag, MonoLabel, Btn } from '../design/shared';
+import { useAppStore } from '../stores/appStore';
 import { RECENT_SIMS } from '../data/mock';
 import { useTokens } from '../hooks/useTokens';
 import { useIsMobile } from '../hooks/useMediaQuery';
@@ -19,7 +20,7 @@ function RecentSimCard({ sim, t }) {
 
   return (
     <button
-      onClick={() => navigate(`/sim/${sim.title.toLowerCase().replace(/\s+/g, '-')}`)}
+      onClick={() => navigate(`/sim/${sim.id || sim.title.toLowerCase().replace(/\s+/g, '-')}`)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -58,6 +59,19 @@ export default function Landing() {
   const t = useTokens();
   const mobile = useIsMobile();
   const navigate = useNavigate();
+  const backendOnline = useAppStore((s) => s.backendOnline);
+  const simulations = useAppStore((s) => s.simulations);
+
+  // Use real simulations when online, mock otherwise
+  const recentSims = backendOnline
+    ? simulations.slice(0, 5).map((s) => ({
+        id: s.id || s.sim_id,
+        title: s.name || s.title || 'Untitled',
+        date: s.updated || s.created || '',
+        models: `${s.participant_count || '?'} personas`,
+        status: s.status || 'complete',
+      }))
+    : RECENT_SIMS;
 
   return (
     <div style={{
@@ -89,14 +103,14 @@ export default function Landing() {
       </div>
 
       {/* Recent Simulations */}
-      {RECENT_SIMS.length > 0 && (
+      {recentSims.length > 0 && (
         <div style={{ maxWidth: 540, width: '100%' }}>
           <MonoLabel icon={IC.clock} color={t.textMuted}>
             Recent Simulations
           </MonoLabel>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {RECENT_SIMS.map((sim, i) => (
-              <RecentSimCard key={i} sim={sim} t={t} />
+            {recentSims.map((sim, i) => (
+              <RecentSimCard key={sim.id || i} sim={sim} t={t} />
             ))}
           </div>
         </div>

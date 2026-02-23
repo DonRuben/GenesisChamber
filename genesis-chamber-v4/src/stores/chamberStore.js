@@ -17,6 +17,12 @@ export const useChamberStore = create((set, get) => ({
   daAggression: 'balanced',
   expandedTeam: null,
 
+  // ── Live Simulation State ──
+  liveSimId: null,
+  liveStatus: null,       // 'starting' | 'running' | 'complete' | 'failed'
+  liveEvents: [],
+  liveError: null,
+
   // ── Dashboard State ──
   simulation: MOCK_SIMULATION,
   activeTab: 'overview',
@@ -68,6 +74,28 @@ export const useChamberStore = create((set, get) => ({
     launchMode: null, launchStep: 0, selectedPreset: null,
     selectedPersonas: new Set(), brief: '', daEnabled: false,
     daAggression: 'balanced', expandedTeam: null,
+  }),
+
+  // ── Live Simulation Actions ──
+  setSimulation: (simulation) => set({ simulation }),
+  handleSimSSEEvent: (type, data) => {
+    switch (type) {
+      case 'simulation_started':
+        set({ liveSimId: data.sim_id, liveStatus: 'running' });
+        break;
+      case 'simulation_complete':
+        set({ liveStatus: 'complete' });
+        break;
+      case 'error':
+        set({ liveError: data.message || 'Simulation error', liveStatus: 'failed' });
+        break;
+      default:
+        set((s) => ({ liveEvents: [...s.liveEvents, { type, ...data }] }));
+        break;
+    }
+  },
+  resetLive: () => set({
+    liveSimId: null, liveStatus: null, liveEvents: [], liveError: null,
   }),
 
   // ── Dashboard Actions ──

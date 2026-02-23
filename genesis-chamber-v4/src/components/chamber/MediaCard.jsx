@@ -16,16 +16,24 @@ export default function MediaCard({ item, onClick }) {
       borderLeft: `2px solid ${borderColor}`,
       transition: 'transform 0.15s',
     }}>
-      {/* Image placeholder */}
-      <div className="gc-skeleton" style={{
+      {/* Media preview */}
+      <div style={{
         aspectRatio: item.aspect || '4/5',
         background: t.surfaceRaised,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        position: 'relative',
-      }}>
-        <span style={{ fontSize: 28, color: t.textMuted }}>
-          {isVideo ? IC.play : IC.gallery}
-        </span>
+        position: 'relative', overflow: 'hidden',
+      }} className={item.url ? undefined : 'gc-skeleton'}>
+        {item.url ? (
+          isVideo ? (
+            <video src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted />
+          ) : (
+            <img src={item.url} alt={item.concept} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+          )
+        ) : (
+          <span style={{ fontSize: 28, color: t.textMuted }}>
+            {isVideo ? IC.play : IC.gallery}
+          </span>
+        )}
 
         {/* Type overlay */}
         <span style={{

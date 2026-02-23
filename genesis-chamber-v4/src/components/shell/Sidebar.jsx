@@ -9,8 +9,11 @@ import { useNavigate } from 'react-router-dom';
 import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { useAppStore } from '../../stores/appStore';
+import { useCouncilStore } from '../../stores/councilStore';
 import { CONVERSATIONS } from '../../data/mock';
+import { ConnectionDot } from '../../design/skeletons';
 import { useTokens } from '../../hooks/useTokens';
+import * as api from '../../services/api';
 
 // ── Logo ──
 function Logo({ collapsed, t }) {
@@ -103,11 +106,11 @@ function ModeTabs({ collapsed, t }) {
 }
 
 // ── New Conversation Button ──
-function NewConversationBtn({ collapsed, t }) {
+function NewConversationBtn({ collapsed, t, onNew }) {
   if (collapsed) {
     return (
       <div style={{ padding: '12px 0', display: 'flex', justifyContent: 'center' }}>
-        <button title="New Conversation"
+        <button title="New Conversation" onClick={onNew}
           style={{
             width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: 'transparent', border: `1px solid ${t.border}`, borderRadius: 6,
@@ -124,6 +127,7 @@ function NewConversationBtn({ collapsed, t }) {
   return (
     <div style={{ padding: '16px 12px 8px' }}>
       <button
+        onClick={onNew}
         style={{
           width: '100%', padding: '11px 16px', display: 'flex', alignItems: 'center', gap: 10,
           background: 'transparent', border: `1px solid ${t.border}`, borderRadius: 6,
@@ -166,7 +170,15 @@ function SearchBar({ t }) {
 // ── Conversation List ──
 function ConversationList({ activeId, onSelect, collapsed, t }) {
   const mode = useAppStore((s) => s.mode);
-  const filtered = CONVERSATIONS.filter((c) => c.mode === mode);
+  const backendOnline = useAppStore((s) => s.backendOnline);
+  const conversations = useAppStore((s) => s.conversations);
+  const simulations = useAppStore((s) => s.simulations);
+
+  // Use real data when online, fall back to mock
+  const items = backendOnline
+    ? (mode === 'council' ? conversations : simulations)
+    : CONVERSATIONS.filter((c) => c.mode === mode);
+  const filtered = Array.isArray(items) ? items : [];
 
   if (collapsed) {
     return (
@@ -230,6 +242,7 @@ function SidebarFooter({ collapsed, t }) {
   const toggleTheme = useAppStore((s) => s.toggleTheme);
   const toggleSidebar = useAppStore((s) => s.toggleSidebar);
   const theme = useAppStore((s) => s.theme);
+  const backendOnline = useAppStore((s) => s.backendOnline);
 
   if (collapsed) {
     return (
@@ -237,6 +250,7 @@ function SidebarFooter({ collapsed, t }) {
         borderTop: `1px solid ${t.border}`, padding: '12px 0',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
       }}>
+        <ConnectionDot online={backendOnline} collapsed />
         <button onClick={toggleTheme} title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
           style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: t.textMuted, fontSize: 14 }}>
           {theme === 'dark' ? IC.sun : IC.moon}
@@ -254,12 +268,15 @@ function SidebarFooter({ collapsed, t }) {
       borderTop: `1px solid ${t.border}`, padding: '12px 16px',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     }}>
-      <span style={{
-        fontSize: 8, fontFamily: font.mono, fontWeight: 500, color: t.textMuted,
-        textTransform: 'uppercase', letterSpacing: '0.14em',
-      }}>
-        OmniPresent Group
-      </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <ConnectionDot online={backendOnline} />
+        <span style={{
+          fontSize: 8, fontFamily: font.mono, fontWeight: 500, color: t.textMuted,
+          textTransform: 'uppercase', letterSpacing: '0.14em',
+        }}>
+          OmniPresent Group
+        </span>
+      </div>
       <div style={{ display: 'flex', gap: 4 }}>
         <button title="Settings"
           style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: t.textMuted, fontSize: 14, borderRadius: 4 }}>
@@ -283,14 +300,38 @@ function SidebarFooter({ collapsed, t }) {
 // ─────────────────────────────────────────────────────────
 export default function Sidebar({ activeConv, onSelectConv }) {
   const t = useTokens();
+  const navigate = useNavigate();
   const sidebarState = useAppStore((s) => s.sidebarState);
+  const mode = useAppStore((s) => s.mode);
+  const backendOnline = useAppStore((s) => s.backendOnline);
   const collapsed = sidebarState === 'collapsed';
+
+  const handleNew = async () => {
+    if (mode === 'council' && backendOnline) {
+      try {
+        const conv = await api.createConversation();
+        useAppStore.getState().addConversation(conv);
+        useCouncilStore.getState().reset();
+        useCouncilStore.getState().setConversationId(conv.id);
+        navigate('/council');
+      } catch {
+        // Fallback — just navigate
+        useCouncilStore.getState().reset();
+        navigate('/council');
+      }
+    } else if (mode === 'genesis') {
+      navigate('/launch');
+    } else {
+      useCouncilStore.getState().reset();
+      navigate('/council');
+    }
+  };
 
   return (
     <>
       <Logo collapsed={collapsed} t={t} />
       <ModeTabs collapsed={collapsed} t={t} />
-      <NewConversationBtn collapsed={collapsed} t={t} />
+      <NewConversationBtn collapsed={collapsed} t={t} onNew={handleNew} />
       {!collapsed && <SearchBar t={t} />}
       <ConversationList activeId={activeConv} onSelect={onSelectConv} collapsed={collapsed} t={t} />
       <SidebarFooter collapsed={collapsed} t={t} />
