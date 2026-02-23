@@ -8,11 +8,12 @@ import { useState } from 'react';
 import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { Tag, ModelDot } from '../../design/shared';
-import { MODELS, MODEL_MAP } from '../../data/mock';
 import { useTokens } from '../../hooks/useTokens';
+import { useModelLookup } from '../../hooks/useModels';
 
 export default function ResponseCard({ response, index, revealed, isWinner, rank, score }) {
   const t = useTokens();
+  const lookupModel = useModelLookup();
   const [showThinking, setShowThinking] = useState(false);
 
   // Accept both mock format {modelId, text, score} and backend format {model, response, reasoning}
@@ -21,10 +22,8 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
   const displayScore = score ?? response.score ?? null;
   const reasoning = response.reasoning || response.reasoning_details;
 
-  // Look up model info
-  const model = MODEL_MAP?.[modelId]
-    || MODELS.find((m) => m.id === modelId)
-    || { name: modelId?.split('/').pop() || 'Unknown', color: t.textMuted, letter: '?' };
+  // Look up model info via hook
+  const model = lookupModel(modelId);
 
   const scoreColor = displayScore != null
     ? (displayScore >= 85 ? t.green : displayScore >= 75 ? t.gold : t.textSoft)

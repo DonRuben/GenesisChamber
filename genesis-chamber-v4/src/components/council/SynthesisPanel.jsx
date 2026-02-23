@@ -9,12 +9,14 @@ import { IC } from '../../design/icons';
 import { ModelDot } from '../../design/shared';
 import { useCouncilStore } from '../../stores/councilStore';
 import { useAppStore } from '../../stores/appStore';
-import { MODELS, MODEL_MAP, MOCK_RESPONSES, MOCK_SYNTHESIS } from '../../data/mock';
+import { MOCK_RESPONSES, MOCK_SYNTHESIS } from '../../data/mock';
 import { SkeletonSynthesis } from '../../design/skeletons';
 import { useTokens } from '../../hooks/useTokens';
+import { useModelLookup } from '../../hooks/useModels';
 
 export default function SynthesisPanel() {
   const t = useTokens();
+  const lookupModel = useModelLookup();
   const showSynthesis = useCouncilStore((s) => s.showSynthesis);
   const toggleSynthesis = useCouncilStore((s) => s.toggleSynthesis);
   const backendOnline = useAppStore((s) => s.backendOnline);
@@ -100,9 +102,7 @@ export default function SynthesisPanel() {
         <div style={{ marginTop: 18, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           {rankData.map((r, i) => {
             const modelId = r.model || r.model_name || r.modelId;
-            const m = MODEL_MAP?.[modelId]
-              || MODELS.find((mod) => mod.id === modelId)
-              || { name: modelId?.split('/').pop() || 'Unknown', color: t.textMuted };
+            const m = lookupModel(modelId);
             const score = r.pct ?? r.score ?? 0;
             const scoreColor = score >= 85 ? t.green : score >= 75 ? t.gold : t.textSoft;
             return (

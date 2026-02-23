@@ -9,21 +9,59 @@ import { IC } from '../../design/icons';
 import { Tag, ModelDot } from '../../design/shared';
 import { useCouncilStore } from '../../stores/councilStore';
 import { useAppStore } from '../../stores/appStore';
-import { MODELS, PRESETS, MOCK_RESPONSES } from '../../data/mock';
+import { PRESETS, MOCK_RESPONSES } from '../../data/mock';
 import { SkeletonResponseCard, StageIndicator, ErrorCard } from '../../design/skeletons';
 import ResponseCard from './ResponseCard';
 import SynthesisPanel from './SynthesisPanel';
 import ChatInput from './ChatInput';
 import { useTokens } from '../../hooks/useTokens';
+import { useModels } from '../../hooks/useModels';
+
+function UserBubble({ text, color, muted }) {
+  const t = useTokens();
+  return (
+    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+      <div style={{
+        maxWidth: '85%', padding: '12px 16px',
+        fontSize: 13, lineHeight: 1.6, color: muted ? t.textMuted : t.text,
+        background: `${color || t.cyan}12`,
+        borderRadius: '12px 12px 4px 12px',
+      }}>
+        {text}
+      </div>
+    </div>
+  );
+}
+
+function PreviousRoundSummary({ message }) {
+  const t = useTokens();
+  const count = message.stage1?.length || 0;
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16,
+      padding: '8px 14px', background: t.surfaceRaised, borderRadius: 6,
+      borderLeft: `2px solid ${t.textMuted}`,
+    }}>
+      <span style={{
+        fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+        textTransform: 'uppercase', letterSpacing: '0.12em',
+      }}>
+        PREVIOUS ROUND — {count} RESPONSES
+      </span>
+    </div>
+  );
+}
 
 export default function ConversationView({ onSubmit }) {
   const t = useTokens();
+  const { models } = useModels();
   const question = useCouncilStore((s) => s.question);
   const preset = useCouncilStore((s) => s.preset);
   const revealed = useCouncilStore((s) => s.revealed);
   const toggleReveal = useCouncilStore((s) => s.toggleReveal);
   const followUp = useCouncilStore((s) => s.followUp);
   const setFollowUp = useCouncilStore((s) => s.setFollowUp);
+  const messages = useCouncilStore((s) => s.messages);
   const backendOnline = useAppStore((s) => s.backendOnline);
 
   // Live API state
@@ -36,7 +74,7 @@ export default function ConversationView({ onSubmit }) {
 
   // Determine data source: live API or mock fallback
   const responses = stage1Results || (backendOnline === false ? MOCK_RESPONSES : null);
-  const modelCount = responses ? responses.length : MODELS.length;
+  const modelCount = responses ? responses.length : activeModels.length;
 
   // Build display responses with scores from stage2 if available
   const displayResponses = responses ? responses.map((resp) => {
@@ -59,30 +97,37 @@ export default function ConversationView({ onSubmit }) {
 
   const presetData = preset ? PRESETS.find((p) => p.key === preset) : null;
 
+  // Active model dots — only show dots for active models
+  const activeModelInfo = models.filter((m) => activeModels.includes(m.id));
+
   const handleFollowUp = () => {
     if (!followUp.trim() || !onSubmit) return;
     onSubmit(followUp.trim());
     setFollowUp('');
   };
 
+  // Previous turns: everything except the last pair (current turn)
+  const prevMessages = messages.length > 0 ? messages.slice(0, -1) : [];
+
   return (
     <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
       <div style={{ maxWidth: 760, margin: '0 auto', width: '100%', padding: '32px 24px' }}>
 
-        {/* Question header */}
-        <div style={{ marginBottom: 32 }}>
+        {/* Previous conversation history */}
+        {prevMessages.map((msg, i) => (
+          msg.role === 'user'
+            ? <UserBubble key={`prev-${i}`} text={msg.content} color={t.textMuted} muted />
+            : <PreviousRoundSummary key={`prev-${i}`} message={msg} />
+        ))}
+
+        {/* Current question — user bubble style */}
+        <div style={{ marginBottom: 24 }}>
           {presetData && (
-            <div style={{ marginBottom: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 6 }}>
               <Tag color={presetData.color}>{presetData.label}</Tag>
             </div>
           )}
-          <div style={{
-            fontSize: 16, fontWeight: 600, color: t.text, lineHeight: 1.6,
-            padding: '16px 20px', background: t.surface, borderRadius: 8,
-            borderLeft: `2px solid ${t.cyan}`,
-          }}>
-            {question}
-          </div>
+          <UserBubble text={question} color={t.cyan} />
         </div>
 
         {/* Stage indicator when loading */}
@@ -100,7 +145,7 @@ export default function ConversationView({ onSubmit }) {
               {modelCount} MODELS RESPONDING
             </span>
             <div style={{ display: 'flex', gap: 6 }}>
-              {MODELS.map((m) => <ModelDot key={m.id} color={m.color} size={8} />)}
+              {activeModelInfo.map((m) => <ModelDot key={m.id} color={m.color} size={8} />)}
             </div>
             <div style={{ flex: 1 }} />
             <button onClick={toggleReveal}

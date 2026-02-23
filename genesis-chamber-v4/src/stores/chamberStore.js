@@ -16,6 +16,10 @@ export const useChamberStore = create((set, get) => ({
   daEnabled: false,
   daAggression: 'balanced',
   expandedTeam: null,
+  modelAssignments: {},       // { personaId: modelId }
+  thinkingMode: 'off',        // 'off' | 'thinking' | 'deep'
+  thinkingOverrides: {},       // { personaId: mode }
+  enableWebSearch: false,
 
   // ── Live Simulation State ──
   liveSimId: null,
@@ -70,10 +74,27 @@ export const useChamberStore = create((set, get) => ({
   setExpandedTeam: (team) => set((s) => ({
     expandedTeam: s.expandedTeam === team ? null : team,
   })),
+  setModelAssignment: (personaId, modelId) => set((s) => ({
+    modelAssignments: { ...s.modelAssignments, [personaId]: modelId },
+  })),
+  setThinkingMode: (mode) => set({ thinkingMode: mode, thinkingOverrides: {} }),
+  setThinkingOverride: (personaId, mode) => set((s) => {
+    const next = { ...s.thinkingOverrides };
+    if (mode === s.thinkingMode) delete next[personaId];
+    else next[personaId] = mode;
+    return { thinkingOverrides: next };
+  }),
+  getEffectiveThinking: (personaId) => {
+    const s = get();
+    return s.thinkingOverrides[personaId] || s.thinkingMode;
+  },
+  setEnableWebSearch: (enabled) => set({ enableWebSearch: enabled }),
   resetLauncher: () => set({
     launchMode: null, launchStep: 0, selectedPreset: null,
     selectedPersonas: new Set(), brief: '', daEnabled: false,
     daAggression: 'balanced', expandedTeam: null,
+    modelAssignments: {}, thinkingMode: 'off', thinkingOverrides: {},
+    enableWebSearch: false,
   }),
 
   // ── Live Simulation Actions ──

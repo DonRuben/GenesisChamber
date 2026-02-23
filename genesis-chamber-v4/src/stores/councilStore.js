@@ -20,11 +20,11 @@ export const useCouncilStore = create((set, get) => ({
   // ── Model Config (full OpenRouter IDs) ──
   activeModels: [
     'openai/gpt-5.2',
-    'google/gemini-3.1-pro-preview',
+    'google/gemini-3-pro',
     'anthropic/claude-sonnet-4.6',
-    'x-ai/grok-4.1-fast',
+    'x-ai/grok-4.1',
   ],
-  chairmanModel: 'google/gemini-3.1-pro-preview',
+  chairmanModel: 'google/gemini-3-pro',
   thinkingMode: 'off',        // 'off' | 'thinking' | 'deep'
   modelThinkingModes: {},      // per-model overrides
   enableWebSearch: false,

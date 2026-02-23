@@ -42,6 +42,7 @@ export default function AppShell() {
   const setSidebar = useAppStore((s) => s.setSidebar);
   const backendOnline = useAppStore((s) => s.backendOnline);
   const loadSidebarData = useAppStore((s) => s.loadSidebarData);
+  const loadModels = useAppStore((s) => s.loadModels);
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
 
@@ -54,10 +55,13 @@ export default function AppShell() {
   // Start backend health check polling
   useBackendStatus();
 
-  // Load sidebar data when backend comes online
+  // Load sidebar data + model roster when backend comes online
   useEffect(() => {
-    if (backendOnline === true) loadSidebarData();
-  }, [backendOnline, loadSidebarData]);
+    if (backendOnline === true) {
+      loadSidebarData();
+      loadModels();
+    }
+  }, [backendOnline, loadSidebarData, loadModels]);
 
   // Sync sidebar state with viewport
   useEffect(() => {

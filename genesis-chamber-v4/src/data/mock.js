@@ -22,16 +22,74 @@ export const RECENT_SIMS = [
   { title: 'Quick Brand Check — EV Charging', mode: 'genesis', date: '3d ago', models: '3 models', status: 'complete' },
 ];
 
-// ── LLM Council Models ──
+// ── Model Tiers ──
+export const MODEL_TIERS = [
+  { id: 'premium', name: 'Premium', color: '#F59E0B' },
+  { id: 'balanced', name: 'Balanced', color: '#3B82F6' },
+  { id: 'efficient', name: 'Efficient', color: '#10B981' },
+  { id: 'budget', name: 'Budget', color: '#6B7280' },
+];
+
+// ── LLM Council Models (full 19-model roster) ──
 export const MODELS = [
-  { id: 'openai/gpt-5.2', name: 'GPT-5.2', color: '#34D399', letter: 'G' },
-  { id: 'google/gemini-3.1-pro-preview', name: 'Gemini 3.1 Pro', color: '#00D9FF', letter: 'Gm' },
-  { id: 'anthropic/claude-sonnet-4.6', name: 'Claude Sonnet 4.6', color: '#F27123', letter: 'C' },
-  { id: 'x-ai/grok-4.1-fast', name: 'Grok 4.1', color: '#E5375E', letter: 'Gk' },
+  // Tier 1 — Premium
+  { id: 'anthropic/claude-opus-4-6', name: 'Claude Opus 4.6', color: '#F27123', letter: 'CO', tier: 'premium' },
+  { id: 'openai/gpt-5.2', name: 'GPT-5.2', color: '#34D399', letter: 'G', tier: 'premium' },
+  { id: 'openai/gpt-5.1', name: 'GPT-5.1', color: '#22C55E', letter: 'G5', tier: 'premium' },
+  { id: 'google/gemini-3-pro', name: 'Gemini 3 Pro', color: '#00D9FF', letter: 'Gm', tier: 'premium' },
+  // Tier 2 — Balanced
+  { id: 'anthropic/claude-sonnet-4.6', name: 'Claude Sonnet 4.6', color: '#F97316', letter: 'CS', tier: 'balanced' },
+  { id: 'google/gemini-2.5-pro', name: 'Gemini 2.5 Pro', color: '#06B6D4', letter: 'Gp', tier: 'balanced' },
+  { id: 'x-ai/grok-4', name: 'Grok 4', color: '#E5375E', letter: 'Gk', tier: 'balanced' },
+  { id: 'x-ai/grok-4.1', name: 'Grok 4.1', color: '#F43F5E', letter: 'G4', tier: 'balanced' },
+  { id: 'mistralai/mistral-large', name: 'Mistral Large', color: '#D4A853', letter: 'ML', tier: 'balanced' },
+  // Tier 3 — Efficient
+  { id: 'meta-llama/llama-4-maverick', name: 'Llama 4 Maverick', color: '#8B5CF6', letter: 'Lm', tier: 'efficient' },
+  { id: 'anthropic/claude-haiku-4.5', name: 'Claude Haiku 4.5', color: '#FB923C', letter: 'CH', tier: 'efficient' },
+  { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash', color: '#67E8F9', letter: 'Gf', tier: 'efficient' },
+  { id: 'deepseek/deepseek-v3.2', name: 'DeepSeek V3.2', color: '#A78BFA', letter: 'DS', tier: 'efficient' },
+  { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1', color: '#C084FC', letter: 'DR', tier: 'efficient' },
+  { id: 'google/gemini-3-flash', name: 'Gemini 3 Flash', color: '#22D3EE', letter: 'G3', tier: 'efficient' },
+  { id: 'qwen/qwen-3-235b', name: 'Qwen 3 235B', color: '#14B8A6', letter: 'Qw', tier: 'efficient' },
+  // Tier 4 — Budget
+  { id: 'moonshotai/kimi-k2.5', name: 'Kimi K2.5', color: '#94A3B8', letter: 'Ki', tier: 'budget' },
+  { id: 'minimax/minimax-m2.5', name: 'MiniMax M2.5', color: '#78716C', letter: 'Mx', tier: 'budget' },
+  { id: 'nvidia/nemotron-70b', name: 'Nemotron 70B', color: '#84CC16', letter: 'Nm', tier: 'budget' },
 ];
 
 // ── Model lookup map ──
 export const MODEL_MAP = Object.fromEntries(MODELS.map(m => [m.id, m]));
+
+// ── Default 4 models for council mode ──
+export const DEFAULT_COUNCIL_MODELS = [
+  'openai/gpt-5.2',
+  'google/gemini-3-pro',
+  'anthropic/claude-sonnet-4.6',
+  'x-ai/grok-4.1',
+];
+
+// ── Default persona → model mapping ──
+export const DEFAULT_PERSONA_MODELS = {
+  'david-ogilvy': 'google/gemini-3-pro',
+  'claude-hopkins': 'anthropic/claude-sonnet-4.6',
+  'leo-burnett': 'openai/gpt-5.1',
+  'mary-wells': 'meta-llama/llama-4-maverick',
+  'gary-halbert': 'x-ai/grok-4.1',
+  'paul-rand': 'google/gemini-3-pro',
+  'paula-scher': 'openai/gpt-5.1',
+  'saul-bass': 'anthropic/claude-sonnet-4.6',
+  'susan-kare': 'meta-llama/llama-4-maverick',
+  'rob-janoff': 'x-ai/grok-4.1',
+  'tobias-vs': 'google/gemini-3-pro',
+  'elon-musk': 'x-ai/grok-4.1',
+  'jeff-bezos': 'anthropic/claude-sonnet-4.6',
+  'warren-buffett': 'google/gemini-3-pro',
+  'richard-branson': 'meta-llama/llama-4-maverick',
+  'dietrich-mateschitz': 'deepseek/deepseek-v3.2',
+  'steve-jobs': 'anthropic/claude-opus-4-6',
+  'jony-ive': 'anthropic/claude-sonnet-4.6',
+  'devils-advocate': 'x-ai/grok-4.1',
+};
 
 // ── LLM Council Presets ──
 export const PRESETS = [
@@ -46,8 +104,8 @@ export const PRESETS = [
 export const MOCK_RESPONSES = [
   { modelId: 'anthropic/claude-sonnet-4.6', text: "The key differentiator lies in the execution model. React's virtual DOM reconciliation is well-understood and battle-tested, but Svelte's compile-time approach eliminates the runtime overhead entirely. For a dashboard with frequent state updates, Svelte's surgical DOM updates yield measurably better frame rates. However, React's ecosystem depth — particularly for complex data visualization with D3 integration — remains unmatched. My recommendation: Svelte for greenfield dashboards under 50 components; React for enterprise-scale with heavy charting requirements.", score: 88 },
   { modelId: 'openai/gpt-5.2', text: "From a developer experience standpoint, Svelte reduces boilerplate by approximately 40% compared to React for equivalent functionality. The reactive declarations ($:) replace useState/useEffect patterns with more intuitive syntax. But the trade-off is significant: React's job market is 10× larger, component libraries like shadcn/ui have no Svelte equivalent at the same quality tier, and React Server Components offer a server-first paradigm Svelte hasn't matched. For your dashboard rebuild: if the team knows React, stay with React. The productivity gains from Svelte don't offset the migration cost and ecosystem gap.", score: 82 },
-  { modelId: 'google/gemini-3.1-pro-preview', text: "The performance benchmarks tell a clear story: Svelte outperforms React by 2-3× in initial render and 1.5× in updates for typical dashboard patterns. But benchmarks aren't production. In real-world dashboards, the bottleneck is rarely the framework — it's data fetching, chart rendering, and WebSocket management. Both frameworks handle these comparably. The deciding factor should be team velocity: which framework lets your specific team ship quality code faster? That's an organizational question, not a technical one.", score: 85 },
-  { modelId: 'x-ai/grok-4.1-fast', text: "Consider the long-term architecture. React 19 with Server Components and the new compiler eliminates most performance criticism — automatic memoization, streaming SSR, and reduced bundle sizes make the framework gap negligible. Svelte 5 with runes also converges toward a similar reactivity model. The frameworks are converging. Your decision should weight: (1) existing codebase investment, (2) team expertise distribution, (3) dependency on third-party component ecosystems. For most production dashboards, React remains the pragmatic choice despite Svelte's elegance.", score: 79 },
+  { modelId: 'google/gemini-3-pro', text: "The performance benchmarks tell a clear story: Svelte outperforms React by 2-3× in initial render and 1.5× in updates for typical dashboard patterns. But benchmarks aren't production. In real-world dashboards, the bottleneck is rarely the framework — it's data fetching, chart rendering, and WebSocket management. Both frameworks handle these comparably. The deciding factor should be team velocity: which framework lets your specific team ship quality code faster? That's an organizational question, not a technical one.", score: 85 },
+  { modelId: 'x-ai/grok-4.1', text: "Consider the long-term architecture. React 19 with Server Components and the new compiler eliminates most performance criticism — automatic memoization, streaming SSR, and reduced bundle sizes make the framework gap negligible. Svelte 5 with runes also converges toward a similar reactivity model. The frameworks are converging. Your decision should weight: (1) existing codebase investment, (2) team expertise distribution, (3) dependency on third-party component ecosystems. For most production dashboards, React remains the pragmatic choice despite Svelte's elegance.", score: 79 },
 ];
 
 export const MOCK_SYNTHESIS = "The council reaches consensus on a nuanced position: **Svelte offers superior developer experience and raw performance**, while **React provides ecosystem depth and hiring advantages**. The pragmatic recommendation depends on context — greenfield projects with small teams favor Svelte; enterprise environments with existing React investment should stay the course. Key insight from the debate: framework performance gaps are narrowing rapidly, making ecosystem and team factors the decisive criteria.";
@@ -62,7 +120,7 @@ export const STAGE_CONFIG = {
 // ── Rankings ──
 export const MOCK_RANKINGS = [
   { model: 'Claude Sonnet 4.6', avgRank: 1.33, pct: 100, color: '#F27123' },
-  { model: 'Gemini 3.1 Pro', avgRank: 1.67, pct: 82, color: '#00D9FF' },
+  { model: 'Gemini 3 Pro', avgRank: 1.67, pct: 82, color: '#00D9FF' },
   { model: 'GPT-5.2', avgRank: 2.67, pct: 48, color: '#34D399' },
   { model: 'Grok 4.1', avgRank: 3.33, pct: 28, color: '#E5375E' },
 ];
@@ -202,30 +260,30 @@ export const MOCK_TEAMS = [
   {
     id: 'marketing', name: 'Marketing & Strategy', color: T.flame,
     personas: [
-      { id: 'david-ogilvy', name: 'David Ogilvy', title: 'Father of Advertising', era: '1960s', model: 'google/gemini-3.1-pro-preview' },
+      { id: 'david-ogilvy', name: 'David Ogilvy', title: 'Father of Advertising', era: '1960s', model: 'google/gemini-3-pro' },
       { id: 'claude-hopkins', name: 'Claude Hopkins', title: 'Scientific Advertising', era: '1920s', model: 'anthropic/claude-sonnet-4.6' },
       { id: 'leo-burnett', name: 'Leo Burnett', title: 'Heartland Storyteller', era: '1950s', model: 'openai/gpt-5.1' },
       { id: 'mary-wells', name: 'Mary Wells Lawrence', title: 'Creative Revolution', era: '1960s', model: 'meta-llama/llama-4-maverick' },
-      { id: 'gary-halbert', name: 'Gary Halbert', title: 'Prince of Print', era: '1980s', model: 'x-ai/grok-4.1-fast' },
+      { id: 'gary-halbert', name: 'Gary Halbert', title: 'Prince of Print', era: '1980s', model: 'x-ai/grok-4.1' },
     ],
   },
   {
     id: 'design', name: 'Design & Visual', color: T.purple,
     personas: [
-      { id: 'paul-rand', name: 'Paul Rand', title: 'Corporate Identity Pioneer', era: '1960s', model: 'google/gemini-3.1-pro-preview' },
+      { id: 'paul-rand', name: 'Paul Rand', title: 'Corporate Identity Pioneer', era: '1960s', model: 'google/gemini-3-pro' },
       { id: 'paula-scher', name: 'Paula Scher', title: 'Typographic Powerhouse', era: '1990s', model: 'openai/gpt-5.1' },
       { id: 'saul-bass', name: 'Saul Bass', title: 'Title Sequence Master', era: '1960s', model: 'anthropic/claude-sonnet-4.6' },
       { id: 'susan-kare', name: 'Susan Kare', title: 'Pixel Art Pioneer', era: '1980s', model: 'meta-llama/llama-4-maverick' },
-      { id: 'rob-janoff', name: 'Rob Janoff', title: 'Apple Logo Creator', era: '1977', model: 'x-ai/grok-4.1-fast' },
-      { id: 'tobias-vs', name: 'Tobias van Schneider', title: 'Dark UI Visionary', era: '2010s', model: 'google/gemini-3.1-pro-preview' },
+      { id: 'rob-janoff', name: 'Rob Janoff', title: 'Apple Logo Creator', era: '1977', model: 'x-ai/grok-4.1' },
+      { id: 'tobias-vs', name: 'Tobias van Schneider', title: 'Dark UI Visionary', era: '2010s', model: 'google/gemini-3-pro' },
     ],
   },
   {
     id: 'business', name: 'Business & Strategy', color: T.cyan,
     personas: [
-      { id: 'elon-musk', name: 'Elon Musk', title: 'First Principles Thinker', era: '2000s', model: 'x-ai/grok-4.1-fast' },
+      { id: 'elon-musk', name: 'Elon Musk', title: 'First Principles Thinker', era: '2000s', model: 'x-ai/grok-4.1' },
       { id: 'jeff-bezos', name: 'Jeff Bezos', title: 'Customer Obsessed', era: '2000s', model: 'anthropic/claude-sonnet-4.6' },
-      { id: 'warren-buffett', name: 'Warren Buffett', title: 'Value Investor', era: '1970s', model: 'google/gemini-3.1-pro-preview' },
+      { id: 'warren-buffett', name: 'Warren Buffett', title: 'Value Investor', era: '1970s', model: 'google/gemini-3-pro' },
       { id: 'richard-branson', name: 'Richard Branson', title: 'Brand Maverick', era: '1980s', model: 'meta-llama/llama-4-maverick' },
       { id: 'dietrich-mateschitz', name: 'Dietrich Mateschitz', title: 'Category Creator', era: '1987', model: 'deepseek/deepseek-v3.2' },
     ],
@@ -236,7 +294,7 @@ export const MOCK_TEAMS = [
 export const MOCK_LEADERSHIP = {
   moderator: { id: 'steve-jobs', name: 'Steve Jobs', title: 'Moderator', model: 'anthropic/claude-opus-4-6', color: '#6B7280' },
   evaluator: { id: 'jony-ive', name: 'Jony Ive', title: 'Evaluator', model: 'anthropic/claude-sonnet-4.6', color: '#9CA3AF' },
-  da: { id: 'devils-advocate', name: 'Advocatus Diaboli', title: "Devil's Advocate", model: 'x-ai/grok-4.1-fast', color: T.magenta },
+  da: { id: 'devils-advocate', name: 'Advocatus Diaboli', title: "Devil's Advocate", model: 'x-ai/grok-4.1', color: T.magenta },
 };
 
 // ── Simulation Stages ──
@@ -265,7 +323,7 @@ export const MOCK_SIMULATION = {
   concepts: [
     {
       id: 'c1', name: 'Volcanic Essence', persona: 'David Ogilvy', personaId: 'david-ogilvy',
-      model: 'google/gemini-3.1-pro-preview', modelColor: '#00D9FF', status: 'winner', score: 92,
+      model: 'google/gemini-3-pro', modelColor: '#00D9FF', status: 'winner', score: 92,
       headline: 'Born in Fire. Purified by Ice.', tagline: 'The water that remembers.',
       idea: 'A luxury water brand that tells the geological story of each bottle — 1,000-year volcanic filtration visualized through minimalist packaging with lava-flow typography.',
       visual_direction: 'Black matte bottle, gold cap, volcanic cross-section on label. Photography: macro shots of volcanic glass with water droplets.',
@@ -306,7 +364,7 @@ export const MOCK_SIMULATION = {
     },
     {
       id: 'c5', name: 'H2Luxe', persona: 'Elon Musk', personaId: 'elon-musk',
-      model: 'x-ai/grok-4.1-fast', modelColor: '#E5375E', status: 'eliminated', score: 45,
+      model: 'x-ai/grok-4.1', modelColor: '#E5375E', status: 'eliminated', score: 45,
       headline: 'Water, Reimagined.', tagline: 'The Tesla of hydration.',
       idea: 'Subscription-based smart water with IoT-connected bottle tracking hydration. Gamified wellness.',
       visual_direction: 'LED-integrated bottle, app interface mockups, futuristic metallic finish.',
@@ -337,11 +395,11 @@ export const MOCK_SIMULATION = {
     },
   ],
   participants: [
-    { id: 'david-ogilvy', name: 'David Ogilvy', model: 'google/gemini-3.1-pro-preview', modelColor: '#00D9FF', concept: 'Volcanic Essence', score: 92, status: 'winner' },
+    { id: 'david-ogilvy', name: 'David Ogilvy', model: 'google/gemini-3-pro', modelColor: '#00D9FF', concept: 'Volcanic Essence', score: 92, status: 'winner' },
     { id: 'paula-scher', name: 'Paula Scher', model: 'openai/gpt-5.1', modelColor: '#34D399', concept: 'Glacier Protocol', score: 85, status: 'surviving' },
     { id: 'saul-bass', name: 'Saul Bass', model: 'anthropic/claude-sonnet-4.6', modelColor: '#F27123', concept: 'Still Life', score: 78, status: 'surviving' },
     { id: 'leo-burnett', name: 'Leo Burnett', model: 'openai/gpt-5.1', modelColor: '#34D399', concept: 'Nordic Myth', score: 62, status: 'eliminated' },
-    { id: 'elon-musk', name: 'Elon Musk', model: 'x-ai/grok-4.1-fast', modelColor: '#E5375E', concept: 'H2Luxe', score: 45, status: 'eliminated' },
+    { id: 'elon-musk', name: 'Elon Musk', model: 'x-ai/grok-4.1', modelColor: '#E5375E', concept: 'H2Luxe', score: 45, status: 'eliminated' },
   ],
   media: [
     { id: 'm1', type: 'image', concept: 'Volcanic Essence', creator: 'David Ogilvy', model: 'Recraft V4', modelColor: '#00D9FF', prompt: 'Ultra-premium black matte water bottle, gold metallic cap, minimalist volcanic cross-section label design', status: 'winner', score: 92, aspect: '4/5' },

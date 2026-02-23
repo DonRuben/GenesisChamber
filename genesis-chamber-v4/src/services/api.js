@@ -89,7 +89,7 @@ export async function listConversations() {
 }
 
 export async function createConversation() {
-  return post('/api/conversations');
+  return post('/api/conversations', {});
 }
 
 export async function getConversation(id) {
@@ -187,7 +187,7 @@ export async function listSouls() {
 
 // ── DA Arena ──
 export async function extractDAInteractions(simId) {
-  return post(`/api/simulation/${simId}/da/extract`);
+  return post(`/api/simulation/${simId}/da/extract`, {});
 }
 
 export async function getDAInteractions(simId) {

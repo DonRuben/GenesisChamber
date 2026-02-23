@@ -4,3 +4,4 @@ export { useTokens } from './useTokens';
 export { useReducedMotion } from './useReducedMotion';
 export { useSwipe } from './useSwipe';
 export { useBackendStatus } from './useBackendStatus';
+export { useModels, useModelLookup } from './useModels';

@@ -45,6 +45,29 @@ export const useAppStore = create((set, get) => ({
   backendOnline: null, // null=checking, true=connected, false=offline
   setBackendOnline: (status) => set({ backendOnline: status }),
 
+  // Available models (fetched from backend)
+  availableModels: null, // null = not loaded yet
+
+  loadModels: async () => {
+    try {
+      const data = await api.getAvailableModels();
+      // Backend returns { tiers: [{name, models: [...]}] } or flat array
+      let flat;
+      if (data?.tiers) {
+        flat = data.tiers.flatMap((tier) =>
+          (tier.models || []).map((m) => ({ ...m, tier: tier.id || tier.name?.toLowerCase() }))
+        );
+      } else if (Array.isArray(data)) {
+        flat = data;
+      } else {
+        return; // unexpected shape
+      }
+      set({ availableModels: flat });
+    } catch {
+      // Offline fallback — leave null so hooks use hardcoded MODELS
+    }
+  },
+
   // Sidebar data (real conversations + simulations)
   conversations: [],
   simulations: [],

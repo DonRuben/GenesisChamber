@@ -12,11 +12,20 @@ import LeaderCard from './LeaderCard';
 import BriefInput from './BriefInput';
 import { useTokens } from '../../hooks/useTokens';
 import { useIsMobile } from '../../hooks/useMediaQuery';
+import { useModels } from '../../hooks/useModels';
+
+const selectStyle = (t) => ({
+  padding: '4px 8px', borderRadius: 4,
+  background: t.surfaceRaised, border: `1px solid ${t.border}`,
+  fontSize: 11, fontFamily: font.mono, color: t.text,
+  cursor: 'pointer', outline: 'none',
+});
 
 export default function LauncherCustom() {
   const t = useTokens();
   const mobile = useIsMobile();
   const navigate = useNavigate();
+  const { models } = useModels();
   const [launching, setLaunching] = useState(false);
   const backendOnline = useAppStore((s) => s.backendOnline);
   const {
@@ -25,9 +34,12 @@ export default function LauncherCustom() {
     brief, setBrief, daEnabled, setDaEnabled, daAggression, setDaAggression,
     expandedTeam, setExpandedTeam, setLaunchMode,
     handleSimSSEEvent, resetLive,
+    modelAssignments, setModelAssignment,
+    thinkingMode, setThinkingMode, thinkingOverrides, setThinkingOverride,
+    getEffectiveThinking,
+    enableWebSearch, setEnableWebSearch,
   } = useChamberStore();
 
-  const [daModel] = useState('x-ai/grok-4.1-fast');
   const count = selectedPersonas.size;
 
   const canProceed = () => {
@@ -51,11 +63,16 @@ export default function LauncherCustom() {
     setLaunching(true);
     resetLive();
     try {
-      // Build participants from selected personas across all teams
       const allPersonas = MOCK_TEAMS.flatMap((team) => team.personas);
       const participants = allPersonas
         .filter((p) => selectedPersonas.has(p.id))
-        .map((p) => ({ id: p.id, name: p.name, model: p.model }));
+        .map((p) => ({
+          id: p.id,
+          name: p.name,
+          model: modelAssignments[p.id] || p.model,
+          thinking_mode: getEffectiveThinking(p.id),
+          enable_web_search: enableWebSearch,
+        }));
 
       const config = {
         creative_brief: brief,
@@ -81,6 +98,12 @@ export default function LauncherCustom() {
     { id: 'analytical', label: 'Analytical', color: t.cyan },
     { id: 'aggressive', label: 'Aggressive', color: t.flame },
     { id: 'ruthless', label: 'Ruthless', color: t.magenta },
+  ];
+
+  const thinkingModes = [
+    { id: 'off', label: 'Off', color: t.textMuted },
+    { id: 'thinking', label: 'Thinking', color: t.cyan },
+    { id: 'deep', label: 'Deep', color: t.gold },
   ];
 
   return (
@@ -119,6 +142,7 @@ export default function LauncherCustom() {
               const isExpanded = expandedTeam === team.id || expandedTeam === null;
               const teamIds = team.personas.map((p) => p.id);
               const allSelected = teamIds.every((id) => selectedPersonas.has(id));
+              const selectedInTeam = team.personas.filter((p) => selectedPersonas.has(p.id));
               return (
                 <div key={team.id} style={{
                   border: `1px solid ${t.border}`, borderRadius: 8,
@@ -160,18 +184,64 @@ export default function LauncherCustom() {
                     }}>{IC.chevDown}</span>
                   </button>
                   {isExpanded && (
-                    <div style={{
-                      display: 'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(260px, 1fr))',
-                      gap: 6, padding: '8px 12px 12px',
-                    }}>
-                      {team.personas.map((p) => (
-                        <PersonaChip
-                          key={p.id} persona={p} teamColor={team.color}
-                          selected={selectedPersonas.has(p.id)}
-                          onToggle={() => togglePersona(p.id)}
-                        />
-                      ))}
-                    </div>
+                    <>
+                      <div style={{
+                        display: 'grid', gridTemplateColumns: mobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(260px, 1fr))',
+                        gap: 6, padding: '8px 12px 12px',
+                      }}>
+                        {team.personas.map((p) => (
+                          <PersonaChip
+                            key={p.id} persona={p} teamColor={team.color}
+                            selected={selectedPersonas.has(p.id)}
+                            onToggle={() => togglePersona(p.id)}
+                          />
+                        ))}
+                      </div>
+                      {/* Model assignment panel for selected personas */}
+                      {selectedInTeam.length > 0 && (
+                        <div style={{
+                          padding: '8px 12px 12px',
+                          borderTop: `1px solid ${t.border}`,
+                        }}>
+                          <MonoLabel style={{ marginBottom: 8 }}>MODEL ASSIGNMENT</MonoLabel>
+                          {selectedInTeam.map((p) => {
+                            const assignedModel = modelAssignments[p.id] || p.model;
+                            const effectiveThinking = thinkingOverrides[p.id] || thinkingMode;
+                            return (
+                              <div key={p.id} style={{
+                                display: 'flex', alignItems: 'center', gap: 8,
+                                padding: '6px 0',
+                              }}>
+                                <span style={{
+                                  flex: 1, fontSize: 11, color: t.text,
+                                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                                }}>{p.name}</span>
+                                <select
+                                  value={assignedModel}
+                                  onChange={(e) => setModelAssignment(p.id, e.target.value)}
+                                  style={selectStyle(t)}
+                                >
+                                  {models.map((m) => (
+                                    <option key={m.id} value={m.id}>{m.name}</option>
+                                  ))}
+                                </select>
+                                {thinkingMode !== 'off' && (
+                                  <select
+                                    value={effectiveThinking}
+                                    onChange={(e) => setThinkingOverride(p.id, e.target.value)}
+                                    style={selectStyle(t)}
+                                  >
+                                    <option value="off">Off</option>
+                                    <option value="thinking">Thinking</option>
+                                    <option value="deep">Deep</option>
+                                  </select>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               );
@@ -231,14 +301,52 @@ export default function LauncherCustom() {
                       ))}
                     </div>
                   </div>
-                  <div style={{
-                    fontSize: 9, fontFamily: font.mono, color: t.textMuted,
-                    display: 'flex', alignItems: 'center', gap: 6,
-                  }}>
-                    Model: <span style={{ color: t.magenta }}>{daModel}</span>
-                  </div>
                 </div>
               )}
+            </div>
+
+            {/* AI Capabilities */}
+            <div style={{
+              padding: 20, borderRadius: 8,
+              background: t.surface, border: `1px solid ${t.border}`,
+              borderLeft: `2px solid ${t.cyan}`,
+            }}>
+              <MonoLabel icon={IC.brain} color={t.cyan} style={{ marginBottom: 16 }}>
+                AI Capabilities
+              </MonoLabel>
+
+              <div style={{ marginBottom: 16 }}>
+                <div style={{
+                  fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+                  textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8,
+                }}>THINKING MODE</div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {thinkingModes.map(({ id, label, color }) => (
+                    <button
+                      key={id}
+                      onClick={() => setThinkingMode(id)}
+                      style={{
+                        flex: 1, padding: '8px 12px', borderRadius: 6, cursor: 'pointer',
+                        background: thinkingMode === id ? `${color}1a` : t.surfaceRaised,
+                        border: `1px solid ${thinkingMode === id ? color : t.border}`,
+                        fontSize: 11, fontFamily: font.mono, fontWeight: 600,
+                        color: thinkingMode === id ? color : t.textMuted,
+                        textTransform: 'uppercase', letterSpacing: '0.06em',
+                      }}
+                    >{label}</button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: t.text }}>Web Search</div>
+                  <div style={{ fontSize: 11, color: t.textMuted, marginTop: 2 }}>
+                    {enableWebSearch ? 'Personas can search the web' : 'No internet access'}
+                  </div>
+                </div>
+                <Toggle enabled={enableWebSearch} onChange={setEnableWebSearch} color={t.cyan} />
+              </div>
             </div>
           </div>
         )}

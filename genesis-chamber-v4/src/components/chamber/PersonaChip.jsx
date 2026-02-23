@@ -1,10 +1,13 @@
 import { font, motion } from '../../design/tokens';
 import { useTokens } from '../../hooks/useTokens';
+import { useModelLookup } from '../../hooks/useModels';
 
 export default function PersonaChip({ persona, teamColor, selected, onToggle }) {
   const t = useTokens();
+  const lookupModel = useModelLookup();
   const { name, title, model } = persona;
   const initials = name.split(' ').map((w) => w[0]).join('').slice(0, 2);
+  const modelInfo = lookupModel(model);
 
   return (
     <button onClick={onToggle} style={{
@@ -35,10 +38,10 @@ export default function PersonaChip({ persona, teamColor, selected, onToggle }) 
         }}>{title}</div>
       </div>
       <span style={{
-        fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+        fontSize: 9, fontFamily: font.mono, color: modelInfo.color || t.textMuted,
         padding: '2px 6px', background: t.surfaceRaised, borderRadius: 3,
         whiteSpace: 'nowrap',
-      }}>{model}</span>
+      }}>{modelInfo.name}</span>
       <div style={{
         width: 18, height: 18, borderRadius: 4, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',

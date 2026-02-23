@@ -2,17 +2,20 @@
 // GENESIS CHAMBER V4 — SETTINGS PANEL
 // Slide-in panel: active models + thinking mode + web search
 // + chairman model + anonymization toggle
+// Models grouped by tier with dynamic roster
 // ─────────────────────────────────────────────────────────
 
 import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { ModelDot, Toggle } from '../../design/shared';
 import { useCouncilStore } from '../../stores/councilStore';
-import { MODELS } from '../../data/mock';
 import { useTokens } from '../../hooks/useTokens';
+import { useModels } from '../../hooks/useModels';
+import { MODEL_TIERS } from '../../data/mock';
 
 export default function SettingsPanel() {
   const t = useTokens();
+  const { models } = useModels();
   const settingsOpen = useCouncilStore((s) => s.settingsOpen);
   const toggleSettings = useCouncilStore((s) => s.toggleSettings);
   const anonymized = useCouncilStore((s) => s.anonymized);
@@ -33,6 +36,15 @@ export default function SettingsPanel() {
     { id: 'thinking', label: 'Thinking', color: t.cyan },
     { id: 'deep', label: 'Deep', color: t.gold },
   ];
+
+  // Group models by tier
+  const tierOrder = ['premium', 'balanced', 'efficient', 'budget'];
+  const grouped = tierOrder.map((tierId) => ({
+    tier: MODEL_TIERS.find((t) => t.id === tierId) || { id: tierId, name: tierId, color: '#6B7280' },
+    models: models.filter((m) => m.tier === tierId),
+  })).filter((g) => g.models.length > 0);
+
+  const activeModelSet = models.filter((m) => activeModels.includes(m.id));
 
   return (
     <div style={{
@@ -59,45 +71,55 @@ export default function SettingsPanel() {
 
       {/* Content */}
       <div style={{ padding: 20, flex: 1, overflowY: 'auto' }}>
-        {/* Active Models */}
+        {/* Active Models — grouped by tier */}
         <div style={{
           fontSize: 9, fontFamily: font.mono, color: t.textMuted,
           textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12,
         }}>ACTIVE MODELS</div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 28 }}>
-          {MODELS.map((m) => {
-            const active = activeModels.includes(m.id);
-            return (
-              <button key={m.id} onClick={() => toggleModel(m.id)}
-                style={{
-                  padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10,
-                  background: active ? t.surfaceRaised : 'transparent',
-                  border: `1px solid ${active ? t.borderHover : t.border}`,
-                  borderLeft: `2px solid ${active ? m.color : 'transparent'}`,
-                  borderRadius: 6, cursor: 'pointer', transition: 'all 0.13s',
-                }}>
-                <ModelDot color={m.color} />
-                <span style={{
-                  fontSize: 12, fontWeight: 500,
-                  color: active ? t.text : t.textMuted,
-                  flex: 1, textAlign: 'left',
-                }}>{m.name}</span>
-                <div style={{
-                  width: 16, height: 16, borderRadius: 3,
-                  border: `1.5px solid ${active ? m.color : t.textMuted}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: active ? `${m.color}1a` : 'transparent',
-                }}>
-                  {active && (
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={m.color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M5 12l5 5 9-9" />
-                    </svg>
-                  )}
-                </div>
-              </button>
-            );
-          })}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 28 }}>
+          {grouped.map(({ tier, models: tierModels }) => (
+            <div key={tier.id}>
+              <div style={{
+                fontSize: 9, fontFamily: font.mono, color: tier.color,
+                textTransform: 'uppercase', letterSpacing: '0.12em',
+                padding: '8px 0 4px', fontWeight: 600,
+              }}>{tier.name}</div>
+              {tierModels.map((m) => {
+                const active = activeModels.includes(m.id);
+                return (
+                  <button key={m.id} onClick={() => toggleModel(m.id)}
+                    style={{
+                      width: '100%', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10,
+                      background: active ? t.surfaceRaised : 'transparent',
+                      border: `1px solid ${active ? t.borderHover : t.border}`,
+                      borderLeft: `2px solid ${active ? m.color : 'transparent'}`,
+                      borderRadius: 6, cursor: 'pointer', transition: 'all 0.13s',
+                      marginBottom: 4,
+                    }}>
+                    <ModelDot color={m.color} />
+                    <span style={{
+                      fontSize: 12, fontWeight: 500,
+                      color: active ? t.text : t.textMuted,
+                      flex: 1, textAlign: 'left',
+                    }}>{m.name}</span>
+                    <div style={{
+                      width: 16, height: 16, borderRadius: 3,
+                      border: `1.5px solid ${active ? m.color : t.textMuted}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: active ? `${m.color}1a` : 'transparent',
+                    }}>
+                      {active && (
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={m.color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M5 12l5 5 9-9" />
+                        </svg>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </div>
 
         {/* Thinking Mode */}
@@ -147,14 +169,14 @@ export default function SettingsPanel() {
           <Toggle enabled={enableWebSearch} onChange={setEnableWebSearch} color={t.cyan} />
         </button>
 
-        {/* Chairman Model */}
+        {/* Chairman Model — only show active models */}
         <div style={{
           fontSize: 9, fontFamily: font.mono, color: t.textMuted,
           textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12,
         }}>CHAIRMAN MODEL</div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 28 }}>
-          {MODELS.filter((m) => activeModels.includes(m.id)).map((m) => (
+          {activeModelSet.map((m) => (
             <button key={m.id} onClick={() => setChairmanModel(m.id)}
               style={{
                 padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10,
