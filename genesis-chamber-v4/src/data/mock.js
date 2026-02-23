@@ -7,12 +7,12 @@ import { T } from '../design/tokens';
 
 // ── Sidebar Conversations ──
 export const CONVERSATIONS = [
-  { id: 'c1', title: 'Brand strategy for AquaLux premium water launch', mode: 'genesis', updated: '2 min ago', status: 'complete' },
-  { id: 'c2', title: 'Compare React vs Svelte for dashboard rebuild', mode: 'council', updated: '1 hr ago', status: 'complete' },
-  { id: 'c3', title: 'AI ethics framework for healthcare deployment', mode: 'council', updated: '3 hr ago', status: 'complete' },
-  { id: 'c4', title: 'Genesis simulation: Luxury EV brand positioning', mode: 'genesis', updated: 'Yesterday', status: 'complete' },
-  { id: 'c5', title: 'Evaluate NEXORA tokenization pitch angles', mode: 'council', updated: 'Yesterday', status: 'complete' },
-  { id: 'c6', title: 'Monetec solar investor deck messaging', mode: 'genesis', updated: '2 days ago', status: 'complete' },
+  { id: 'c1', title: 'Brand strategy for AquaLux premium water launch', mode: 'genesis', updated: '2 min ago', status: 'complete', starred: true, createdAt: new Date(Date.now() - 2 * 60000).toISOString() },
+  { id: 'c2', title: 'Compare React vs Svelte for dashboard rebuild', mode: 'council', updated: '1 hr ago', status: 'complete', starred: false, createdAt: new Date(Date.now() - 3600000).toISOString() },
+  { id: 'c3', title: 'AI ethics framework for healthcare deployment', mode: 'council', updated: '3 hr ago', status: 'complete', starred: false, createdAt: new Date(Date.now() - 3 * 3600000).toISOString() },
+  { id: 'c4', title: 'Genesis simulation: Luxury EV brand positioning', mode: 'genesis', updated: 'Yesterday', status: 'complete', starred: false, createdAt: new Date(Date.now() - 86400000).toISOString() },
+  { id: 'c5', title: 'Evaluate NEXORA tokenization pitch angles', mode: 'council', updated: 'Yesterday', status: 'complete', starred: true, createdAt: new Date(Date.now() - 100000000).toISOString() },
+  { id: 'c6', title: 'Monetec solar investor deck messaging', mode: 'genesis', updated: '2 days ago', status: 'complete', starred: false, createdAt: new Date(Date.now() - 172800000).toISOString() },
 ];
 
 // ── Landing — Recent Simulations ──

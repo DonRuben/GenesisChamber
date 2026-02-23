@@ -50,6 +50,14 @@ export default function LLMCouncil() {
         convId = conv.id;
         store.setConversationId(convId);
         useAppStore.getState().addConversation(conv);
+        useAppStore.getState().setActiveConversationId(convId);
+        useAppStore.getState().updateConversation(convId, {
+          title: q.slice(0, 60) + (q.length > 60 ? '...' : ''),
+          mode: 'council',
+          question: q,
+          preset: store.preset,
+          models: store.activeModels,
+        });
       } catch (err) {
         store.setError('Failed to create conversation: ' + err.message);
         return;

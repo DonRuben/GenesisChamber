@@ -5,14 +5,16 @@
 // Ref: gc-v4-app-shell.jsx
 // ─────────────────────────────────────────────────────────
 
-import { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { font, layout } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { useAppStore } from '../../stores/appStore';
+import { useCouncilStore } from '../../stores/councilStore';
 import { useIsMobile, useIsTablet } from '../../hooks/useMediaQuery';
 import { useTokens } from '../../hooks/useTokens';
 import { useBackendStatus } from '../../hooks/useBackendStatus';
+import * as api from '../../services/api';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import ConfigModal from './ConfigModal';
@@ -46,10 +48,37 @@ export default function AppShell() {
   const loadModels = useAppStore((s) => s.loadModels);
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
+  const navigate = useNavigate();
 
   const showConfigModal = useAppStore((s) => s.showConfigModal);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [activeConv, setActiveConv] = useState(null);
+  const activeConv = useAppStore((s) => s.activeConversationId);
+  const setActiveConv = useAppStore((s) => s.setActiveConversationId);
+
+  // Load a conversation from the backend into the appropriate store
+  const handleLoadConversation = useCallback(async (id) => {
+    const online = useAppStore.getState().backendOnline;
+    if (!online) return; // Mock mode — no loading needed
+
+    try {
+      const data = await api.getConversation(id);
+      if (data.mode === 'council' || !data.mode) {
+        const cs = useCouncilStore.getState();
+        cs.reset();
+        cs.setConversationId(id);
+        cs.setQuestion(data.question || data.title || '');
+        if (data.stage1) cs.handleSSEEvent('stage1_complete', { data: data.stage1 });
+        if (data.stage2) cs.handleSSEEvent('stage2_complete', { data: data.stage2.rankings, metadata: data.stage2 });
+        if (data.stage3) cs.handleSSEEvent('stage3_complete', { data: data.stage3 });
+        cs.setView('conversation');
+        navigate('/council');
+      } else if (data.mode === 'chamber') {
+        navigate(`/sim/${id}`);
+      }
+    } catch (err) {
+      console.error('[GC] Failed to load conversation:', err);
+    }
+  }, [navigate]);
 
   // Resolve tokens for current theme
   const t = useTokens();
@@ -108,7 +137,11 @@ export default function AppShell() {
       )}
       <Sidebar
         activeConv={activeConv}
-        onSelectConv={(id) => { setActiveConv(id); if (isMobileOverlay) setMobileOpen(false); }}
+        onSelectConv={(id) => {
+          setActiveConv(id);
+          if (isMobileOverlay) setMobileOpen(false);
+          handleLoadConversation(id);
+        }}
       />
     </div>
   );

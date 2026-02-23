@@ -72,6 +72,24 @@ export const useAppStore = create((set, get) => ({
     }
   },
 
+  // Active conversation + search
+  activeConversationId: null,
+  searchFilter: '',
+  setActiveConversationId: (id) => set({ activeConversationId: id }),
+  setSearchFilter: (filter) => set({ searchFilter: filter }),
+
+  starConversation: (id) => set((s) => ({
+    conversations: s.conversations.map((c) =>
+      c.id === id ? { ...c, starred: !c.starred } : c
+    ),
+  })),
+
+  updateConversation: (id, updates) => set((s) => ({
+    conversations: s.conversations.map((c) =>
+      c.id === id ? { ...c, ...updates } : c
+    ),
+  })),
+
   // Sidebar data (real conversations + simulations)
   conversations: [],
   simulations: [],
@@ -96,7 +114,12 @@ export const useAppStore = create((set, get) => ({
   },
 
   addConversation: (conv) => set((s) => ({
-    conversations: [conv, ...s.conversations],
+    conversations: [{
+      ...conv,
+      starred: conv.starred ?? false,
+      createdAt: conv.createdAt || conv.created_at || new Date().toISOString(),
+      updatedAt: conv.updatedAt || conv.updated_at || new Date().toISOString(),
+    }, ...s.conversations],
   })),
 
   removeConversation: (id) => set((s) => ({

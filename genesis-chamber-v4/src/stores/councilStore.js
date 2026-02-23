@@ -5,6 +5,7 @@
 // ─────────────────────────────────────────────────────────
 
 import { create } from 'zustand';
+import { useAppStore } from './appStore';
 
 export const useCouncilStore = create((set, get) => ({
   // ── UI State ──
@@ -143,9 +144,15 @@ export const useCouncilStore = create((set, get) => ({
         }
         break;
       }
-      case 'title_complete':
-        set({ conversationTitle: data.data?.title || data.title });
+      case 'title_complete': {
+        const title = data.data?.title || data.title;
+        set({ conversationTitle: title });
+        const convId = get().conversationId;
+        if (title && convId) {
+          useAppStore.getState().updateConversation(convId, { title });
+        }
         break;
+      }
       case 'complete': {
         const s = get();
         const assistantMsg = {
