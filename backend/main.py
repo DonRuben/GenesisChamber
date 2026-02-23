@@ -39,6 +39,17 @@ from .prompt_bible import get_all_strategies, optimize_prompt as pb_optimize_pro
 from .database import DatabasePool, UploadDB, is_db_available, ensure_schema
 
 app = FastAPI(title="LLM Council + Genesis Chamber API")
+
+# CORS — must be first middleware, before any routes or event handlers
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+)
+
 simulation_store = SimulationStore()
 upload_db = UploadDB() if is_db_available() else None
 
@@ -59,16 +70,6 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown():
     await DatabasePool.close()
-
-# CORS — allow all origins so frontend can reach backend from any deployment
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 
 class CreateConversationRequest(BaseModel):
     """Request to create a new conversation."""
@@ -117,6 +118,11 @@ async def root():
     return {"status": "ok", "service": "LLM Council API"}
 
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+
 @app.get("/api/conversations", response_model=List[ConversationMetadata])
 async def list_conversations():
     """List all conversations (metadata only)."""
@@ -124,11 +130,14 @@ async def list_conversations():
 
 
 @app.post("/api/conversations", response_model=Conversation)
-async def create_conversation(request: CreateConversationRequest):
+async def create_conversation(request: CreateConversationRequest = None):
     """Create a new conversation."""
-    conversation_id = str(uuid.uuid4())
-    conversation = storage.create_conversation(conversation_id)
-    return conversation
+    try:
+        conversation_id = str(uuid.uuid4())
+        conversation = storage.create_conversation(conversation_id)
+        return conversation
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create conversation: {str(e)}")
 
 
 @app.get("/api/conversations/{conversation_id}", response_model=Conversation)
