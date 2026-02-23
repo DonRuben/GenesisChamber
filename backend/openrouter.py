@@ -108,8 +108,14 @@ async def query_model(
             message = data['choices'][0]['message']
             return _extract_response(message)
 
+    except httpx.TimeoutException as e:
+        print(f"[openrouter] TIMEOUT querying {model} after {timeout}s: {e}")
+        return None
+    except httpx.HTTPStatusError as e:
+        print(f"[openrouter] HTTP {e.response.status_code} from {model}: {e.response.text[:500]}")
+        return None
     except Exception as e:
-        print(f"Error querying model {model}: {e}")
+        print(f"[openrouter] ERROR querying {model}: {type(e).__name__}: {e}")
         return None
 
 

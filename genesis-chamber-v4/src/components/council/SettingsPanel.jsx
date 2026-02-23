@@ -44,8 +44,6 @@ export default function SettingsPanel() {
     models: models.filter((m) => m.tier === tierId),
   })).filter((g) => g.models.length > 0);
 
-  const activeModelSet = models.filter((m) => activeModels.includes(m.id));
-
   return (
     <div style={{
       position: 'fixed', top: 0, right: 0, bottom: 0, width: 320,
@@ -169,35 +167,45 @@ export default function SettingsPanel() {
           <Toggle enabled={enableWebSearch} onChange={setEnableWebSearch} color={t.cyan} />
         </button>
 
-        {/* Chairman Model — only show active models */}
+        {/* Chairman Model — all models grouped by tier */}
         <div style={{
           fontSize: 9, fontFamily: font.mono, color: t.textMuted,
           textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12,
         }}>CHAIRMAN MODEL</div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 28 }}>
-          {activeModelSet.map((m) => (
-            <button key={m.id} onClick={() => setChairmanModel(m.id)}
-              style={{
-                padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10,
-                background: chairmanModel === m.id ? t.surfaceRaised : 'transparent',
-                border: `1px solid ${chairmanModel === m.id ? t.borderHover : t.border}`,
-                borderLeft: `2px solid ${chairmanModel === m.id ? t.gold : 'transparent'}`,
-                borderRadius: 6, cursor: 'pointer', transition: 'all 0.13s',
-              }}>
-              <ModelDot color={m.color} size={6} />
-              <span style={{
-                fontSize: 11, fontWeight: 500,
-                color: chairmanModel === m.id ? t.text : t.textMuted,
-                flex: 1, textAlign: 'left',
-              }}>{m.name}</span>
-              {chairmanModel === m.id && (
-                <span style={{
-                  fontSize: 8, fontFamily: font.mono, fontWeight: 600,
-                  color: t.gold, textTransform: 'uppercase', letterSpacing: '0.08em',
-                }}>CHAIRMAN</span>
-              )}
-            </button>
+          {grouped.map(({ tier, models: tierModels }) => (
+            <div key={`chair-${tier.id}`}>
+              <div style={{
+                fontSize: 9, fontFamily: font.mono, color: tier.color,
+                textTransform: 'uppercase', letterSpacing: '0.12em',
+                padding: '8px 0 4px', fontWeight: 600,
+              }}>{tier.name}</div>
+              {tierModels.map((m) => (
+                <button key={m.id} onClick={() => setChairmanModel(m.id)}
+                  style={{
+                    width: '100%', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10,
+                    background: chairmanModel === m.id ? t.surfaceRaised : 'transparent',
+                    border: `1px solid ${chairmanModel === m.id ? t.borderHover : t.border}`,
+                    borderLeft: `2px solid ${chairmanModel === m.id ? t.gold : 'transparent'}`,
+                    borderRadius: 6, cursor: 'pointer', transition: 'all 0.13s',
+                    marginBottom: 4,
+                  }}>
+                  <ModelDot color={m.color} size={6} />
+                  <span style={{
+                    fontSize: 11, fontWeight: 500,
+                    color: chairmanModel === m.id ? t.text : t.textMuted,
+                    flex: 1, textAlign: 'left',
+                  }}>{m.name}</span>
+                  {chairmanModel === m.id && (
+                    <span style={{
+                      fontSize: 8, fontFamily: font.mono, fontWeight: 600,
+                      color: t.gold, textTransform: 'uppercase', letterSpacing: '0.08em',
+                    }}>CHAIRMAN</span>
+                  )}
+                </button>
+              ))}
+            </div>
           ))}
         </div>
 

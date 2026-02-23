@@ -114,6 +114,9 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
         >
           <span style={{ fontSize: 12 }}>{IC.copy}</span> Copy
         </button>
+        <span style={{ fontSize: 10, fontFamily: font.mono, color: t.textMuted, letterSpacing: '0.04em' }}>
+          {text ? text.split(/\s+/).filter(Boolean).length : 0} words
+        </span>
       </div>
     </div>
   );

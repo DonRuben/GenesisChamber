@@ -232,7 +232,7 @@ Provide a clear, well-reasoned final answer that represents the council's collec
     if model_thinking_modes and chairman in model_thinking_modes:
         effective_mode = model_thinking_modes[chairman]
     extras = _build_council_extras(effective_mode, enable_web_search, chairman)
-    response = await query_model(chairman, messages, **extras)
+    response = await query_model(chairman, messages, timeout=180.0, **extras)
 
     if response is None:
         print(f"[council] Stage 3 synthesis FAILED — chairman={chairman}")

@@ -16,15 +16,16 @@ export const useCouncilStore = create((set, get) => ({
   settingsOpen: false,
   anonymized: true,
   followUp: '',
+  selectedResponseTab: 0,       // 0-based index | 'all' | 'synthesis'
 
   // ── Model Config (full OpenRouter IDs) ──
   activeModels: [
     'openai/gpt-5.2',
-    'google/gemini-3-pro',
+    'google/gemini-3.1-pro-preview',
     'anthropic/claude-sonnet-4.6',
     'x-ai/grok-4.1',
   ],
-  chairmanModel: 'google/gemini-3-pro',
+  chairmanModel: 'google/gemini-3.1-pro-preview',
   thinkingMode: 'off',        // 'off' | 'thinking' | 'deep'
   modelThinkingModes: {},      // per-model overrides
   enableWebSearch: false,
@@ -55,6 +56,7 @@ export const useCouncilStore = create((set, get) => ({
       : [...s.activeModels, id],
   })),
   setFollowUp: (followUp) => set({ followUp }),
+  setSelectedResponseTab: (tab) => set({ selectedResponseTab: tab }),
 
   // ── Model Config Actions ──
   setChairmanModel: (model) => set({ chairmanModel: model }),
@@ -79,6 +81,7 @@ export const useCouncilStore = create((set, get) => ({
     currentStage: null,
     showSynthesis: false,
     revealed: false,
+    selectedResponseTab: 0,
   }),
 
   // ── Cancel active stream ──
@@ -169,7 +172,7 @@ export const useCouncilStore = create((set, get) => ({
   // ── Full reset ──
   reset: () => set({
     view: 'landing', question: '', preset: null,
-    revealed: false, showSynthesis: false, followUp: '',
+    revealed: false, showSynthesis: false, followUp: '', selectedResponseTab: 0,
     conversationId: null, loading: false, currentStage: null,
     stage1Results: null, stage2Results: null, stage3Result: null,
     error: null, conversationTitle: null, messages: [],
