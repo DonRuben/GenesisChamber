@@ -16,6 +16,7 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
   const t = useTokens();
   const lookupModel = useModelLookup();
   const [showThinking, setShowThinking] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // Accept both mock format {modelId, text, score} and backend format {model, response, reasoning}
   const modelId = response.model || response.modelId;
@@ -30,6 +31,19 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
     ? (displayScore >= 85 ? t.green : displayScore >= 75 ? t.gold : t.textSoft)
     : t.textMuted;
 
+  const wordCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
+
+  // Extract citation annotations
+  const annotations = (response.annotations || []).filter(
+    (a) => a.type === 'url_citation' || a.url
+  );
+
+  const handleCopy = () => {
+    navigator.clipboard?.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="gc-enter" style={{
       background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8,
@@ -42,7 +56,14 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
           {revealed ? (
             <>
               <ModelDot color={model.color} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: t.text }}>{model.name}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {modelId && (
+                  <span style={{ fontSize: 9, fontFamily: font.mono, color: t.textMuted }}>
+                    {modelId.split('/')[0]}
+                  </span>
+                )}
+                <span style={{ fontSize: 12, fontWeight: 600, color: t.text }}>{model.name}</span>
+              </div>
               {isWinner && <Tag color={t.gold}>{IC.trophy} BEST</Tag>}
             </>
           ) : (
@@ -60,7 +81,10 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
             </>
           )}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 10, fontFamily: font.mono, color: t.textMuted }}>
+            {wordCount.toLocaleString()} words
+          </span>
           {revealed && rank != null && (
             <span style={{ fontSize: 11, fontFamily: font.mono, color: t.textMuted, letterSpacing: '0.04em' }}>
               #{rank}
@@ -102,21 +126,47 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
       {/* Response text */}
       <Markdown>{text}</Markdown>
 
-      {/* Footer */}
+      {/* Citations / Sources */}
+      {annotations.length > 0 && (
+        <div style={{
+          marginTop: 12, padding: '10px 14px', background: t.surfaceRaised,
+          borderRadius: 6, borderLeft: `2px solid ${t.cyan}`,
+        }}>
+          <span style={{
+            fontSize: 9, fontFamily: font.mono, color: t.cyan,
+            textTransform: 'uppercase', letterSpacing: '0.12em',
+          }}>SOURCES</span>
+          <ul style={{ margin: '6px 0 0', paddingLeft: 16, listStyle: 'disc' }}>
+            {annotations.map((a, i) => (
+              <li key={i} style={{ fontSize: 11, marginBottom: 3 }}>
+                <a
+                  href={a.url || a.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: t.cyan, textDecoration: 'none' }}
+                >
+                  {a.title || a.url || a.href}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Footer — copy button */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 14 }}>
         <button
-          onClick={() => navigator.clipboard?.writeText(text)}
+          onClick={handleCopy}
           style={{
             display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px',
             background: 'transparent', border: 'none', cursor: 'pointer',
-            fontSize: 11, color: t.textMuted, fontFamily: font.mono,
+            fontSize: 11, color: copied ? t.green : t.textMuted, fontFamily: font.mono,
+            transition: 'color 0.15s',
           }}
         >
-          <span style={{ fontSize: 12 }}>{IC.copy}</span> Copy
+          <span style={{ fontSize: 12 }}>{copied ? IC.check : IC.copy}</span>
+          {copied ? 'Copied' : 'Copy'}
         </button>
-        <span style={{ fontSize: 10, fontFamily: font.mono, color: t.textMuted, letterSpacing: '0.04em' }}>
-          {text ? text.split(/\s+/).filter(Boolean).length : 0} words
-        </span>
       </div>
     </div>
   );

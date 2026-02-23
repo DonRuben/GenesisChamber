@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
-import { StepNav, Btn, MonoLabel, Tag } from '../../design/shared';
+import { StepNav, Btn, MonoLabel, Tag, Toggle } from '../../design/shared';
 import { useChamberStore } from '../../stores/chamberStore';
 import { useAppStore } from '../../stores/appStore';
 import { MOCK_PRESETS, MOCK_TEAMS } from '../../data/mock';
@@ -33,6 +33,8 @@ export default function LauncherQuick() {
     modelAssignments, setModelAssignment,
     brief, setBrief,
     setLaunchMode, handleSimSSEEvent, resetLive,
+    thinkingMode, setThinkingMode,
+    enableWebSearch, setEnableWebSearch,
   } = useChamberStore();
 
   const preset = MOCK_PRESETS.find((p) => p.id === selectedPreset);
@@ -67,6 +69,7 @@ export default function LauncherQuick() {
     setLaunching(true);
     resetLive();
     try {
+      const { getEffectiveThinking, enableWebSearch: webSearch } = useChamberStore.getState();
       const allPersonas = MOCK_TEAMS.flatMap((team) => team.personas);
       const participants = allPersonas
         .filter((p) => selectedPersonas.has(p.id))
@@ -74,12 +77,14 @@ export default function LauncherQuick() {
           id: p.id,
           name: p.name,
           model: modelAssignments[p.id] || p.model,
+          thinking_mode: getEffectiveThinking(p.id),
         }));
 
       const config = {
         preset_type: selectedPreset,
         creative_brief: brief,
         participants,
+        enable_web_search: webSearch,
       };
       await api.startSimulationStream(config, (type, data) => {
         handleSimSSEEvent(type, data);
@@ -216,6 +221,63 @@ export default function LauncherQuick() {
                 </div>
               );
             })}
+
+            {/* AI Capabilities */}
+            <div style={{
+              border: `1px solid ${t.border}`, borderRadius: 8,
+              borderLeft: `2px solid ${t.cyan}`, padding: '16px',
+            }}>
+              <MonoLabel icon={IC.brain} color={t.cyan} style={{ marginBottom: 12 }}>AI Capabilities</MonoLabel>
+
+              {/* Thinking Mode */}
+              <div style={{
+                fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+                textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8,
+              }}>THINKING MODE</div>
+              <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
+                {[
+                  { id: 'off', label: 'Off', color: t.textMuted },
+                  { id: 'thinking', label: 'Thinking', color: t.cyan },
+                  { id: 'deep', label: 'Deep', color: t.gold },
+                ].map(({ id, label, color }) => (
+                  <button
+                    key={id}
+                    onClick={() => setThinkingMode(id)}
+                    style={{
+                      flex: 1, padding: '8px 12px', borderRadius: 6, cursor: 'pointer',
+                      background: thinkingMode === id ? `${color}1a` : t.surfaceRaised,
+                      border: `1px solid ${thinkingMode === id ? color : t.border}`,
+                      fontSize: 11, fontFamily: font.mono, fontWeight: 600,
+                      color: thinkingMode === id ? color : t.textMuted,
+                      textTransform: 'uppercase', letterSpacing: '0.06em',
+                    }}
+                  >{label}</button>
+                ))}
+              </div>
+
+              {/* Web Search */}
+              <div style={{
+                fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+                textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8,
+              }}>WEB SEARCH</div>
+              <button onClick={() => setEnableWebSearch(!enableWebSearch)}
+                style={{
+                  width: '100%', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10,
+                  background: t.surfaceRaised, border: `1px solid ${t.border}`, borderRadius: 6,
+                  cursor: 'pointer',
+                }}>
+                <span style={{ fontSize: 14, color: enableWebSearch ? t.cyan : t.textMuted }}>
+                  {IC.search}
+                </span>
+                <div style={{ flex: 1, textAlign: 'left' }}>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: t.text }}>Web Search</div>
+                  <div style={{ fontSize: 10, color: t.textMuted, marginTop: 2 }}>
+                    {enableWebSearch ? 'Personas can search the web' : 'No internet access'}
+                  </div>
+                </div>
+                <Toggle enabled={enableWebSearch} onChange={setEnableWebSearch} color={t.cyan} />
+              </button>
+            </div>
           </div>
         )}
 

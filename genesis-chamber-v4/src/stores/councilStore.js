@@ -16,7 +16,12 @@ export const useCouncilStore = create((set, get) => ({
   settingsOpen: false,
   anonymized: true,
   followUp: '',
-  selectedResponseTab: 0,       // 0-based index | 'all' | 'synthesis'
+  selectedResponseTab: 0,       // 0-based index | 'all' | 'leaderboard' | 'synthesis'
+
+  // ── Compare Mode ──
+  compareMode: false,
+  compareLeft: 0,
+  compareRight: 1,
 
   // ── Model Config (full OpenRouter IDs) ──
   activeModels: [
@@ -57,6 +62,9 @@ export const useCouncilStore = create((set, get) => ({
   })),
   setFollowUp: (followUp) => set({ followUp }),
   setSelectedResponseTab: (tab) => set({ selectedResponseTab: tab }),
+  setCompareMode: (on) => set({ compareMode: on }),
+  setCompareLeft: (idx) => set({ compareLeft: idx }),
+  setCompareRight: (idx) => set({ compareRight: idx }),
 
   // ── Model Config Actions ──
   setChairmanModel: (model) => set({ chairmanModel: model }),
@@ -82,6 +90,9 @@ export const useCouncilStore = create((set, get) => ({
     showSynthesis: false,
     revealed: false,
     selectedResponseTab: 0,
+    compareMode: false,
+    compareLeft: 0,
+    compareRight: 1,
   }),
 
   // ── Cancel active stream ──
@@ -173,6 +184,7 @@ export const useCouncilStore = create((set, get) => ({
   reset: () => set({
     view: 'landing', question: '', preset: null,
     revealed: false, showSynthesis: false, followUp: '', selectedResponseTab: 0,
+    compareMode: false, compareLeft: 0, compareRight: 1,
     conversationId: null, loading: false, currentStage: null,
     stage1Results: null, stage2Results: null, stage3Result: null,
     error: null, conversationTitle: null, messages: [],

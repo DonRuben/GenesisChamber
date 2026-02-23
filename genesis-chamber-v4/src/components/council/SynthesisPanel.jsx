@@ -1,9 +1,10 @@
 // ─────────────────────────────────────────────────────────
 // GENESIS CHAMBER V4 — SYNTHESIS PANEL
-// Collapsible council verdict with score rankings
+// Council verdict with chairman badge, citations, copy
 // Store-driven with mock fallback
 // ─────────────────────────────────────────────────────────
 
+import { useState } from 'react';
 import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { ModelDot } from '../../design/shared';
@@ -21,10 +22,12 @@ export default function SynthesisPanel() {
   const showSynthesis = useCouncilStore((s) => s.showSynthesis);
   const toggleSynthesis = useCouncilStore((s) => s.toggleSynthesis);
   const backendOnline = useAppStore((s) => s.backendOnline);
+  const [copied, setCopied] = useState(false);
 
   // Live data
   const stage3Result = useCouncilStore((s) => s.stage3Result);
   const stage2Results = useCouncilStore((s) => s.stage2Results);
+  const stage1Results = useCouncilStore((s) => s.stage1Results);
   const loading = useCouncilStore((s) => s.loading);
   const currentStage = useCouncilStore((s) => s.currentStage);
 
@@ -36,6 +39,25 @@ export default function SynthesisPanel() {
     || (backendOnline === false
       ? [...MOCK_RESPONSES].sort((a, b) => b.score - a.score)
       : null);
+
+  // Chairman model info
+  const chairmanModel = stage3Result?.model;
+  const chairman = chairmanModel ? lookupModel(chairmanModel) : null;
+
+  // Citation annotations from synthesis
+  const annotations = (stage3Result?.annotations || []).filter(
+    (a) => a.type === 'url_citation' || a.url
+  );
+
+  // Response count for footer
+  const responseCount = stage1Results?.length || (backendOnline === false ? MOCK_RESPONSES.length : 0);
+
+  const handleCopy = () => {
+    if (!synthesis) return;
+    navigator.clipboard?.writeText(synthesis);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   // Show skeleton during stage3 loading
   if (loading && currentStage === 'stage3') {
@@ -63,20 +85,59 @@ export default function SynthesisPanel() {
 
   if (!synthesis) return null;
 
+  const wordCount = synthesis.split(/\s+/).filter(Boolean).length;
+
   return (
     <div className="gc-enter" style={{
       background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8,
       borderLeft: `2px solid ${t.gold}`, padding: '24px 24px',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-        <span style={{ fontSize: 14, color: t.gold }}>{IC.star}</span>
-        <span style={{
-          fontSize: 9, fontFamily: font.mono, fontWeight: 500, color: t.gold,
-          textTransform: 'uppercase', letterSpacing: '0.12em',
-        }}>COUNCIL SYNTHESIS</span>
+      {/* Header with chairman badge */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 14, color: t.gold }}>{IC.star}</span>
+          <span style={{
+            fontSize: 9, fontFamily: font.mono, fontWeight: 500, color: t.gold,
+            textTransform: 'uppercase', letterSpacing: '0.12em',
+          }}>COUNCIL SYNTHESIS</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 12, color: t.gold }}>{IC.scale}</span>
+          {chairman && <ModelDot color={chairman.color} size={6} />}
+          <span style={{ fontSize: 10, fontFamily: font.mono, color: t.gold }}>
+            {chairman?.name || 'Chairman'}
+          </span>
+        </div>
       </div>
 
       <Markdown>{synthesis}</Markdown>
+
+      {/* Citations / Sources */}
+      {annotations.length > 0 && (
+        <div style={{
+          marginTop: 12, padding: '10px 14px', background: t.surfaceRaised,
+          borderRadius: 6, borderLeft: `2px solid ${t.cyan}`,
+        }}>
+          <span style={{
+            fontSize: 9, fontFamily: font.mono, color: t.cyan,
+            textTransform: 'uppercase', letterSpacing: '0.12em',
+          }}>SOURCES</span>
+          <ul style={{ margin: '6px 0 0', paddingLeft: 16, listStyle: 'disc' }}>
+            {annotations.map((a, i) => (
+              <li key={i} style={{ fontSize: 11, marginBottom: 3 }}>
+                <a
+                  href={a.url || a.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: t.cyan, textDecoration: 'none' }}
+                >
+                  {a.title || a.url || a.href}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Thinking for synthesis */}
       {stage3Result?.reasoning && (
@@ -102,21 +163,49 @@ export default function SynthesisPanel() {
       {rankData && (
         <div style={{ marginTop: 18, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           {rankData.map((r, i) => {
-            const modelId = r.model || r.model_name || r.modelId;
-            const m = lookupModel(modelId);
-            const score = r.pct ?? r.score ?? 0;
-            const scoreColor = score >= 85 ? t.green : score >= 75 ? t.gold : t.textSoft;
+            const rModelId = r.model || r.model_name || r.modelId;
+            const m = lookupModel(rModelId);
+            const rScore = r.pct ?? r.score ?? 0;
+            const rScoreColor = rScore >= 85 ? t.green : rScore >= 75 ? t.gold : t.textSoft;
             return (
-              <div key={modelId || i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div key={rModelId || i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ fontSize: 11, fontFamily: font.mono, fontWeight: 700, color: t.textMuted }}>#{i + 1}</span>
                 <ModelDot color={m.color} size={6} />
                 <span style={{ fontSize: 11, fontFamily: font.mono, color: t.textSoft }}>{m.name?.split(' ')[0]}</span>
-                <span style={{ fontSize: 12, fontFamily: font.mono, fontWeight: 700, color: scoreColor }}>{score}</span>
+                <span style={{ fontSize: 12, fontFamily: font.mono, fontWeight: 700, color: rScoreColor }}>{rScore}</span>
               </div>
             );
           })}
         </div>
       )}
+
+      {/* Footer: word count, copy, response count */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 12, marginTop: 16,
+        paddingTop: 12, borderTop: `1px solid ${t.border}`,
+      }}>
+        <button
+          onClick={handleCopy}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px',
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            fontSize: 11, color: copied ? t.green : t.textMuted, fontFamily: font.mono,
+            transition: 'color 0.15s',
+          }}
+        >
+          <span style={{ fontSize: 12 }}>{copied ? IC.check : IC.copy}</span>
+          {copied ? 'Copied' : 'Copy'}
+        </button>
+        <span style={{ fontSize: 10, fontFamily: font.mono, color: t.textMuted }}>
+          {wordCount.toLocaleString()} words
+        </span>
+        <div style={{ flex: 1 }} />
+        {responseCount > 0 && (
+          <span style={{ fontSize: 10, fontFamily: font.mono, color: t.textMuted }}>
+            Synthesized from {responseCount} model responses
+          </span>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,10 +1,11 @@
 // ─────────────────────────────────────────────────────────
 // GENESIS CHAMBER V4 — SETTINGS PANEL
-// Slide-in panel: active models + thinking mode + web search
-// + chairman model + anonymization toggle
+// Slide-in panel: active models + per-model thinking +
+// web search + chairman model + anonymization toggle
 // Models grouped by tier with dynamic roster
 // ─────────────────────────────────────────────────────────
 
+import { useState } from 'react';
 import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { ModelDot, Toggle } from '../../design/shared';
@@ -24,10 +25,15 @@ export default function SettingsPanel() {
   const toggleModel = useCouncilStore((s) => s.toggleModel);
   const thinkingMode = useCouncilStore((s) => s.thinkingMode);
   const setThinkingMode = useCouncilStore((s) => s.setThinkingMode);
+  const modelThinkingModes = useCouncilStore((s) => s.modelThinkingModes);
+  const setModelThinkingMode = useCouncilStore((s) => s.setModelThinkingMode);
   const enableWebSearch = useCouncilStore((s) => s.enableWebSearch);
   const setEnableWebSearch = useCouncilStore((s) => s.setEnableWebSearch);
   const chairmanModel = useCouncilStore((s) => s.chairmanModel);
   const setChairmanModel = useCouncilStore((s) => s.setChairmanModel);
+
+  // Collapsible chairman tiers
+  const [expandedChairTier, setExpandedChairTier] = useState('premium');
 
   if (!settingsOpen) return null;
 
@@ -40,9 +46,15 @@ export default function SettingsPanel() {
   // Group models by tier
   const tierOrder = ['premium', 'balanced', 'efficient', 'budget'];
   const grouped = tierOrder.map((tierId) => ({
-    tier: MODEL_TIERS.find((t) => t.id === tierId) || { id: tierId, name: tierId, color: '#6B7280' },
+    tier: MODEL_TIERS.find((mt) => mt.id === tierId) || { id: tierId, name: tierId, color: '#6B7280' },
     models: models.filter((m) => m.tier === tierId),
   })).filter((g) => g.models.length > 0);
+
+  const thinkingSelectStyle = {
+    padding: '2px 4px', fontSize: 9, fontFamily: font.mono,
+    background: t.surfaceRaised, border: `1px solid ${t.border}`,
+    borderRadius: 3, color: t.text, cursor: 'pointer', outline: 'none',
+  };
 
   return (
     <div style={{
@@ -86,41 +98,58 @@ export default function SettingsPanel() {
               {tierModels.map((m) => {
                 const active = activeModels.includes(m.id);
                 return (
-                  <button key={m.id} onClick={() => toggleModel(m.id)}
-                    style={{
-                      width: '100%', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10,
-                      background: active ? t.surfaceRaised : 'transparent',
-                      border: `1px solid ${active ? t.borderHover : t.border}`,
-                      borderLeft: `2px solid ${active ? m.color : 'transparent'}`,
-                      borderRadius: 6, cursor: 'pointer', transition: 'all 0.13s',
-                      marginBottom: 4,
-                    }}>
-                    <ModelDot color={m.color} />
-                    <span style={{
-                      fontSize: 12, fontWeight: 500,
-                      color: active ? t.text : t.textMuted,
-                      flex: 1, textAlign: 'left',
-                    }}>{m.name}</span>
-                    <div style={{
-                      width: 16, height: 16, borderRadius: 3,
-                      border: `1.5px solid ${active ? m.color : t.textMuted}`,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      background: active ? `${m.color}1a` : 'transparent',
-                    }}>
+                  <div key={m.id} style={{ marginBottom: 4 }}>
+                    <button onClick={() => toggleModel(m.id)}
+                      style={{
+                        width: '100%', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10,
+                        background: active ? t.surfaceRaised : 'transparent',
+                        border: `1px solid ${active ? t.borderHover : t.border}`,
+                        borderLeft: `2px solid ${active ? m.color : 'transparent'}`,
+                        borderRadius: 6, cursor: 'pointer', transition: 'all 0.13s',
+                      }}>
+                      <ModelDot color={m.color} />
+                      <span style={{
+                        fontSize: 12, fontWeight: 500,
+                        color: active ? t.text : t.textMuted,
+                        flex: 1, textAlign: 'left',
+                      }}>{m.name}</span>
+                      {/* Per-model thinking dropdown */}
                       {active && (
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={m.color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M5 12l5 5 9-9" />
-                        </svg>
+                        <select
+                          value={modelThinkingModes[m.id] || thinkingMode}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            setModelThinkingMode(m.id, e.target.value);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          style={thinkingSelectStyle}
+                        >
+                          <option value="off">Off</option>
+                          <option value="thinking">Think</option>
+                          <option value="deep">Deep</option>
+                        </select>
                       )}
-                    </div>
-                  </button>
+                      <div style={{
+                        width: 16, height: 16, borderRadius: 3,
+                        border: `1.5px solid ${active ? m.color : t.textMuted}`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: active ? `${m.color}1a` : 'transparent',
+                      }}>
+                        {active && (
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={m.color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M5 12l5 5 9-9" />
+                          </svg>
+                        )}
+                      </div>
+                    </button>
+                  </div>
                 );
               })}
             </div>
           ))}
         </div>
 
-        {/* Thinking Mode */}
+        {/* Thinking Mode (global default) */}
         <div style={{
           fontSize: 9, fontFamily: font.mono, color: t.textMuted,
           textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12,
@@ -167,7 +196,7 @@ export default function SettingsPanel() {
           <Toggle enabled={enableWebSearch} onChange={setEnableWebSearch} color={t.cyan} />
         </button>
 
-        {/* Chairman Model — all models grouped by tier */}
+        {/* Chairman Model — collapsible tiers */}
         <div style={{
           fontSize: 9, fontFamily: font.mono, color: t.textMuted,
           textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12,
@@ -176,12 +205,23 @@ export default function SettingsPanel() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 28 }}>
           {grouped.map(({ tier, models: tierModels }) => (
             <div key={`chair-${tier.id}`}>
-              <div style={{
-                fontSize: 9, fontFamily: font.mono, color: tier.color,
-                textTransform: 'uppercase', letterSpacing: '0.12em',
-                padding: '8px 0 4px', fontWeight: 600,
-              }}>{tier.name}</div>
-              {tierModels.map((m) => (
+              <button
+                onClick={() => setExpandedChairTier((prev) => prev === tier.id ? null : tier.id)}
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  background: 'transparent', border: 'none', cursor: 'pointer',
+                  padding: '8px 0 4px',
+                }}
+              >
+                <span style={{
+                  fontSize: 9, fontFamily: font.mono, color: tier.color,
+                  textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 600,
+                }}>{tier.name}</span>
+                <span style={{ fontSize: 10, color: t.textMuted }}>
+                  {expandedChairTier === tier.id ? IC.chevUp : IC.chevDown}
+                </span>
+              </button>
+              {expandedChairTier === tier.id && tierModels.map((m) => (
                 <button key={m.id} onClick={() => setChairmanModel(m.id)}
                   style={{
                     width: '100%', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10,
