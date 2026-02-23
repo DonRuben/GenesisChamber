@@ -122,7 +122,11 @@ export const useCouncilStore = create((set, get) => ({
         break;
       case 'stage3_complete': {
         const result = Array.isArray(data.data) ? data.data[0] : data.data;
-        set({ stage3Result: result });
+        if (result?.error || result?.response?.startsWith('Error:')) {
+          set({ error: result.response || 'Synthesis failed', stage3Result: null });
+        } else {
+          set({ stage3Result: result });
+        }
         break;
       }
       case 'title_complete':

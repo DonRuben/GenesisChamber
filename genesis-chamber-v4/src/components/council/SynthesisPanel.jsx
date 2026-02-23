@@ -13,6 +13,7 @@ import { MOCK_RESPONSES, MOCK_SYNTHESIS } from '../../data/mock';
 import { SkeletonSynthesis } from '../../design/skeletons';
 import { useTokens } from '../../hooks/useTokens';
 import { useModelLookup } from '../../hooks/useModels';
+import Markdown from '../../design/Markdown';
 
 export default function SynthesisPanel() {
   const t = useTokens();
@@ -75,7 +76,7 @@ export default function SynthesisPanel() {
         }}>COUNCIL SYNTHESIS</span>
       </div>
 
-      <div style={{ fontSize: 13, color: t.textSoft, lineHeight: 1.7 }}>{synthesis}</div>
+      <Markdown>{synthesis}</Markdown>
 
       {/* Thinking for synthesis */}
       {stage3Result?.reasoning && (

@@ -80,7 +80,6 @@ export default function LLMCouncil() {
 
   const handlePreset = (p) => {
     setPreset(p);
-    handleSubmit(p.placeholder);
   };
 
   return (

@@ -4,7 +4,7 @@
 // Ref: gc-v4-llm-council.jsx:88-135
 // ─────────────────────────────────────────────────────────
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { useCouncilStore } from '../../stores/councilStore';
@@ -21,12 +21,12 @@ export default function LandingState({ onPreset, onSubmit }) {
   const backendOnline = useAppStore((s) => s.backendOnline);
   const inputRef = useRef(null);
 
-  // Focus the input when a preset is selected
-  useEffect(() => {
-    if (preset && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [preset]);
+  // Wrap onPreset to populate input with placeholder text
+  const handlePreset = (p) => {
+    onPreset(p);
+    setQ(p.placeholder);
+    if (inputRef.current) inputRef.current.focus();
+  };
 
   const submit = () => {
     if (q.trim()) {
@@ -87,7 +87,7 @@ export default function LandingState({ onPreset, onSubmit }) {
         </div>
       )}
 
-      <PresetBar onPreset={onPreset} activePreset={preset} />
+      <PresetBar onPreset={handlePreset} activePreset={preset} />
 
       {/* Preset context tag */}
       {preset && (
@@ -124,7 +124,7 @@ export default function LandingState({ onPreset, onSubmit }) {
       <ChatInput
         ref={inputRef}
         value={q} onChange={setQ} onSubmit={submit}
-        placeholder={preset ? preset.placeholder : 'Ask your question... (Shift+Enter for new line, Enter to send)'}
+        placeholder={preset ? 'Edit your question, then press Enter...' : 'Ask your question... (Shift+Enter for new line, Enter to send)'}
       />
     </div>
   );

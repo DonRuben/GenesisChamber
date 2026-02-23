@@ -235,9 +235,11 @@ Provide a clear, well-reasoned final answer that represents the council's collec
     response = await query_model(chairman, messages, **extras)
 
     if response is None:
+        print(f"[council] Stage 3 synthesis FAILED — chairman={chairman}")
         return {
             "model": chairman,
-            "response": "Error: Unable to generate final synthesis."
+            "response": "Error: Unable to generate final synthesis.",
+            "error": True,
         }
 
     result = {

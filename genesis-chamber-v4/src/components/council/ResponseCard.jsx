@@ -10,6 +10,7 @@ import { IC } from '../../design/icons';
 import { Tag, ModelDot } from '../../design/shared';
 import { useTokens } from '../../hooks/useTokens';
 import { useModelLookup } from '../../hooks/useModels';
+import Markdown from '../../design/Markdown';
 
 export default function ResponseCard({ response, index, revealed, isWinner, rank, score }) {
   const t = useTokens();
@@ -99,7 +100,7 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
       )}
 
       {/* Response text */}
-      <div style={{ fontSize: 13, color: t.textSoft, lineHeight: 1.7 }}>{text}</div>
+      <Markdown>{text}</Markdown>
 
       {/* Footer */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 14 }}>
