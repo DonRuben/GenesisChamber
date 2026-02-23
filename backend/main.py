@@ -56,6 +56,8 @@ upload_db = UploadDB() if is_db_available() else None
 
 @app.on_event("startup")
 async def startup():
+    from .config import DATA_DIR
+    print(f"[startup] DATA_DIR={DATA_DIR}, writable={os.access(DATA_DIR, os.W_OK)}")
     if is_db_available():
         pool = await DatabasePool.get_pool()
         if pool:

@@ -20,6 +20,11 @@ def ensure_data_dir():
     Path(DATA_DIR).mkdir(parents=True, exist_ok=True)
 
 
+# Eagerly create on import so startup logs show writability
+ensure_data_dir()
+print(f"[storage] DATA_DIR={DATA_DIR}, writable={os.access(DATA_DIR, os.W_OK)}")
+
+
 def get_conversation_path(conversation_id: str) -> str:
     return os.path.join(DATA_DIR, f"{conversation_id}.json")
 

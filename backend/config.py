@@ -25,7 +25,8 @@ CHAIRMAN_MODEL = "google/gemini-3.1-pro-preview"
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 # Data directory for conversation storage
-DATA_DIR = "data/conversations"
+# Use /tmp on Render (ephemeral filesystem) — overridable via DATA_DIR env var
+DATA_DIR = os.environ.get("DATA_DIR", "/tmp/gc-data")
 
 
 # === GENESIS CHAMBER CONFIG (new) ===
