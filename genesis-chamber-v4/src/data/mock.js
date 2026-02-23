@@ -249,10 +249,10 @@ export const DA_PERSONAS = {
 
 // ── Simulation Presets ──
 export const MOCK_PRESETS = [
-  { id: 'quick_test', name: 'Quick Test', desc: 'Fast 3-round creative sprint — ideal for early exploration', icon: 'bolt', color: T.cyan, time: '~15 min', participants: 5, rounds: 3 },
-  { id: 'message_lab', name: 'Message Lab', desc: '6-round messaging deep-dive with quality gates', icon: 'megaphone', color: T.flame, time: '~45 min', participants: 8, rounds: 6 },
-  { id: 'genesis_chamber', name: 'Genesis Chamber', desc: 'Full 8-round simulation — maximum creative depth', icon: 'temple', color: T.gold, time: '~90 min', participants: 16, rounds: 8 },
-  { id: 'assembly_line', name: 'Assembly Line', desc: '5-round production-focused pipeline with tight eliminations', icon: 'factory', color: T.green, time: '~30 min', participants: 10, rounds: 5 },
+  { id: 'quick_test', name: 'Quick Test', desc: 'Fast 3-round creative sprint — ideal for early exploration', icon: 'bolt', color: T.cyan, time: '~15 min', participants: 5, rounds: 3, personas: ['david-ogilvy', 'paula-scher', 'elon-musk', 'gary-halbert', 'saul-bass'] },
+  { id: 'message_lab', name: 'Message Lab', desc: '6-round messaging deep-dive with quality gates', icon: 'megaphone', color: T.flame, time: '~45 min', participants: 8, rounds: 6, personas: ['david-ogilvy', 'claude-hopkins', 'leo-burnett', 'mary-wells', 'gary-halbert', 'paul-rand', 'paula-scher', 'elon-musk'] },
+  { id: 'genesis_chamber', name: 'Genesis Chamber', desc: 'Full 8-round simulation — maximum creative depth', icon: 'temple', color: T.gold, time: '~90 min', participants: 16, rounds: 8, personas: ['david-ogilvy', 'claude-hopkins', 'leo-burnett', 'mary-wells', 'gary-halbert', 'paul-rand', 'paula-scher', 'saul-bass', 'susan-kare', 'rob-janoff', 'tobias-vs', 'elon-musk', 'jeff-bezos', 'warren-buffett', 'richard-branson', 'dietrich-mateschitz'] },
+  { id: 'assembly_line', name: 'Assembly Line', desc: '5-round production-focused pipeline with tight eliminations', icon: 'factory', color: T.green, time: '~30 min', participants: 10, rounds: 5, personas: ['david-ogilvy', 'leo-burnett', 'mary-wells', 'paul-rand', 'paula-scher', 'saul-bass', 'susan-kare', 'elon-musk', 'jeff-bezos', 'warren-buffett'] },
 ];
 
 // ── Teams & Personas ──

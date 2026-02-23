@@ -15,6 +15,7 @@ import { useTokens } from '../../hooks/useTokens';
 import { useBackendStatus } from '../../hooks/useBackendStatus';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
+import ConfigModal from './ConfigModal';
 
 // ── Mobile Overlay ──
 function MobileOverlay({ open, onClose, children }) {
@@ -46,6 +47,7 @@ export default function AppShell() {
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
 
+  const showConfigModal = useAppStore((s) => s.showConfigModal);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeConv, setActiveConv] = useState(null);
 
@@ -147,6 +149,9 @@ export default function AppShell() {
         <TopBar onMenuOpen={() => setMobileOpen(true)} />
         <Outlet />
       </div>
+
+      {/* Config Modal */}
+      {showConfigModal && <ConfigModal />}
     </div>
   );
 }

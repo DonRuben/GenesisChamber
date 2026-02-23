@@ -237,28 +237,54 @@ function ConversationList({ activeId, onSelect, collapsed, t }) {
   );
 }
 
+// ── Footer Icon Button ──
+function FooterBtn({ onClick, title, icon, t, rotating }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <button
+      onClick={onClick} title={title}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: hovered ? t.surfaceHover : 'transparent',
+        border: 'none', cursor: 'pointer', color: t.textMuted, fontSize: 20,
+        borderRadius: 6,
+        transform: hovered ? 'scale(1.05)' : rotating ? 'rotate(180deg)' : 'scale(1)',
+        transition: 'all 150ms',
+      }}
+    >
+      {icon}
+    </button>
+  );
+}
+
 // ── Footer ──
 function SidebarFooter({ collapsed, t }) {
   const toggleTheme = useAppStore((s) => s.toggleTheme);
   const toggleSidebar = useAppStore((s) => s.toggleSidebar);
+  const toggleConfigModal = useAppStore((s) => s.toggleConfigModal);
   const theme = useAppStore((s) => s.theme);
   const backendOnline = useAppStore((s) => s.backendOnline);
+  const [themeRotating, setThemeRotating] = useState(false);
+
+  const handleThemeToggle = () => {
+    setThemeRotating(true);
+    toggleTheme();
+    setTimeout(() => setThemeRotating(false), 300);
+  };
 
   if (collapsed) {
     return (
       <div style={{
         borderTop: `1px solid ${t.border}`, padding: '12px 0',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+        background: t.surfaceRaised,
       }}>
         <ConnectionDot online={backendOnline} collapsed />
-        <button onClick={toggleTheme} title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-          style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: t.textMuted, fontSize: 14 }}>
-          {theme === 'dark' ? IC.sun : IC.moon}
-        </button>
-        <button onClick={toggleSidebar} title="Expand sidebar"
-          style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: t.textMuted, fontSize: 14 }}>
-          {IC.panelRight}
-        </button>
+        <FooterBtn onClick={toggleConfigModal} title="Settings" icon={IC.settings} t={t} />
+        <FooterBtn onClick={handleThemeToggle} title={theme === 'dark' ? 'Light mode' : 'Dark mode'} icon={theme === 'dark' ? IC.sun : IC.moon} t={t} rotating={themeRotating} />
+        <FooterBtn onClick={toggleSidebar} title="Expand sidebar" icon={IC.panelRight} t={t} />
       </div>
     );
   }
@@ -267,6 +293,7 @@ function SidebarFooter({ collapsed, t }) {
     <div style={{
       borderTop: `1px solid ${t.border}`, padding: '12px 16px',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      background: t.surfaceRaised,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <ConnectionDot online={backendOnline} />
@@ -278,18 +305,9 @@ function SidebarFooter({ collapsed, t }) {
         </span>
       </div>
       <div style={{ display: 'flex', gap: 4 }}>
-        <button title="Settings"
-          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: t.textMuted, fontSize: 14, borderRadius: 4 }}>
-          {IC.settings}
-        </button>
-        <button onClick={toggleTheme} title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: t.textMuted, fontSize: 14, borderRadius: 4 }}>
-          {theme === 'dark' ? IC.sun : IC.moon}
-        </button>
-        <button onClick={toggleSidebar} title="Collapse sidebar"
-          style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: t.textMuted, fontSize: 14, borderRadius: 4 }}>
-          {IC.panelLeft}
-        </button>
+        <FooterBtn onClick={toggleConfigModal} title="Settings" icon={IC.settings} t={t} />
+        <FooterBtn onClick={handleThemeToggle} title={theme === 'dark' ? 'Light mode' : 'Dark mode'} icon={theme === 'dark' ? IC.sun : IC.moon} t={t} rotating={themeRotating} />
+        <FooterBtn onClick={toggleSidebar} title="Collapse sidebar" icon={IC.panelLeft} t={t} />
       </div>
     </div>
   );

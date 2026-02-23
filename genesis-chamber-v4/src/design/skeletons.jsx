@@ -105,7 +105,7 @@ export function ConnectionDot({ online, collapsed }) {
       <div title={label} style={{
         width: 8, height: 8, borderRadius: 4,
         background: color,
-        animation: online === true ? 'none' : 'pulse 2s infinite',
+        animation: 'pulse 2s infinite',
       }} />
     );
   }
@@ -115,7 +115,7 @@ export function ConnectionDot({ online, collapsed }) {
       <div style={{
         width: 6, height: 6, borderRadius: 3,
         background: color,
-        animation: online === true ? 'none' : 'pulse 2s infinite',
+        animation: 'pulse 2s infinite',
       }} />
       <span style={{
         fontSize: 8, fontFamily: font.mono, fontWeight: 600,

@@ -8,6 +8,7 @@ import { useState, useRef, useEffect } from 'react';
 import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { useCouncilStore } from '../../stores/councilStore';
+import { useAppStore } from '../../stores/appStore';
 import PresetBar from './PresetBar';
 import ChatInput from './ChatInput';
 import { useTokens } from '../../hooks/useTokens';
@@ -17,6 +18,7 @@ export default function LandingState({ onPreset, onSubmit }) {
   const [q, setQ] = useState('');
   const preset = useCouncilStore((s) => s.preset);
   const setPreset = useCouncilStore((s) => s.setPreset);
+  const backendOnline = useAppStore((s) => s.backendOnline);
   const inputRef = useRef(null);
 
   // Focus the input when a preset is selected
@@ -58,6 +60,32 @@ export default function LandingState({ onPreset, onSubmit }) {
         Ask a question and receive responses from multiple AI models,
         anonymized rankings, and a synthesized answer.
       </p>
+
+      {/* Backend status banner */}
+      {backendOnline !== true && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: '8px 14px', borderRadius: 6, marginBottom: 16,
+          width: '100%', maxWidth: 560,
+          background: backendOnline === null ? `${t.gold}12` : `${t.textMuted}12`,
+          border: `1px solid ${backendOnline === null ? `${t.gold}30` : `${t.textMuted}30`}`,
+          animation: 'fadeSlideUp 0.21s ease-out',
+        }}>
+          <div style={{
+            width: 7, height: 7, borderRadius: 4,
+            background: backendOnline === null ? t.gold : t.textMuted,
+            animation: backendOnline === null ? 'pulse 2s infinite' : 'none',
+            flexShrink: 0,
+          }} />
+          <span style={{
+            fontSize: 11, fontFamily: font.mono, fontWeight: 500,
+            color: backendOnline === null ? t.gold : t.textMuted,
+            letterSpacing: '0.04em',
+          }}>
+            {backendOnline === null ? 'Connecting to backend...' : 'Offline mode — using mock data'}
+          </span>
+        </div>
+      )}
 
       <PresetBar onPreset={onPreset} activePreset={preset} />
 

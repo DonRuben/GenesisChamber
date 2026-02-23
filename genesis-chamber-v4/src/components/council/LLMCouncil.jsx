@@ -24,8 +24,23 @@ export default function LLMCouncil() {
     store.setQuestion(q);
     store.setView('conversation');
 
-    // Offline fallback — show mock data instantly
-    if (!backendOnline) return;
+    // Wait for health check to resolve if still pending
+    console.log('[GC] Council submit — backendOnline:', backendOnline);
+    if (backendOnline === null) {
+      const status = await new Promise((resolve) => {
+        const unsub = useAppStore.subscribe((state) => {
+          if (state.backendOnline !== null) {
+            unsub();
+            resolve(state.backendOnline);
+          }
+        });
+        setTimeout(() => { unsub(); resolve(false); }, 6000);
+      });
+      if (!status) return;
+    } else if (backendOnline === false) {
+      return;
+    }
+    console.log('[GC] Council — proceeding with backend');
 
     // Create conversation if needed
     let convId = store.conversationId;

@@ -41,6 +41,10 @@ export const useAppStore = create((set, get) => ({
     sidebarState: s.sidebarState === 'expanded' ? 'collapsed' : 'expanded',
   })),
 
+  // Config modal
+  showConfigModal: false,
+  toggleConfigModal: () => set((s) => ({ showConfigModal: !s.showConfigModal })),
+
   // Backend connection status
   backendOnline: null, // null=checking, true=connected, false=offline
   setBackendOnline: (status) => set({ backendOnline: status }),

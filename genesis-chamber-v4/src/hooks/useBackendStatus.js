@@ -14,9 +14,11 @@ export function useBackendStatus() {
   useEffect(() => {
     const check = async () => {
       try {
-        await healthCheck();
+        const data = await healthCheck();
+        console.log('[GC] Backend health check: OK', data);
         setBackendOnline(true);
-      } catch {
+      } catch (err) {
+        console.warn('[GC] Backend health check: FAILED', err.message);
         setBackendOnline(false);
       }
     };
