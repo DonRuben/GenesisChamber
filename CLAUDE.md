@@ -6,6 +6,7 @@ Multi-persona AI creative council. 18 legendary personas (Ogilvy, Rand, Musk, Jo
 ## What
 Full-stack app: React 19 + Vite frontend, Python FastAPI backend, Neon PostgreSQL database.
 Frontend on Vercel, backend on Render. SSE streaming for real-time council responses.
+For backend-specific context (API endpoints, SSE events, OpenRouter config): see `backend/CLAUDE.md`.
 
 ```
 genesis-chamber-v4/
