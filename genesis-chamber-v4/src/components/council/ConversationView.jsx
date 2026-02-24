@@ -351,13 +351,13 @@ export default function ConversationView({ onSubmit }) {
     };
   });
 
-  // Track completed responses for progress bar
-  const completedCount = responses ? responses.length : 0;
-  const totalParticipants = activeModels.length;
-
   // Determine data source: live API or mock fallback
   const responses = stage1Results || (backendOnline === false ? MOCK_RESPONSES : null);
   const modelCount = responses ? responses.length : activeModels.length;
+
+  // Track completed responses for progress bar
+  const completedCount = responses ? responses.length : 0;
+  const totalParticipants = activeModels.length;
 
   // Build display responses with scores from stage2 if available
   const displayResponses = responses ? responses.map((resp) => {

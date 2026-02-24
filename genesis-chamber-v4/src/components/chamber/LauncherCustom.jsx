@@ -5,7 +5,7 @@ import { IC } from '../../design/icons';
 import { StepNav, Btn, MonoLabel, Toggle, Tag } from '../../design/shared';
 import { useChamberStore } from '../../stores/chamberStore';
 import { useAppStore } from '../../stores/appStore';
-import { MOCK_TEAMS, MOCK_LEADERSHIP } from '../../data/mock';
+import { MOCK_TEAMS, MOCK_LEADERSHIP, DEFAULT_PERSONA_MODELS } from '../../data/mock';
 import * as api from '../../services/api';
 import PersonaChip from './PersonaChip';
 import SoulInfoModal from './SoulInfoModal';
@@ -37,6 +37,7 @@ export default function LauncherCustom() {
     daModel, setDaModel, daThinkingMode, setDaThinkingMode,
     daWebSearch, setDaWebSearch, daCritiqueFocus, toggleDaCritiqueFocus,
     daAttackStrategy, setDaAttackStrategy, daMaxElimination, setDaMaxElimination,
+    moderatorSoulId, setModeratorSoulId, evaluatorSoulId, setEvaluatorSoulId,
     moderatorModel, setModeratorModel, evaluatorModel, setEvaluatorModel,
     expandedTeam, setExpandedTeam, setLaunchMode,
     handleSimSSEEvent, resetLive,
@@ -277,38 +278,84 @@ export default function LauncherCustom() {
         {launchStep === 1 && (
           <div className="gc-enter-right" key={1} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <MonoLabel icon={IC.crown}>Leadership</MonoLabel>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
-              <div>
-                <LeaderCard role="Moderator" leader={MOCK_LEADERSHIP.moderator} />
-                <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 9, fontFamily: font.mono, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>MODEL</span>
-                  <select
-                    value={moderatorModel || MOCK_LEADERSHIP.moderator.model}
-                    onChange={(e) => setModeratorModel(e.target.value)}
-                    style={{ ...selectStyle(t), flex: 1 }}
-                  >
-                    {models.map((m) => (
-                      <option key={m.id} value={m.id}>{m.name}</option>
-                    ))}
-                  </select>
+            {(() => {
+              const allPersonas = MOCK_TEAMS.flatMap((team) => team.personas);
+              const leaderCandidates = allPersonas.filter((p) => p.canBeLeader);
+              const moderatorPersona = allPersonas.find((p) => p.id === moderatorSoulId) || allPersonas.find((p) => p.id === MOCK_LEADERSHIP.moderator.id);
+              const evaluatorPersona = allPersonas.find((p) => p.id === evaluatorSoulId) || allPersonas.find((p) => p.id === MOCK_LEADERSHIP.evaluator.id);
+              const modLeader = {
+                id: moderatorPersona.id,
+                name: moderatorPersona.name,
+                title: 'Moderator',
+                model: moderatorModel || moderatorPersona.model || moderatorPersona.defaultModel || MOCK_LEADERSHIP.moderator.model,
+                color: MOCK_LEADERSHIP.moderator.color,
+              };
+              const evalLeader = {
+                id: evaluatorPersona.id,
+                name: evaluatorPersona.name,
+                title: 'Evaluator',
+                model: evaluatorModel || evaluatorPersona.model || evaluatorPersona.defaultModel || MOCK_LEADERSHIP.evaluator.model,
+                color: MOCK_LEADERSHIP.evaluator.color,
+              };
+              return (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
+                  <div>
+                    <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 9, fontFamily: font.mono, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>PERSONA</span>
+                      <select
+                        value={moderatorSoulId}
+                        onChange={(e) => setModeratorSoulId(e.target.value)}
+                        style={{ ...selectStyle(t), flex: 1 }}
+                      >
+                        {leaderCandidates.map((p) => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <LeaderCard role="Moderator" leader={modLeader} />
+                    <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 9, fontFamily: font.mono, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>MODEL</span>
+                      <select
+                        value={moderatorModel || moderatorPersona.model || moderatorPersona.defaultModel || MOCK_LEADERSHIP.moderator.model}
+                        onChange={(e) => setModeratorModel(e.target.value)}
+                        style={{ ...selectStyle(t), flex: 1 }}
+                      >
+                        {models.map((m) => (
+                          <option key={m.id} value={m.id}>{m.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 9, fontFamily: font.mono, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>PERSONA</span>
+                      <select
+                        value={evaluatorSoulId}
+                        onChange={(e) => setEvaluatorSoulId(e.target.value)}
+                        style={{ ...selectStyle(t), flex: 1 }}
+                      >
+                        {leaderCandidates.map((p) => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <LeaderCard role="Evaluator" leader={evalLeader} />
+                    <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 9, fontFamily: font.mono, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>MODEL</span>
+                      <select
+                        value={evaluatorModel || evaluatorPersona.model || evaluatorPersona.defaultModel || MOCK_LEADERSHIP.evaluator.model}
+                        onChange={(e) => setEvaluatorModel(e.target.value)}
+                        style={{ ...selectStyle(t), flex: 1 }}
+                      >
+                        {models.map((m) => (
+                          <option key={m.id} value={m.id}>{m.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <LeaderCard role="Evaluator" leader={MOCK_LEADERSHIP.evaluator} />
-                <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 9, fontFamily: font.mono, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>MODEL</span>
-                  <select
-                    value={evaluatorModel || MOCK_LEADERSHIP.evaluator.model}
-                    onChange={(e) => setEvaluatorModel(e.target.value)}
-                    style={{ ...selectStyle(t), flex: 1 }}
-                  >
-                    {models.map((m) => (
-                      <option key={m.id} value={m.id}>{m.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
+              );
+            })()}
 
             <div style={{
               marginTop: 8, padding: 20, borderRadius: 8,

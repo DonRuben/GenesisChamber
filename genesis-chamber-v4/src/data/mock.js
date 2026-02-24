@@ -275,7 +275,7 @@ export const MOCK_TEAMS = [
       { id: 'susan-kare', name: 'Susan Kare', title: 'Pixel Art Pioneer', era: '1980s', model: 'meta-llama/llama-4-maverick', thinkingMode: 'default' },
       { id: 'rob-janoff', name: 'Rob Janoff', title: 'Apple Logo Creator', era: '1977', model: 'x-ai/grok-4.1', thinkingMode: 'default' },
       { id: 'tobias-vs', name: 'Tobias van Schneider', title: 'Dark UI Visionary', era: '2010s', model: 'google/gemini-3.1-pro-preview', thinkingMode: 'default' },
-      { id: 'jony-ive', name: 'Jony Ive', title: 'CRAFT PERFECTIONIST', subtitle: 'Design is how it works', group: 'design', defaultModel: 'anthropic/claude-sonnet-4.6', thinkingMode: 'default', canBeLeader: true, leaderRoles: ['moderator', 'evaluator'] },
+      { id: 'jony-ive', name: 'Jony Ive', title: 'CRAFT PERFECTIONIST', subtitle: 'Design is how it works', group: 'design', model: 'anthropic/claude-sonnet-4.6', defaultModel: 'anthropic/claude-sonnet-4.6', thinkingMode: 'default', canBeLeader: true, leaderRoles: ['moderator', 'evaluator'] },
     ],
   },
   {
@@ -286,7 +286,7 @@ export const MOCK_TEAMS = [
       { id: 'warren-buffett', name: 'Warren Buffett', title: 'Value Investor', era: '1970s', model: 'google/gemini-3.1-pro-preview', thinkingMode: 'default' },
       { id: 'richard-branson', name: 'Richard Branson', title: 'Brand Maverick', era: '1980s', model: 'meta-llama/llama-4-maverick', thinkingMode: 'default' },
       { id: 'dietrich-mateschitz', name: 'Dietrich Mateschitz', title: 'Category Creator', era: '1987', model: 'deepseek/deepseek-v3.2', thinkingMode: 'default' },
-      { id: 'steve-jobs', name: 'Steve Jobs', title: 'VISIONARY PROVOCATEUR', subtitle: 'The intersection of technology & liberal arts', group: 'business', defaultModel: 'anthropic/claude-opus-4-6', thinkingMode: 'default', canBeLeader: true, leaderRoles: ['moderator', 'evaluator'] },
+      { id: 'steve-jobs', name: 'Steve Jobs', title: 'VISIONARY PROVOCATEUR', subtitle: 'The intersection of technology & liberal arts', group: 'business', model: 'anthropic/claude-opus-4-6', defaultModel: 'anthropic/claude-opus-4-6', thinkingMode: 'default', canBeLeader: true, leaderRoles: ['moderator', 'evaluator'] },
     ],
   },
 ];

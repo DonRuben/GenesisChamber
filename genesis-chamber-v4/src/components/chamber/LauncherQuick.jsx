@@ -5,7 +5,7 @@ import { IC } from '../../design/icons';
 import { StepNav, Btn, MonoLabel, Tag, Toggle } from '../../design/shared';
 import { useChamberStore } from '../../stores/chamberStore';
 import { useAppStore } from '../../stores/appStore';
-import { MOCK_PRESETS, MOCK_TEAMS, COUNCIL_PRESETS } from '../../data/mock';
+import { MOCK_PRESETS, MOCK_TEAMS, COUNCIL_PRESETS, DEFAULT_PERSONA_MODELS } from '../../data/mock';
 import * as api from '../../services/api';
 import PresetCard from './PresetCard';
 import PersonaChip from './PersonaChip';
@@ -50,14 +50,24 @@ export default function LauncherQuick() {
       const souls = councilPreset.souls === 'all'
         ? new Set(allPersonaIds)
         : new Set(councilPreset.souls);
-      useChamberStore.setState({ selectedPersonas: souls });
+      const updates = { selectedPersonas: souls };
       // DA config from preset
       if (councilPreset.daEnabled !== undefined) {
-        useChamberStore.setState({ daEnabled: councilPreset.daEnabled });
+        updates.daEnabled = councilPreset.daEnabled;
       }
       if (councilPreset.daAggression) {
-        useChamberStore.setState({ daAggression: councilPreset.daAggression });
+        updates.daAggression = councilPreset.daAggression;
       }
+      // Leadership from preset
+      if (councilPreset.moderator) {
+        updates.moderatorSoulId = councilPreset.moderator;
+        updates.moderatorModel = DEFAULT_PERSONA_MODELS[councilPreset.moderator] || null;
+      }
+      if (councilPreset.evaluator) {
+        updates.evaluatorSoulId = councilPreset.evaluator;
+        updates.evaluatorModel = DEFAULT_PERSONA_MODELS[councilPreset.evaluator] || null;
+      }
+      useChamberStore.setState(updates);
     }
   }, [selectedPreset]); // eslint-disable-line react-hooks/exhaustive-deps
 

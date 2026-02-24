@@ -83,30 +83,6 @@ export default function LLMCouncil() {
           thinking_mode: store.chairman.thinkingMode,
           web_search: store.chairman.webSearch,
         },
-        moderator: {
-          soul_id: store.moderator.soulId,
-          model: store.moderator.modelId,
-          thinking_mode: store.moderator.thinkingMode,
-          web_search: store.moderator.webSearch,
-          also_participant: store.moderator.alsoParticipant,
-        },
-        evaluator: {
-          soul_id: store.evaluator.soulId,
-          model: store.evaluator.modelId,
-          thinking_mode: store.evaluator.thinkingMode,
-          web_search: store.evaluator.webSearch,
-          also_participant: store.evaluator.alsoParticipant,
-        },
-        devilsAdvocate: {
-          enabled: store.devilsAdvocate.enabled,
-          model: store.devilsAdvocate.modelId,
-          thinking_mode: store.devilsAdvocate.thinkingMode,
-          web_search: store.devilsAdvocate.webSearch,
-          aggression: store.devilsAdvocate.aggressionLevel,
-          critique_focus: store.devilsAdvocate.critiqueFocus,
-          attack_strategy: store.devilsAdvocate.attackStrategy,
-          max_elimination_pct: store.devilsAdvocate.maxEliminationPct,
-        },
         signal: ctrl.signal,
       });
     } catch (err) {

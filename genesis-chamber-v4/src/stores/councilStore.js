@@ -6,7 +6,7 @@
 
 import { create } from 'zustand';
 import { useAppStore } from './appStore';
-import { MOCK_TEAMS, DEFAULT_PERSONA_MODELS } from '../data/mock';
+import { MOCK_TEAMS } from '../data/mock';
 
 export const useCouncilStore = create((set, get) => ({
   // ── UI State ──
@@ -43,33 +43,6 @@ export const useCouncilStore = create((set, get) => ({
   chairman: {
     thinkingMode: 'off',
     webSearch: false,
-  },
-
-  moderator: {
-    soulId: 'steve-jobs',
-    modelId: 'anthropic/claude-opus-4-6',
-    thinkingMode: 'off',
-    webSearch: false,
-    alsoParticipant: true,
-  },
-
-  evaluator: {
-    soulId: 'jony-ive',
-    modelId: 'anthropic/claude-sonnet-4-6',
-    thinkingMode: 'off',
-    webSearch: false,
-    alsoParticipant: true,
-  },
-
-  devilsAdvocate: {
-    enabled: true,
-    modelId: 'x-ai/grok-4.1',
-    thinkingMode: 'off',
-    webSearch: false,
-    aggressionLevel: 'aggressive',
-    critiqueFocus: ['market_viability', 'originality', 'execution_risk', 'competitive'],
-    attackStrategy: 'sanhedrin',
-    maxEliminationPct: 60,
   },
 
   // ── API State ──
@@ -122,30 +95,6 @@ export const useCouncilStore = create((set, get) => ({
   setChairmanConfig: (updates) => set((s) => ({
     chairman: { ...s.chairman, ...updates },
   })),
-  setModeratorConfig: (updates) => set((s) => ({
-    moderator: { ...s.moderator, ...updates },
-  })),
-  setEvaluatorConfig: (updates) => set((s) => ({
-    evaluator: { ...s.evaluator, ...updates },
-  })),
-  setDAConfig: (updates) => set((s) => ({
-    devilsAdvocate: { ...s.devilsAdvocate, ...updates },
-  })),
-  toggleDAFocus: (focusId) => set((s) => {
-    const current = s.devilsAdvocate.critiqueFocus;
-    const next = current.includes(focusId)
-      ? current.filter((f) => f !== focusId)
-      : [...current, focusId];
-    return { devilsAdvocate: { ...s.devilsAdvocate, critiqueFocus: next } };
-  }),
-  setModerator: (soulId) => set((s) => {
-    const modelId = DEFAULT_PERSONA_MODELS[soulId] || s.moderator.modelId;
-    return { moderator: { ...s.moderator, soulId, modelId } };
-  }),
-  setEvaluator: (soulId) => set((s) => {
-    const modelId = DEFAULT_PERSONA_MODELS[soulId] || s.evaluator.modelId;
-    return { evaluator: { ...s.evaluator, soulId, modelId } };
-  }),
 
   // ── API State Actions ──
   setConversationId: (id) => set({ conversationId: id }),
