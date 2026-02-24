@@ -41,7 +41,7 @@
     },
     "wells": {
       "display_name": "Mary Wells Lawrence",
-      "model": "x-ai/grok-4",
+      "model": "x-ai/grok-4.1",
       "soul_document": "souls/mary-wells-lawrence.md",
       "role": "participant",
       "temperature": 0.7,

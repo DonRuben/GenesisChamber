@@ -40,7 +40,7 @@ export const MODELS = [
   // Tier 2 — Balanced
   { id: 'anthropic/claude-sonnet-4.6', name: 'Claude Sonnet 4.6', color: '#F97316', letter: 'CS', tier: 'balanced' },
   { id: 'google/gemini-2.5-pro', name: 'Gemini 2.5 Pro', color: '#06B6D4', letter: 'Gp', tier: 'balanced' },
-  { id: 'x-ai/grok-4', name: 'Grok 4', color: '#E5375E', letter: 'Gk', tier: 'balanced' },
+  { id: 'x-ai/grok-4.1', name: 'Grok 4.1', color: '#E5375E', letter: 'Gk', tier: 'balanced' },
   { id: 'x-ai/grok-4.1', name: 'Grok 4.1', color: '#F43F5E', letter: 'G4', tier: 'balanced' },
   { id: 'mistralai/mistral-large', name: 'Mistral Large', color: '#D4A853', letter: 'ML', tier: 'balanced' },
   // Tier 3 — Efficient

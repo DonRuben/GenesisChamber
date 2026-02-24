@@ -781,7 +781,7 @@ async def get_available_models():
                 "models": [
                     {"id": "anthropic/claude-sonnet-4.6", "cost_per_1m_tokens": 3.0, "context": "1M", "best_for": "Detail, precision"},
                     {"id": "google/gemini-2.5-pro", "cost_per_1m_tokens": 2.5, "context": "1M", "best_for": "Research-heavy"},
-                    {"id": "x-ai/grok-4", "cost_per_1m_tokens": 3.0, "context": "128K", "best_for": "Bold, provocative"},
+                    {"id": "x-ai/grok-4.1", "cost_per_1m_tokens": 3.0, "context": "128K", "best_for": "Bold, provocative"},
                     {"id": "x-ai/grok-4.1", "cost_per_1m_tokens": 3.0, "context": "128K", "best_for": "Latest Grok, improved reasoning"},
                     {"id": "mistralai/mistral-large", "cost_per_1m_tokens": 2.0, "context": "128K", "best_for": "EU alternative, strong reasoning"}
                 ]

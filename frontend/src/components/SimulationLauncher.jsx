@@ -65,16 +65,16 @@ const DEFAULT_MODELS = {
   'claude-hopkins': 'anthropic/claude-sonnet-4.6',  // $3/$15 — scientific, precise
   'leo-burnett': 'openai/gpt-5.1',                 // $5/$15 — warm, emotional creative
   'mary-wells-lawrence': 'meta-llama/llama-4-maverick', // $0.20/$0.60 — bold, direct, budget
-  'gary-halbert': 'x-ai/grok-4',                   // $3/$15 — raw, provocative, urgent
+  'gary-halbert': 'x-ai/grok-4.1',                   // $3/$15 — raw, provocative, urgent
   // Design & Visual
   'paul-rand': 'google/gemini-3-pro',              // $1.25/$10 — systematic, intellectual
   'paula-scher': 'openai/gpt-5.1',                 // $5/$15 — expressive, bold typography
   'saul-bass': 'anthropic/claude-sonnet-4.6',       // $3/$15 — precise, iconic reduction
   'susan-kare': 'meta-llama/llama-4-maverick',      // $0.20/$0.60 — human, accessible, budget
-  'rob-janoff': 'x-ai/grok-4',                     // $3/$15 — unconventional simplicity
+  'rob-janoff': 'x-ai/grok-4.1',                     // $3/$15 — unconventional simplicity
   'tobias-van-schneider': 'google/gemini-3-pro',    // $1.25/$10 — modern, digital-first
   // Business & Strategy
-  'elon-musk': 'x-ai/grok-4',                      // $3/$15 — HIS OWN AI COMPANY
+  'elon-musk': 'x-ai/grok-4.1',                      // $3/$15 — HIS OWN AI COMPANY
   'jeff-bezos': 'anthropic/claude-sonnet-4.6',      // $3/$15 — methodical, customer-obsessed
   'warren-buffett': 'google/gemini-3-pro',          // $1.25/$10 — patient analyst, 2M context
   'richard-branson': 'meta-llama/llama-4-maverick', // $0.20/$0.60 — gut-instinct, budget
@@ -83,7 +83,7 @@ const DEFAULT_MODELS = {
   moderator: 'anthropic/claude-opus-4-6',           // $5/$25 — elimination decisions need depth
   evaluator: 'anthropic/claude-sonnet-4.6',         // $3/$15 — structured scoring
   // Devil's Advocate — Grok is naturally adversarial
-  'devils-advocate': 'x-ai/grok-4',                 // $3/$15 — provocative, NOT Claude
+  'devils-advocate': 'x-ai/grok-4.1',                 // $3/$15 — provocative, NOT Claude
 };
 
 // Team display order and metadata
@@ -486,7 +486,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
         ...(devilsAdvocateActive ? {
           devils_advocate: {
             display_name: 'Advocatus Diaboli',
-            model: modelAssignments['devils-advocate'] || 'x-ai/grok-4',
+            model: modelAssignments['devils-advocate'] || 'x-ai/grok-4.1',
             soul_document: 'souls/devils-advocate.md',
             role: 'devils_advocate',
             temperature: 0.75,
@@ -865,7 +865,7 @@ export default function SimulationLauncher({ onStart, onLiveEvent }) {
                 <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '10px' }}>
                   {availableModels && (
                     <ModelSelector
-                      value={modelAssignments['devils-advocate'] || 'x-ai/grok-4'}
+                      value={modelAssignments['devils-advocate'] || 'x-ai/grok-4.1'}
                       onChange={(modelId) => updateModel('devils-advocate', modelId)}
                       models={availableModels}
                       compact
