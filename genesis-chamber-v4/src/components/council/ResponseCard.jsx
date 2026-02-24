@@ -12,11 +12,13 @@ import { Tag, ModelDot } from '../../design/shared';
 import { useTokens } from '../../hooks/useTokens';
 import { useModelLookup } from '../../hooks/useModels';
 import Markdown from '../../design/Markdown';
-import ReadFullModal from './ReadFullModal';
+import ReadFullModal, { sanitizeFilename, questionSlug } from './ReadFullModal';
+import { useCouncilStore } from '../../stores/councilStore';
 
 export default function ResponseCard({ response, index, revealed, isWinner, rank, score }) {
   const t = useTokens();
   const lookupModel = useModelLookup();
+  const question = useCouncilStore((s) => s.question);
   const [showThinking, setShowThinking] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -238,6 +240,7 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
           text={text}
           accentColor={revealed ? model.color : t.textMuted}
           annotations={annotations}
+          filename={sanitizeFilename('response', model.name, questionSlug(question))}
           onClose={() => setShowModal(false)}
         />
       )}

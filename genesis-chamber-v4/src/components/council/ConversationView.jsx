@@ -22,6 +22,7 @@ import { useModels } from '../../hooks/useModels';
 import { useModelLookup } from '../../hooks/useModels';
 import { useIsMobile } from '../../hooks/useMediaQuery';
 import Markdown from '../../design/Markdown';
+import ReadFullModal, { sanitizeFilename, questionSlug, downloadBlob, openPrintWindow, PRINT_CSS } from './ReadFullModal';
 
 function UserBubble({ text, color, muted }) {
   const t = useTokens();
@@ -106,10 +107,11 @@ function ResponseTabBar({ tabs, selectedTab, onSelect, t }) {
 }
 
 // ─── Leaderboard Panel ──────────────────────────────────
-function LeaderboardPanel({ stage2Results, t }) {
+function LeaderboardPanel({ stage2Results, t, question }) {
   const lookupModel = useModelLookup();
   const [showRawEvals, setShowRawEvals] = useState(false);
   const [rawEvalTab, setRawEvalTab] = useState(0);
+  const [evalModal, setEvalModal] = useState(null);
 
   const aggregateRankings = stage2Results?.aggregateRankings;
   const rankings = stage2Results?.rankings;
@@ -250,45 +252,90 @@ function LeaderboardPanel({ stage2Results, t }) {
               </div>
 
               {/* Selected evaluator's ranking */}
-              {rankings[rawEvalTab] && (
-                <div style={{
-                  padding: '14px 16px', background: t.surfaceRaised, borderRadius: 6,
-                  borderLeft: `2px solid ${lookupModel(rankings[rawEvalTab].model).color}`,
-                }}>
-                  {/* Parsed ranking chips */}
-                  {rankings[rawEvalTab].parsed_ranking && (
-                    <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
-                      {rankings[rawEvalTab].parsed_ranking.map((label, idx) => {
-                        const resolvedModel = labelToModel[label] ? lookupModel(labelToModel[label]) : null;
-                        return (
-                          <div key={idx} style={{
-                            display: 'flex', alignItems: 'center', gap: 4,
-                            padding: '3px 8px', borderRadius: 4,
-                            background: idx === 0 ? `${t.gold}1a` : t.surface,
-                            border: `1px solid ${idx === 0 ? t.gold : t.border}`,
-                          }}>
-                            <span style={{
-                              fontSize: 10, fontFamily: font.mono, fontWeight: 700,
-                              color: idx === 0 ? t.gold : t.textMuted,
+              {rankings[rawEvalTab] && (() => {
+                const evalModel = lookupModel(rankings[rawEvalTab].model);
+                const rankingText = deAnonymize(rankings[rawEvalTab].ranking);
+                const evalWordCount = rankingText ? rankingText.split(/\s+/).filter(Boolean).length : 0;
+                const evalIsLong = evalWordCount > 150;
+                return (
+                  <div style={{
+                    padding: '14px 16px', background: t.surfaceRaised, borderRadius: 6,
+                    borderLeft: `2px solid ${evalModel.color}`,
+                  }}>
+                    {/* Parsed ranking chips */}
+                    {rankings[rawEvalTab].parsed_ranking && (
+                      <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+                        {rankings[rawEvalTab].parsed_ranking.map((label, idx) => {
+                          const resolvedModel = labelToModel[label] ? lookupModel(labelToModel[label]) : null;
+                          return (
+                            <div key={idx} style={{
+                              display: 'flex', alignItems: 'center', gap: 4,
+                              padding: '3px 8px', borderRadius: 4,
+                              background: idx === 0 ? `${t.gold}1a` : t.surface,
+                              border: `1px solid ${idx === 0 ? t.gold : t.border}`,
                             }}>
-                              {idx + 1}
-                            </span>
-                            {resolvedModel && <ModelDot color={resolvedModel.color} size={5} />}
-                            <span style={{ fontSize: 10, fontFamily: font.mono, color: t.text }}>
-                              {resolvedModel ? resolvedModel.name : label}
-                            </span>
-                          </div>
-                        );
-                      })}
+                              <span style={{
+                                fontSize: 10, fontFamily: font.mono, fontWeight: 700,
+                                color: idx === 0 ? t.gold : t.textMuted,
+                              }}>
+                                {idx + 1}
+                              </span>
+                              {resolvedModel && <ModelDot color={resolvedModel.color} size={5} />}
+                              <span style={{ fontSize: 10, fontFamily: font.mono, color: t.text }}>
+                                {resolvedModel ? resolvedModel.name : label}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {/* De-anonymized ranking text — scrollable */}
+                    <div style={{ position: 'relative' }}>
+                      <div className="gc-scrollbar" style={{ maxHeight: 350, overflow: 'hidden' }}>
+                        <Markdown>{rankingText}</Markdown>
+                      </div>
+                      {evalIsLong && (
+                        <div style={{
+                          position: 'absolute', bottom: 0, left: 0, right: 0, height: 60,
+                          background: `linear-gradient(transparent, ${t.surfaceRaised})`,
+                          pointerEvents: 'none',
+                        }} />
+                      )}
                     </div>
-                  )}
-                  {/* De-anonymized ranking text */}
-                  <Markdown>{deAnonymize(rankings[rawEvalTab].ranking)}</Markdown>
-                </div>
-              )}
+                    {evalIsLong && (
+                      <button
+                        onClick={() => setEvalModal({ title: `Evaluation — ${evalModel.name}`, subtitle: rankings[rawEvalTab].model, text: rankingText, color: evalModel.color, modelName: evalModel.name })}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 6,
+                          marginTop: 4, padding: '6px 12px',
+                          background: 'transparent', border: `1px solid ${t.border}`, borderRadius: 5,
+                          cursor: 'pointer', fontSize: 10, fontFamily: font.mono,
+                          color: t.textSoft, textTransform: 'uppercase', letterSpacing: '0.06em',
+                        }}
+                      >
+                        <span style={{ fontSize: 12 }}>{IC.exportArrow}</span>
+                        Read full evaluation
+                      </button>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>
+      )}
+
+      {/* Evaluation modal */}
+      {evalModal && (
+        <ReadFullModal
+          title={evalModal.title}
+          subtitle={evalModal.subtitle}
+          text={evalModal.text}
+          accentColor={evalModal.color}
+          annotations={[]}
+          filename={sanitizeFilename('evaluation', evalModal.modelName, questionSlug(question))}
+          onClose={() => setEvalModal(null)}
+        />
       )}
     </div>
   );
@@ -481,6 +528,138 @@ export default function ConversationView({ onSubmit }) {
     cursor: 'pointer', outline: 'none', width: '100%',
   };
 
+  // ── Full Session Export ──
+  const [showReport, setShowReport] = useState(false);
+
+  const buildFullReport = () => {
+    const date = new Date().toISOString().split('T')[0];
+    const modelNames = activeModels.map((id) => lookupModel(id).name);
+    const lines = [];
+
+    lines.push('# LLM Council Report');
+    lines.push('');
+    lines.push(`**Date:** ${date}`);
+    lines.push(`**Models:** ${modelNames.join(', ')}`);
+    lines.push('');
+
+    // Question
+    lines.push('## Brief');
+    lines.push('');
+    lines.push(`> ${question}`);
+    lines.push('');
+
+    // Section 1: Responses
+    if (finalResponses && finalResponses.length > 0) {
+      lines.push('---');
+      lines.push('');
+      lines.push('## Individual Responses');
+      lines.push('');
+      finalResponses.forEach((resp, i) => {
+        const mid = resp.model || resp.modelId;
+        const m = lookupModel(mid);
+        const respText = resp.response || resp.text;
+        const respScore = resp._score ?? resp.score ?? null;
+        lines.push(`### ${i + 1}. ${m.name}${respScore != null ? ` — Score: ${respScore}` : ''}`);
+        lines.push('');
+        lines.push(respText || '*No response*');
+        lines.push('');
+      });
+    }
+
+    // Section 2: Rankings
+    if (stage2Results) {
+      lines.push('---');
+      lines.push('');
+      lines.push('## Rankings');
+      lines.push('');
+      const aggRank = stage2Results.aggregateRankings;
+      if (aggRank) {
+        lines.push('| Rank | Model | Score |');
+        lines.push('|------|-------|-------|');
+        aggRank.forEach((r, i) => {
+          const mid = r.model || r.model_name || r.modelId;
+          const m = lookupModel(mid);
+          const s = r.pct ?? r.score ?? '';
+          lines.push(`| #${i + 1} | ${m.name} | ${s} |`);
+        });
+        lines.push('');
+      }
+      if (stage2Results.rankings) {
+        const lbl = stage2Results.labelToModel || {};
+        stage2Results.rankings.forEach((r) => {
+          const em = lookupModel(r.model);
+          lines.push(`#### Evaluation by ${em.name}`);
+          lines.push('');
+          let evalText = r.ranking || '';
+          Object.entries(lbl).forEach(([label, modelId]) => {
+            const mm = lookupModel(modelId);
+            evalText = evalText.replace(new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), `**${mm.name}**`);
+          });
+          lines.push(evalText);
+          lines.push('');
+        });
+      }
+    }
+
+    // Section 3: Synthesis
+    const synthesis = stage3Result?.response;
+    if (synthesis) {
+      lines.push('---');
+      lines.push('');
+      lines.push('## Council Synthesis');
+      lines.push('');
+      const chairModel = stage3Result?.model;
+      if (chairModel) {
+        const ch = lookupModel(chairModel);
+        lines.push(`*Chairman: ${ch.name}*`);
+        lines.push('');
+      }
+      lines.push(synthesis);
+      lines.push('');
+    }
+
+    // Section 4: Sources
+    const allSources = [];
+    if (finalResponses) {
+      finalResponses.forEach((resp) => {
+        const raw = resp.annotations || resp.citations || resp.sources || resp.web_search_results || [];
+        raw.forEach((a) => {
+          const c = a.url_citation || a;
+          const url = c.url || c.href || c.link || a.url || a.href;
+          const title = c.title || c.text || c.display_name || a.title;
+          if (url) allSources.push({ url, title });
+        });
+      });
+    }
+    const synthRaw = stage3Result?.annotations || stage3Result?.citations || stage3Result?.sources || stage3Result?.web_search_results || [];
+    synthRaw.forEach((a) => {
+      const c = a.url_citation || a;
+      const url = c.url || c.href || c.link || a.url || a.href;
+      const title = c.title || c.text || c.display_name || a.title;
+      if (url) allSources.push({ url, title });
+    });
+    // Dedupe by URL
+    const uniqueSources = [...new Map(allSources.map((s) => [s.url, s])).values()];
+    if (uniqueSources.length > 0) {
+      lines.push('---');
+      lines.push('');
+      lines.push('## Sources');
+      lines.push('');
+      uniqueSources.forEach((s) => {
+        lines.push(`- [${s.title || s.url}](${s.url})`);
+      });
+      lines.push('');
+    }
+
+    lines.push('---');
+    lines.push('');
+    lines.push('*Generated by Genesis Chamber LLM Council*');
+
+    return lines.join('\n');
+  };
+
+  const reportFilename = sanitizeFilename('council-report', questionSlug(question), new Date().toISOString().split('T')[0]);
+
   return (
     <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
       <div style={{ maxWidth: 760, margin: '0 auto', width: '100%', padding: '32px 24px' }}>
@@ -556,6 +735,19 @@ export default function ConversationView({ onSubmit }) {
               }}>
               <span style={{ fontSize: 13 }}>{revealed ? IC.eye : IC.eyeOff}</span>
               {revealed ? 'Models visible' : 'Reveal models'}
+            </button>
+            {/* Export full report */}
+            <button
+              onClick={() => setShowReport(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px',
+                background: 'transparent', border: `1px solid ${t.border}`, borderRadius: 5,
+                cursor: 'pointer', fontSize: 11, fontFamily: font.mono, color: t.textSoft,
+                letterSpacing: '0.04em',
+              }}
+            >
+              <span style={{ fontSize: 13 }}>{IC.exportArrow}</span>
+              Export Report
             </button>
           </div>
         )}
@@ -640,7 +832,7 @@ export default function ConversationView({ onSubmit }) {
             {selectedTab === 'synthesis' ? (
               <SynthesisPanel />
             ) : selectedTab === 'leaderboard' ? (
-              <LeaderboardPanel stage2Results={stage2Results} t={t} />
+              <LeaderboardPanel stage2Results={stage2Results} t={t} question={question} />
             ) : selectedTab === 'all' ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {finalResponses.map((resp, i) => renderResponseCard(resp, i))}
@@ -664,6 +856,19 @@ export default function ConversationView({ onSubmit }) {
           />
         </div>
       </div>
+
+      {/* Full report modal */}
+      {showReport && (
+        <ReadFullModal
+          title="LLM Council Report"
+          subtitle={`${activeModels.length} models \u00B7 ${new Date().toISOString().split('T')[0]}`}
+          text={buildFullReport()}
+          accentColor={t.gold}
+          annotations={[]}
+          filename={reportFilename}
+          onClose={() => setShowReport(false)}
+        />
+      )}
     </div>
   );
 }

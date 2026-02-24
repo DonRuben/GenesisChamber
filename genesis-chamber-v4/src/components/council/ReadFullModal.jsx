@@ -10,7 +10,60 @@ import { IC } from '../../design/icons';
 import { useTokens } from '../../hooks/useTokens';
 import Markdown from '../../design/Markdown';
 
-export default function ReadFullModal({ title, subtitle, text, accentColor, annotations, onClose }) {
+// Shared filename sanitizer — exported for full report use
+export function sanitizeFilename(...parts) {
+  return parts
+    .filter(Boolean)
+    .join('-')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 80);
+}
+
+export function questionSlug(text, wordCount = 5) {
+  if (!text) return '';
+  return text.split(/\s+/).slice(0, wordCount).join(' ');
+}
+
+const PRINT_CSS =
+  `body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;max-width:700px;margin:40px auto;padding:0 20px;line-height:1.6;color:#1a1a1a}` +
+  `h1,h2,h3,h4{margin:1em 0 0.5em}` +
+  `pre{background:#f5f5f5;padding:12px;border-radius:6px;overflow-x:auto;font-size:13px}` +
+  `code{background:#f0f0f0;padding:2px 4px;border-radius:3px;font-size:13px}` +
+  `pre code{background:none;padding:0}` +
+  `table{border-collapse:collapse;width:100%;margin:1em 0}th,td{border:1px solid #ddd;padding:8px 12px;text-align:left}th{background:#f5f5f5}` +
+  `blockquote{border-left:3px solid #ddd;margin:1em 0;padding:0.5em 1em;color:#555}` +
+  `a{color:#0066cc}ul,ol{padding-left:1.5em}` +
+  `hr{border:none;border-top:1px solid #ddd;margin:2em 0}` +
+  `@media print{body{margin:20px}}`;
+
+function downloadBlob(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function openPrintWindow(title, html) {
+  const printWin = window.open('', '_blank');
+  if (!printWin) return;
+  printWin.document.write(
+    `<!DOCTYPE html><html><head><title>${title}</title>` +
+    `<style>${PRINT_CSS}</style></head><body>${html}</body></html>`
+  );
+  printWin.document.close();
+  setTimeout(() => printWin.print(), 250);
+}
+
+// Re-export helpers for full report
+export { PRINT_CSS, downloadBlob, openPrintWindow };
+
+export default function ReadFullModal({ title, subtitle, text, accentColor, annotations, filename, onClose }) {
   const t = useTokens();
   const contentRef = useRef(null);
   const [copied, setCopied] = useState(false);
@@ -22,6 +75,7 @@ export default function ReadFullModal({ title, subtitle, text, accentColor, anno
   }, [onClose]);
 
   const wordCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
+  const baseName = filename || sanitizeFilename(title || 'response');
 
   const handleCopy = () => {
     navigator.clipboard?.writeText(text);
@@ -30,34 +84,12 @@ export default function ReadFullModal({ title, subtitle, text, accentColor, anno
   };
 
   const handleDownloadMD = () => {
-    const blob = new Blob([text], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${(title || 'response').replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase()}.md`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadBlob(text, `${baseName}.md`, 'text/markdown');
   };
 
   const handleDownloadPDF = () => {
     const html = contentRef.current?.innerHTML || `<pre>${text}</pre>`;
-    const printWin = window.open('', '_blank');
-    if (!printWin) return;
-    printWin.document.write(
-      `<!DOCTYPE html><html><head><title>${title || 'Response'}</title><style>` +
-      `body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;max-width:700px;margin:40px auto;padding:0 20px;line-height:1.6;color:#1a1a1a}` +
-      `h1,h2,h3,h4{margin:1em 0 0.5em}` +
-      `pre{background:#f5f5f5;padding:12px;border-radius:6px;overflow-x:auto;font-size:13px}` +
-      `code{background:#f0f0f0;padding:2px 4px;border-radius:3px;font-size:13px}` +
-      `pre code{background:none;padding:0}` +
-      `table{border-collapse:collapse;width:100%;margin:1em 0}th,td{border:1px solid #ddd;padding:8px 12px;text-align:left}th{background:#f5f5f5}` +
-      `blockquote{border-left:3px solid #ddd;margin:1em 0;padding:0.5em 1em;color:#555}` +
-      `a{color:#0066cc}ul,ol{padding-left:1.5em}` +
-      `@media print{body{margin:20px}}` +
-      `</style></head><body>${html}</body></html>`
-    );
-    printWin.document.close();
-    setTimeout(() => printWin.print(), 250);
+    openPrintWindow(title || 'Response', html);
   };
 
   const accent = accentColor || t.cyan;

@@ -16,7 +16,7 @@ import { SkeletonSynthesis } from '../../design/skeletons';
 import { useTokens } from '../../hooks/useTokens';
 import { useModelLookup } from '../../hooks/useModels';
 import Markdown from '../../design/Markdown';
-import ReadFullModal from './ReadFullModal';
+import ReadFullModal, { sanitizeFilename, questionSlug } from './ReadFullModal';
 
 export default function SynthesisPanel() {
   const t = useTokens();
@@ -24,6 +24,7 @@ export default function SynthesisPanel() {
   const showSynthesis = useCouncilStore((s) => s.showSynthesis);
   const toggleSynthesis = useCouncilStore((s) => s.toggleSynthesis);
   const backendOnline = useAppStore((s) => s.backendOnline);
+  const question = useCouncilStore((s) => s.question);
   const [copied, setCopied] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
@@ -272,6 +273,7 @@ export default function SynthesisPanel() {
           text={synthesis}
           accentColor={t.gold}
           annotations={annotations}
+          filename={sanitizeFilename('synthesis', questionSlug(question))}
           onClose={() => setShowModal(false)}
         />
       )}
