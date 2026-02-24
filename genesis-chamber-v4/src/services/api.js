@@ -106,7 +106,10 @@ export async function renameConversation(id, name) {
 
 // ── Council Streaming ──
 export async function sendMessageStream(convId, content, onEvent, options = {}) {
-  const { models, chairmanModel, thinkingMode, enableWebSearch, modelThinkingModes, signal } = options;
+  const {
+    models, chairmanModel, thinkingMode, enableWebSearch, modelThinkingModes,
+    chairman, moderator, evaluator, devilsAdvocate, signal,
+  } = options;
 
   const body = { content };
   if (models) body.models = models;
@@ -116,6 +119,10 @@ export async function sendMessageStream(convId, content, onEvent, options = {}) 
   if (modelThinkingModes && Object.keys(modelThinkingModes).length > 0) {
     body.model_thinking_modes = modelThinkingModes;
   }
+  if (chairman) body.chairman = chairman;
+  if (moderator) body.moderator = moderator;
+  if (evaluator) body.evaluator = evaluator;
+  if (devilsAdvocate) body.devils_advocate = devilsAdvocate;
 
   const res = await fetch(`${API_BASE}/api/conversations/${convId}/message/stream`, {
     method: 'POST',

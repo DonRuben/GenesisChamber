@@ -5,7 +5,7 @@ import { IC } from '../../design/icons';
 import { StepNav, Btn, MonoLabel, Tag, Toggle } from '../../design/shared';
 import { useChamberStore } from '../../stores/chamberStore';
 import { useAppStore } from '../../stores/appStore';
-import { MOCK_PRESETS, MOCK_TEAMS } from '../../data/mock';
+import { MOCK_PRESETS, MOCK_TEAMS, COUNCIL_PRESETS } from '../../data/mock';
 import * as api from '../../services/api';
 import PresetCard from './PresetCard';
 import PersonaChip from './PersonaChip';
@@ -25,6 +25,7 @@ export default function LauncherQuick() {
   const navigate = useNavigate();
   const { models } = useModels();
   const [launching, setLaunching] = useState(false);
+  const [collapsedCategories, setCollapsedCategories] = useState({});
   const backendOnline = useAppStore((s) => s.backendOnline);
   const {
     launchStep, nextStep, prevStep,
@@ -38,21 +39,36 @@ export default function LauncherQuick() {
   } = useChamberStore();
 
   const preset = MOCK_PRESETS.find((p) => p.id === selectedPreset);
+  const councilPreset = COUNCIL_PRESETS.find((p) => p.id === selectedPreset);
 
   // Auto-populate personas when preset is selected
   useEffect(() => {
     if (preset?.personas) {
       useChamberStore.setState({ selectedPersonas: new Set(preset.personas) });
+    } else if (councilPreset) {
+      const allPersonaIds = MOCK_TEAMS.flatMap((team) => team.personas.map((p) => p.id));
+      const souls = councilPreset.souls === 'all'
+        ? new Set(allPersonaIds)
+        : new Set(councilPreset.souls);
+      useChamberStore.setState({ selectedPersonas: souls });
+      // DA config from preset
+      if (councilPreset.daEnabled !== undefined) {
+        useChamberStore.setState({ daEnabled: councilPreset.daEnabled });
+      }
+      if (councilPreset.daAggression) {
+        useChamberStore.setState({ daAggression: councilPreset.daAggression });
+      }
     }
   }, [selectedPreset]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const count = selectedPersonas.size;
 
-  const summary = preset ? [
-    { label: 'Preset', value: preset.name, color: preset.color },
+  const activePreset = preset || councilPreset;
+  const summary = activePreset ? [
+    { label: 'Preset', value: activePreset.name, color: activePreset.color || t.cyan },
     { label: 'Personas', value: count, color: count >= 3 ? t.green : t.magenta },
-    { label: 'Rounds', value: preset.rounds },
-    { label: 'Est. Time', value: preset.time },
+    ...(activePreset.rounds ? [{ label: 'Rounds', value: activePreset.rounds }] : []),
+    { label: 'Est. Time', value: activePreset.time },
   ] : null;
 
   const canProceed = launchStep === 0
@@ -124,21 +140,123 @@ export default function LauncherQuick() {
       </div>
 
       <div style={{ flex: 1, overflow: 'auto' }}>
-        {/* Step 0: Preset Selection */}
+        {/* Step 0: Preset Selection — Grouped by Category */}
         {launchStep === 0 && (
           <div className="gc-enter-right" key={0}>
             <MonoLabel icon={IC.temple} color={t.cyan}>Choose a Preset</MonoLabel>
-            <div style={{
-              display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: 12, marginTop: 4,
-            }}>
-              {MOCK_PRESETS.map((p) => (
-                <PresetCard
-                  key={p.id} preset={p}
-                  selected={selectedPreset === p.id}
-                  onClick={() => setSelectedPreset(p.id)}
-                />
-              ))}
+
+            {/* Council Presets — grouped by category */}
+            {[
+              { id: 'speed', label: 'SPEED', icon: IC.bolt, color: t.cyan },
+              { id: 'balanced', label: 'BALANCED', icon: IC.scale, color: t.gold },
+              { id: 'specialist', label: 'SPECIALIST', icon: IC.target, color: '#F27123' },
+              { id: 'use-case', label: 'USE CASE', icon: IC.brain, color: '#8B5CF6' },
+              { id: 'maximum', label: 'MAXIMUM', icon: IC.flame, color: '#EF4444' },
+            ].map(({ id: catId, label, icon, color }) => {
+              const presets = COUNCIL_PRESETS.filter((p) => p.category === catId);
+              if (presets.length === 0) return null;
+              const collapsed = collapsedCategories[catId];
+              return (
+                <div key={catId} style={{ marginTop: 12 }}>
+                  <button
+                    onClick={() => setCollapsedCategories((prev) => ({ ...prev, [catId]: !prev[catId] }))}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6, width: '100%',
+                      background: 'transparent', border: 'none', cursor: 'pointer',
+                      padding: '8px 0',
+                    }}
+                  >
+                    <span style={{ fontSize: 12, color }}>{icon}</span>
+                    <span style={{
+                      fontSize: 10, fontFamily: font.mono, fontWeight: 600,
+                      color, textTransform: 'uppercase', letterSpacing: '0.12em',
+                    }}>{label}</span>
+                    <span style={{
+                      fontSize: 9, fontFamily: font.mono, color: t.textMuted, marginLeft: 4,
+                    }}>({presets.length})</span>
+                    <div style={{ flex: 1 }} />
+                    <span style={{ fontSize: 10, color: t.textMuted }}>
+                      {collapsed ? IC.chevDown : IC.chevUp}
+                    </span>
+                  </button>
+                  {!collapsed && (
+                    <div style={{
+                      display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                      gap: 8,
+                    }}>
+                      {presets.map((p) => {
+                        const isSel = selectedPreset === p.id;
+                        return (
+                          <button
+                            key={p.id}
+                            onClick={() => setSelectedPreset(p.id)}
+                            style={{
+                              padding: '14px 16px', borderRadius: 8, cursor: 'pointer',
+                              background: isSel ? `${color}0d` : t.surface,
+                              border: `1px solid ${isSel ? color : t.border}`,
+                              borderLeft: `3px solid ${isSel ? color : 'transparent'}`,
+                              textAlign: 'left', transition: 'all 0.15s',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                              <span style={{ fontSize: 16 }}>{p.icon}</span>
+                              <span style={{ fontSize: 13, fontWeight: 600, color: t.text }}>{p.name}</span>
+                              {p.recommended && (
+                                <span style={{
+                                  fontSize: 8, fontFamily: font.mono, fontWeight: 700,
+                                  color: '#F27123', background: 'rgba(242,113,35,0.1)',
+                                  padding: '2px 6px', borderRadius: 3,
+                                  textTransform: 'uppercase', letterSpacing: '0.06em',
+                                }}>{'\u2605'} RECOMMENDED</span>
+                              )}
+                            </div>
+                            <div style={{
+                              fontSize: 11, color: t.textMuted, lineHeight: 1.4, marginBottom: 8,
+                            }}>{p.description}</div>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                              <span style={{
+                                fontSize: 9, fontFamily: font.mono, color: t.textSoft,
+                                padding: '2px 6px', background: t.surfaceRaised, borderRadius: 3,
+                              }}>{p.participants} souls</span>
+                              <span style={{
+                                fontSize: 9, fontFamily: font.mono, color: t.textSoft,
+                                padding: '2px 6px', background: t.surfaceRaised, borderRadius: 3,
+                              }}>{p.time}</span>
+                              {p.daEnabled && (
+                                <span style={{
+                                  fontSize: 9, fontFamily: font.mono, color: '#EF4444',
+                                  padding: '2px 6px', background: 'rgba(239,68,68,0.08)', borderRadius: 3,
+                                }}>DA</span>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Legacy Presets */}
+            <div style={{ marginTop: 24 }}>
+              <div style={{
+                fontSize: 10, fontFamily: font.mono, fontWeight: 600,
+                color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.12em',
+                marginBottom: 8,
+              }}>SIMULATION PRESETS</div>
+              <div style={{
+                display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: 12,
+              }}>
+                {MOCK_PRESETS.map((p) => (
+                  <PresetCard
+                    key={p.id} preset={p}
+                    selected={selectedPreset === p.id}
+                    onClick={() => setSelectedPreset(p.id)}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         )}

@@ -39,6 +39,9 @@ class SimulationConfig(BaseModel):
     devils_advocate: Optional[ParticipantConfig] = None  # Advocatus Diaboli — optional adversarial critic
     da_aggression_level: Literal["analytical", "aggressive", "ruthless"] = "aggressive"
     da_attack_focus: List[str] = []  # empty = attack everything; options: brand_consistency, market_viability, creative_originality, technical_feasibility, audience_fit, budget_realism
+    da_critique_focus: List[str] = []  # Phase 9: specific critique areas
+    da_attack_strategy: str = "sanhedrin"  # sanhedrin | first_principles | customer_lens
+    da_max_elimination_pct: int = 60  # 0-100, max % of concepts DA can recommend eliminating per round
 
 
 # --- Concept Lifecycle Models ---

@@ -230,6 +230,10 @@ YOUR JOB IN THIS ROUND:
         round_num: int,
         brief: str,
         context: str = "",
+        aggression: str = "aggressive",
+        critique_focus: list = None,
+        attack_strategy: str = "sanhedrin",
+        max_elimination_pct: int = 60,
     ) -> str:
         """Build the Devil's Advocate system prompt for critique stages.
 
@@ -238,6 +242,36 @@ YOUR JOB IN THIS ROUND:
         """
         soul = self.loaded_souls.get("devils-advocate", {})
         soul_text = soul.get("full", "")
+
+        # Aggression tone mapping
+        tone_map = {
+            "analytical": "Provide measured, evidence-based critique. Identify weaknesses with specific reasoning. Be thorough but fair.",
+            "aggressive": "Challenge aggressively. Expose every weakness. Push hard on assumptions. Don't accept vague justifications.",
+            "ruthless": "Tear apart every assumption with zero mercy. If it can't survive your attack, it doesn't deserve to exist. Be devastating but always attack the idea, never the person.",
+        }
+        tone = tone_map.get(aggression, tone_map["aggressive"])
+
+        # Attack strategy mapping
+        strategy_map = {
+            "sanhedrin": "Apply the Sanhedrin Principle: if everyone agrees, something is wrong. Unanimous approval means the process failed to test rigorously. Force dissent.",
+            "first_principles": "Strip every claim to its fundamental truths. Challenge every assumption. If a requirement can't be justified from first principles, it should be eliminated.",
+            "customer_lens": "Evaluate purely from the target customer's perspective. Would they actually pay for this? Would they choose this over alternatives? Prove it with evidence.",
+        }
+        strategy = strategy_map.get(attack_strategy, strategy_map["sanhedrin"])
+
+        # Critique focus
+        focus_text = ""
+        if critique_focus:
+            focus_labels = {
+                "market_viability": "Market Viability",
+                "originality": "Originality",
+                "execution_risk": "Execution Risk",
+                "legal_compliance": "Legal/Compliance",
+                "cultural": "Cultural Sensitivity",
+                "competitive": "Competitive Analysis",
+            }
+            focus_names = [focus_labels.get(f, f) for f in critique_focus]
+            focus_text = f"\nFocus your critique on these areas: {', '.join(focus_names)}."
 
         da_mandate = f"""You are the {persona_name} — the institutionalized critic.
 
@@ -248,14 +282,17 @@ PROJECT BRIEF:
 
 {f'BRAND CONTEXT: {context}' if context else ''}
 
+TONE: {tone}
+
+REASONING FRAMEWORK: {strategy}
+
 YOUR MANDATE IN ROUND {round_num}:
 - Score concepts 1-2 points LOWER than you might otherwise. Your standard is real-world survival.
 - For EVERY concept, identify at least ONE hidden assumption the creator didn't question.
 - For EVERY concept, describe the specific failure scenario — the conditions under which it collapses.
-- Check for consensus: if all other concepts share the same flaw or the same strength, FLAG IT.
-- Apply the SANHEDRIN PRINCIPLE: if all critics agree, that agreement itself is suspicious.
 - Every criticism MUST include what would FIX the problem, not just what IS the problem.
 - End each concept critique with: "This concept earns canonization if it can answer: [specific challenge]"
+- You may recommend eliminating up to {max_elimination_pct}% of concepts in this round.{focus_text}
 
 CRITIQUE FORMAT:
 {STAGE_TASKS[2]}

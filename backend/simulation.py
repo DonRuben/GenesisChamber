@@ -466,12 +466,16 @@ class GenesisRound:
                 round_num=self.round_num,
                 brief=self.config.brief,
                 context=self.config.brand_context,
+                aggression=self.config.da_aggression_level,
+                critique_focus=self.config.da_critique_focus,
+                attack_strategy=self.config.da_attack_strategy,
+                max_elimination_pct=self.config.da_max_elimination_pct,
             )
 
             da_prompt = f"Here are {len(concepts)} anonymized concepts to critique as the Advocatus Diaboli:\n"
             da_prompt += anonymized_text
             da_prompt += f"\nApply the Devil's Advocate mandate to ALL concepts from Concept A through Concept {last_label}."
-            da_prompt += "\nRemember: check for consensus patterns. If all other critics agree, invoke the Sanhedrin principle."
+            da_prompt += "\nRemember: apply your reasoning framework rigorously."
 
             query = {
                 "model": da.model,
