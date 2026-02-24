@@ -25,7 +25,13 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
 
   // Accept both mock format {modelId, text, score} and backend format {model, response, reasoning}
   const modelId = response.model || response.modelId;
-  const text = response.response || response.text;
+  const text = response.response || response.text || response.content
+    || (typeof response.message === 'string' ? response.message : response.message?.content)
+    || '';
+  // Debug: log response shape for empty responses
+  if (!text && response) {
+    console.debug('[ResponseCard] Empty text for model:', modelId, 'Keys:', Object.keys(response));
+  }
   const displayScore = score ?? response.score ?? null;
   const reasoning = response.reasoning || response.reasoning_details;
 
@@ -42,13 +48,18 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
   // Extract citation annotations — check multiple possible locations
   const rawAnnotations = response.annotations || response.citations || response.sources
     || response.web_search_results || [];
-  const annotations = rawAnnotations.map((a) => {
+  const rawMapped = rawAnnotations.map((a) => {
     const citation = a.url_citation || a;
     return {
       url: citation.url || citation.href || citation.link || a.url || a.href,
       title: citation.title || citation.text || citation.display_name || a.title,
     };
   }).filter((a) => a.url);
+  // Deduplicate by URL, clean title=URL entries, limit to 10
+  const annotations = [...new Map(rawMapped.map(a => [a.url, a])).values()]
+    .map(a => ({ ...a, title: (a.title && a.title !== a.url) ? a.title : null }));
+  const displayAnnotations = annotations.slice(0, 10);
+  const moreSourcesCount = Math.max(0, annotations.length - 10);
 
   const handleCopy = () => {
     navigator.clipboard?.writeText(text);
@@ -158,6 +169,23 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
           )}
         </div>
 
+        {/* Inline images from response */}
+        {response.images && response.images.length > 0 && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+            {response.images.map((img, imgIdx) => (
+              <img
+                key={imgIdx}
+                src={typeof img === 'string' ? img : img.url || img.data}
+                alt={`Generated ${imgIdx + 1}`}
+                style={{
+                  maxWidth: '100%', maxHeight: 300, borderRadius: 8,
+                  objectFit: 'contain', border: `1px solid ${t.border}`,
+                }}
+              />
+            ))}
+          </div>
+        )}
+
         {/* Read full response — opens modal */}
         {isLong && (
           <button
@@ -176,7 +204,7 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
         )}
 
         {/* Citations / Sources */}
-        {annotations.length > 0 && (
+        {displayAnnotations.length > 0 && (
           <div style={{
             marginTop: 12, padding: '10px 14px', background: t.surfaceRaised,
             borderRadius: 6, borderLeft: `2px solid ${t.cyan}`,
@@ -186,7 +214,7 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
               textTransform: 'uppercase', letterSpacing: '0.12em',
             }}>SOURCES</span>
             <ul style={{ margin: '6px 0 0', paddingLeft: 16, listStyle: 'disc' }}>
-              {annotations.map((a, i) => (
+              {displayAnnotations.map((a, i) => (
                 <li key={i} style={{ fontSize: 11, marginBottom: 3 }}>
                   <a
                     href={a.url}
@@ -198,6 +226,11 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
                   </a>
                 </li>
               ))}
+              {moreSourcesCount > 0 && (
+                <li style={{ fontSize: 11, color: t.textMuted, fontStyle: 'italic' }}>
+                  and {moreSourcesCount} more sources
+                </li>
+              )}
             </ul>
           </div>
         )}

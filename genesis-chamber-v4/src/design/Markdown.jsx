@@ -8,8 +8,9 @@ import remarkGfm from 'remark-gfm';
 import { font, fontSize, spacing, radius } from './tokens';
 import { useTokens } from '../hooks/useTokens';
 
-export default function Markdown({ children }) {
-  const t = useTokens();
+export default function Markdown({ children, colors }) {
+  const _t = useTokens();
+  const t = colors ? { ..._t, ...colors } : _t;
 
   if (!children) return null;
 
@@ -108,6 +109,12 @@ export default function Markdown({ children }) {
     ),
     hr: () => (
       <hr style={{ border: 'none', borderTop: `1px solid ${t.border}`, margin: `${spacing.md}px 0` }} />
+    ),
+    img: ({ src, alt }) => (
+      <img src={src} alt={alt || ''} style={{
+        maxWidth: '100%', borderRadius: radius.md, margin: `${spacing.sm}px 0`,
+        display: 'block',
+      }} />
     ),
   };
 

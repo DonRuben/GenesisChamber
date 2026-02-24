@@ -834,8 +834,18 @@ export default function ConversationView({ onSubmit }) {
             ) : selectedTab === 'leaderboard' ? (
               <LeaderboardPanel stage2Results={stage2Results} t={t} question={question} />
             ) : selectedTab === 'all' ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {finalResponses.map((resp, i) => renderResponseCard(resp, i))}
+              <div className="gc-scrollbar" style={{
+                display: 'flex', gap: 16, overflowX: 'auto',
+                paddingBottom: 12, scrollSnapType: 'x mandatory',
+              }}>
+                {finalResponses.map((resp, i) => (
+                  <div key={(resp.model || resp.modelId) + '-all'} style={{
+                    minWidth: 400, maxWidth: 400, flexShrink: 0,
+                    scrollSnapAlign: 'start',
+                  }}>
+                    {renderResponseCard(resp, i)}
+                  </div>
+                ))}
               </div>
             ) : typeof selectedTab === 'number' && finalResponses[selectedTab] ? (
               renderResponseCard(finalResponses[selectedTab], selectedTab)

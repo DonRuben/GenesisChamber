@@ -54,6 +54,14 @@ export const MODELS = [
   { id: 'moonshotai/kimi-k2.5', name: 'Kimi K2.5', color: '#94A3B8', letter: 'Ki', tier: 'budget' },
   { id: 'minimax/minimax-m2.5', name: 'MiniMax M2.5', color: '#78716C', letter: 'Mx', tier: 'budget' },
   { id: 'nvidia/nemotron-70b', name: 'Nemotron 70B', color: '#84CC16', letter: 'Nm', tier: 'budget' },
+  // ── Image & Search Models ──
+  { id: 'openai/gpt-5-image', name: 'GPT-5 Image', color: '#4ADE80', letter: 'GI', tier: 'premium', capabilities: ['image'] },
+  { id: 'google/gemini-3-pro-image-preview', name: 'Nano Banana Pro', color: '#2DD4BF', letter: 'NB', tier: 'premium', capabilities: ['image'] },
+  { id: 'perplexity/sonar-pro-search', name: 'Sonar Pro Search', color: '#6366F1', letter: 'SS', tier: 'premium', capabilities: ['search'] },
+  { id: 'perplexity/sonar-pro', name: 'Sonar Pro', color: '#818CF8', letter: 'Sp', tier: 'balanced', capabilities: ['search'] },
+  { id: 'perplexity/sonar-reasoning', name: 'Sonar Reasoning', color: '#A78BFA', letter: 'SR', tier: 'balanced', capabilities: ['search'] },
+  { id: 'perplexity/sonar', name: 'Sonar', color: '#C4B5FD', letter: 'So', tier: 'efficient', capabilities: ['search'] },
+  { id: 'google/gemini-2.5-flash-image-preview', name: 'Nano Banana', color: '#5EEAD4', letter: 'Nb', tier: 'efficient', capabilities: ['image'] },
 ];
 
 // ── Model lookup map ──

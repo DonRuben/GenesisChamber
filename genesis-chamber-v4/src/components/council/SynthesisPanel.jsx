@@ -51,13 +51,18 @@ export default function SynthesisPanel() {
   // Citation annotations from synthesis — check multiple possible locations
   const rawAnnotations = stage3Result?.annotations || stage3Result?.citations
     || stage3Result?.sources || stage3Result?.web_search_results || [];
-  const annotations = rawAnnotations.map((a) => {
+  const rawMappedAnnotations = rawAnnotations.map((a) => {
     const citation = a.url_citation || a;
     return {
       url: citation.url || citation.href || citation.link || a.url || a.href,
       title: citation.title || citation.text || citation.display_name || a.title,
     };
   }).filter((a) => a.url);
+  // Deduplicate by URL, clean title=URL entries, limit to 10
+  const annotations = [...new Map(rawMappedAnnotations.map(a => [a.url, a])).values()]
+    .map(a => ({ ...a, title: (a.title && a.title !== a.url) ? a.title : null }));
+  const displayAnnotations = annotations.slice(0, 10);
+  const moreSourcesCount = Math.max(0, annotations.length - 10);
 
   // Response count for footer
   const responseCount = stage1Results?.length || (backendOnline === false ? MOCK_RESPONSES.length : 0);
@@ -159,7 +164,7 @@ export default function SynthesisPanel() {
         )}
 
         {/* Citations / Sources */}
-        {annotations.length > 0 && (
+        {displayAnnotations.length > 0 && (
           <div style={{
             marginTop: 12, padding: '10px 14px', background: t.surfaceRaised,
             borderRadius: 6, borderLeft: `2px solid ${t.cyan}`,
@@ -169,7 +174,7 @@ export default function SynthesisPanel() {
               textTransform: 'uppercase', letterSpacing: '0.12em',
             }}>SOURCES</span>
             <ul style={{ margin: '6px 0 0', paddingLeft: 16, listStyle: 'disc' }}>
-              {annotations.map((a, i) => (
+              {displayAnnotations.map((a, i) => (
                 <li key={i} style={{ fontSize: 11, marginBottom: 3 }}>
                   <a
                     href={a.url}
@@ -181,6 +186,11 @@ export default function SynthesisPanel() {
                   </a>
                 </li>
               ))}
+              {moreSourcesCount > 0 && (
+                <li style={{ fontSize: 11, color: t.textMuted, fontStyle: 'italic' }}>
+                  and {moreSourcesCount} more sources
+                </li>
+              )}
             </ul>
           </div>
         )}

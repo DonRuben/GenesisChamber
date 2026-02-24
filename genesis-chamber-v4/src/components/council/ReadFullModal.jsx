@@ -63,6 +63,17 @@ function openPrintWindow(title, html) {
 // Re-export helpers for full report
 export { PRINT_CSS, downloadBlob, openPrintWindow };
 
+// Dark-mode colors for modal markdown (always visible on #1A1A1E bg)
+const MODAL_COLORS = {
+  text: '#FFFFFF',
+  textSoft: '#E9E7E4',
+  textMuted: '#A1A1AA',
+  cyan: '#00D9FF',
+  gold: '#D4A853',
+  surfaceRaised: 'rgba(255,255,255,0.06)',
+  border: 'rgba(255,255,255,0.08)',
+};
+
 export default function ReadFullModal({ title, subtitle, text, accentColor, annotations, filename, onClose }) {
   const t = useTokens();
   const contentRef = useRef(null);
@@ -96,9 +107,9 @@ export default function ReadFullModal({ title, subtitle, text, accentColor, anno
 
   const btnStyle = {
     display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px',
-    background: 'transparent', border: `1px solid ${t.border}`, borderRadius: 5,
+    background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 5,
     cursor: 'pointer', fontSize: 10, fontFamily: font.mono,
-    color: t.textSoft, textTransform: 'uppercase', letterSpacing: '0.06em',
+    color: '#E9E7E4', textTransform: 'uppercase', letterSpacing: '0.06em',
     transition: 'color 0.15s',
   };
 
@@ -130,8 +141,8 @@ export default function ReadFullModal({ title, subtitle, text, accentColor, anno
           style={{
             position: 'absolute', top: 16, right: 16,
             width: 32, height: 32, borderRadius: 16,
-            background: t.surfaceRaised, border: 'none',
-            color: t.textMuted, fontSize: 16, cursor: 'pointer',
+            background: 'rgba(255,255,255,0.06)', border: 'none',
+            color: '#A1A1AA', fontSize: 16, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
@@ -140,21 +151,30 @@ export default function ReadFullModal({ title, subtitle, text, accentColor, anno
 
         {/* Header */}
         <div style={{ marginBottom: 16, paddingRight: 40, flexShrink: 0 }}>
-          {subtitle && (
-            <span style={{ fontSize: 9, fontFamily: font.mono, color: t.textMuted, display: 'block', marginBottom: 2 }}>
-              {subtitle}
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+            <div>
+              {subtitle && (
+                <span style={{
+                  fontSize: 9, fontFamily: font.mono, color: '#A1A1AA',
+                  display: 'inline-block', padding: '2px 6px', marginBottom: 4,
+                  background: 'rgba(255,255,255,0.06)', borderRadius: 3,
+                  textTransform: 'uppercase', letterSpacing: '0.08em',
+                }}>
+                  {subtitle}
+                </span>
+              )}
+              <div style={{ fontSize: 18, fontWeight: 700, color: '#FFFFFF' }}>
+                {title}
+              </div>
+            </div>
+            <span style={{ fontSize: 10, fontFamily: font.mono, color: '#A1A1AA', whiteSpace: 'nowrap' }}>
+              {wordCount.toLocaleString()} words
             </span>
-          )}
-          <div style={{ fontSize: 16, fontWeight: 600, color: t.text }}>
-            {title}
           </div>
-          <span style={{ fontSize: 10, fontFamily: font.mono, color: t.textMuted, marginTop: 4, display: 'block' }}>
-            {wordCount.toLocaleString()} words
-          </span>
         </div>
 
         {/* Divider */}
-        <div style={{ height: 1, background: t.surfaceRaised, marginBottom: 16, flexShrink: 0 }} />
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', marginBottom: 16, flexShrink: 0 }} />
 
         {/* Body — scrollable */}
         <div
@@ -162,42 +182,56 @@ export default function ReadFullModal({ title, subtitle, text, accentColor, anno
           className="gc-scrollbar"
           style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}
         >
-          <Markdown>{text}</Markdown>
+          <Markdown colors={MODAL_COLORS}>{text}</Markdown>
         </div>
 
-        {/* Sources */}
-        {annotations && annotations.length > 0 && (
-          <div style={{
-            marginTop: 12, padding: '10px 14px', background: t.surfaceRaised,
-            borderRadius: 6, borderLeft: `2px solid ${t.cyan}`, flexShrink: 0,
-          }}>
-            <span style={{
-              fontSize: 9, fontFamily: font.mono, color: t.cyan,
-              textTransform: 'uppercase', letterSpacing: '0.12em',
-            }}>SOURCES</span>
-            <ul style={{ margin: '6px 0 0', paddingLeft: 16, listStyle: 'disc' }}>
-              {annotations.map((a, i) => (
-                <li key={i} style={{ fontSize: 11, marginBottom: 3 }}>
-                  <a
-                    href={a.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: t.cyan, textDecoration: 'none' }}
-                  >
-                    {a.title || a.url}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {/* Sources — deduplicated */}
+        {(() => {
+          const deduped = annotations
+            ? [...new Map(annotations.map(a => [a.url, a])).values()]
+                .map(a => ({ ...a, title: (a.title && a.title !== a.url) ? a.title : null }))
+            : [];
+          const shown = deduped.slice(0, 15);
+          const extra = Math.max(0, deduped.length - 15);
+          if (!shown.length) return null;
+          return (
+            <div style={{
+              marginTop: 12, padding: '10px 14px', background: 'rgba(255,255,255,0.04)',
+              borderRadius: 6, borderLeft: '2px solid #00D9FF', flexShrink: 0,
+            }}>
+              <span style={{
+                fontSize: 9, fontFamily: font.mono, color: '#00D9FF',
+                textTransform: 'uppercase', letterSpacing: '0.12em',
+              }}>SOURCES</span>
+              <ul style={{ margin: '6px 0 0', paddingLeft: 16, listStyle: 'disc' }}>
+                {shown.map((a, i) => (
+                  <li key={i} style={{ fontSize: 11, marginBottom: 3 }}>
+                    <a
+                      href={a.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: '#00D9FF', textDecoration: 'none' }}
+                    >
+                      {a.title || a.url}
+                    </a>
+                  </li>
+                ))}
+                {extra > 0 && (
+                  <li style={{ fontSize: 11, color: '#A1A1AA', fontStyle: 'italic' }}>
+                    and {extra} more sources
+                  </li>
+                )}
+              </ul>
+            </div>
+          );
+        })()}
 
         {/* Divider */}
-        <div style={{ height: 1, background: t.surfaceRaised, margin: '16px 0 12px', flexShrink: 0 }} />
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '16px 0 12px', flexShrink: 0 }} />
 
         {/* Footer — export buttons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
-          <button onClick={handleCopy} style={{ ...btnStyle, color: copied ? t.green : t.textSoft }}>
+          <button onClick={handleCopy} style={{ ...btnStyle, color: copied ? '#34D399' : '#E9E7E4' }}>
             <span style={{ fontSize: 12 }}>{copied ? IC.check : IC.copy}</span>
             {copied ? 'Copied' : 'Copy'}
           </button>
