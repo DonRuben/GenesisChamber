@@ -39,6 +39,8 @@ export default function LauncherCustom() {
     daAttackStrategy, setDaAttackStrategy, daMaxElimination, setDaMaxElimination,
     moderatorSoulId, setModeratorSoulId, evaluatorSoulId, setEvaluatorSoulId,
     moderatorModel, setModeratorModel, evaluatorModel, setEvaluatorModel,
+    moderatorThinkingMode, setModeratorThinkingMode, moderatorWebSearch, setModeratorWebSearch,
+    evaluatorThinkingMode, setEvaluatorThinkingMode, evaluatorWebSearch, setEvaluatorWebSearch,
     expandedTeam, setExpandedTeam, setLaunchMode,
     handleSimSSEEvent, resetLive,
     modelAssignments, setModelAssignment,
@@ -325,6 +327,35 @@ export default function LauncherCustom() {
                         ))}
                       </select>
                     </div>
+                    {/* Moderator Thinking Mode */}
+                    <div style={{ marginTop: 10 }}>
+                      <span style={{ fontSize: 9, fontFamily: font.mono, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.12em', display: 'block', marginBottom: 6 }}>THINKING MODE</span>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        {[
+                          { id: 'off', label: 'Off', color: t.textMuted },
+                          { id: 'thinking', label: 'Thinking', color: t.cyan },
+                          { id: 'deep', label: 'Deep', color: t.gold },
+                        ].map(({ id, label, color }) => (
+                          <button
+                            key={id}
+                            onClick={() => setModeratorThinkingMode(id)}
+                            style={{
+                              flex: 1, padding: '6px 10px', borderRadius: 6, cursor: 'pointer',
+                              background: moderatorThinkingMode === id ? `${color}1a` : t.surfaceRaised,
+                              border: `1px solid ${moderatorThinkingMode === id ? color : t.border}`,
+                              fontSize: 10, fontFamily: font.mono, fontWeight: 600,
+                              color: moderatorThinkingMode === id ? color : t.textMuted,
+                              textTransform: 'uppercase', letterSpacing: '0.06em',
+                            }}
+                          >{label}</button>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Moderator Web Search */}
+                    <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 11, color: t.text }}>Web Search</span>
+                      <Toggle enabled={moderatorWebSearch} onChange={setModeratorWebSearch} color={t.cyan} />
+                    </div>
                   </div>
                   <div>
                     <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -351,6 +382,35 @@ export default function LauncherCustom() {
                           <option key={m.id} value={m.id}>{m.name}</option>
                         ))}
                       </select>
+                    </div>
+                    {/* Evaluator Thinking Mode */}
+                    <div style={{ marginTop: 10 }}>
+                      <span style={{ fontSize: 9, fontFamily: font.mono, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.12em', display: 'block', marginBottom: 6 }}>THINKING MODE</span>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        {[
+                          { id: 'off', label: 'Off', color: t.textMuted },
+                          { id: 'thinking', label: 'Thinking', color: t.cyan },
+                          { id: 'deep', label: 'Deep', color: t.gold },
+                        ].map(({ id, label, color }) => (
+                          <button
+                            key={id}
+                            onClick={() => setEvaluatorThinkingMode(id)}
+                            style={{
+                              flex: 1, padding: '6px 10px', borderRadius: 6, cursor: 'pointer',
+                              background: evaluatorThinkingMode === id ? `${color}1a` : t.surfaceRaised,
+                              border: `1px solid ${evaluatorThinkingMode === id ? color : t.border}`,
+                              fontSize: 10, fontFamily: font.mono, fontWeight: 600,
+                              color: evaluatorThinkingMode === id ? color : t.textMuted,
+                              textTransform: 'uppercase', letterSpacing: '0.06em',
+                            }}
+                          >{label}</button>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Evaluator Web Search */}
+                    <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 11, color: t.text }}>Web Search</span>
+                      <Toggle enabled={evaluatorWebSearch} onChange={setEvaluatorWebSearch} color={t.cyan} />
                     </div>
                   </div>
                 </div>

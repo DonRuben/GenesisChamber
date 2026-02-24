@@ -25,6 +25,10 @@ export const useChamberStore = create((set, get) => ({
   evaluatorSoulId: 'jony-ive',
   moderatorModel: null,
   evaluatorModel: null,
+  moderatorThinkingMode: 'off',
+  moderatorWebSearch: false,
+  evaluatorThinkingMode: 'off',
+  evaluatorWebSearch: false,
   expandedTeam: null,
   modelAssignments: {},       // { personaId: modelId }
   thinkingMode: 'off',        // 'off' | 'thinking' | 'deep'
@@ -97,6 +101,10 @@ export const useChamberStore = create((set, get) => ({
   setEvaluatorSoulId: (id) => set({ evaluatorSoulId: id, evaluatorModel: null }),
   setModeratorModel: (m) => set({ moderatorModel: m }),
   setEvaluatorModel: (m) => set({ evaluatorModel: m }),
+  setModeratorThinkingMode: (mode) => set({ moderatorThinkingMode: mode }),
+  setModeratorWebSearch: (val) => set({ moderatorWebSearch: val }),
+  setEvaluatorThinkingMode: (mode) => set({ evaluatorThinkingMode: mode }),
+  setEvaluatorWebSearch: (val) => set({ evaluatorWebSearch: val }),
   setExpandedTeam: (team) => set((s) => ({
     expandedTeam: s.expandedTeam === team ? null : team,
   })),
@@ -122,6 +130,8 @@ export const useChamberStore = create((set, get) => ({
     daWebSearch: false, daCritiqueFocus: [], daAttackStrategy: 'sanhedrin',
     daMaxElimination: 60, moderatorSoulId: 'steve-jobs', evaluatorSoulId: 'jony-ive',
     moderatorModel: null, evaluatorModel: null,
+    moderatorThinkingMode: 'off', moderatorWebSearch: false,
+    evaluatorThinkingMode: 'off', evaluatorWebSearch: false,
     expandedTeam: null,
     modelAssignments: {}, thinkingMode: 'off', thinkingOverrides: {},
     enableWebSearch: false,
