@@ -34,6 +34,10 @@ export default function LauncherCustom() {
     launchStep, nextStep, prevStep,
     selectedPersonas, togglePersona, selectAllTeam, deselectAllTeam,
     brief, setBrief, daEnabled, setDaEnabled, daAggression, setDaAggression,
+    daModel, setDaModel, daThinkingMode, setDaThinkingMode,
+    daWebSearch, setDaWebSearch, daCritiqueFocus, toggleDaCritiqueFocus,
+    daAttackStrategy, setDaAttackStrategy, daMaxElimination, setDaMaxElimination,
+    moderatorModel, setModeratorModel, evaluatorModel, setEvaluatorModel,
     expandedTeam, setExpandedTeam, setLaunchMode,
     handleSimSSEEvent, resetLive,
     modelAssignments, setModelAssignment,
@@ -274,8 +278,36 @@ export default function LauncherCustom() {
           <div className="gc-enter-right" key={1} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <MonoLabel icon={IC.crown}>Leadership</MonoLabel>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
-              <LeaderCard role="Moderator" leader={MOCK_LEADERSHIP.moderator} />
-              <LeaderCard role="Evaluator" leader={MOCK_LEADERSHIP.evaluator} />
+              <div>
+                <LeaderCard role="Moderator" leader={MOCK_LEADERSHIP.moderator} />
+                <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 9, fontFamily: font.mono, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>MODEL</span>
+                  <select
+                    value={moderatorModel || MOCK_LEADERSHIP.moderator.model}
+                    onChange={(e) => setModeratorModel(e.target.value)}
+                    style={{ ...selectStyle(t), flex: 1 }}
+                  >
+                    {models.map((m) => (
+                      <option key={m.id} value={m.id}>{m.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <LeaderCard role="Evaluator" leader={MOCK_LEADERSHIP.evaluator} />
+                <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 9, fontFamily: font.mono, color: t.textMuted, textTransform: 'uppercase', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>MODEL</span>
+                  <select
+                    value={evaluatorModel || MOCK_LEADERSHIP.evaluator.model}
+                    onChange={(e) => setEvaluatorModel(e.target.value)}
+                    style={{ ...selectStyle(t), flex: 1 }}
+                  >
+                    {models.map((m) => (
+                      <option key={m.id} value={m.id}>{m.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
 
             <div style={{
@@ -302,6 +334,53 @@ export default function LauncherCustom() {
                   animation: 'fadeSlideUp 0.2s ease-out',
                 }}>
                   <LeaderCard role="Devil's Advocate" leader={MOCK_LEADERSHIP.da} />
+
+                  {/* Model */}
+                  <div>
+                    <MonoLabel style={{ marginBottom: 8 }}>Model</MonoLabel>
+                    <select
+                      value={daModel || MOCK_LEADERSHIP.da.model}
+                      onChange={(e) => setDaModel(e.target.value)}
+                      style={{ ...selectStyle(t), width: '100%' }}
+                    >
+                      {models.map((m) => (
+                        <option key={m.id} value={m.id}>{m.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Thinking Mode */}
+                  <div>
+                    <MonoLabel style={{ marginBottom: 8 }}>Thinking Mode</MonoLabel>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      {[
+                        { id: 'off', label: 'Off', color: t.textMuted },
+                        { id: 'thinking', label: 'Thinking', color: t.cyan },
+                        { id: 'deep', label: 'Deep', color: t.gold },
+                      ].map(({ id, label, color }) => (
+                        <button
+                          key={id}
+                          onClick={() => setDaThinkingMode(id)}
+                          style={{
+                            flex: 1, padding: '6px 10px', borderRadius: 6, cursor: 'pointer',
+                            background: daThinkingMode === id ? `${color}1a` : t.surfaceRaised,
+                            border: `1px solid ${daThinkingMode === id ? color : t.border}`,
+                            fontSize: 10, fontFamily: font.mono, fontWeight: 600,
+                            color: daThinkingMode === id ? color : t.textMuted,
+                            textTransform: 'uppercase', letterSpacing: '0.06em',
+                          }}
+                        >{label}</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Web Search */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 11, color: t.text }}>Web Search</span>
+                    <Toggle enabled={daWebSearch} onChange={setDaWebSearch} color={t.cyan} />
+                  </div>
+
+                  {/* Aggression Level */}
                   <div>
                     <MonoLabel style={{ marginBottom: 8 }}>Aggression Level</MonoLabel>
                     <div style={{ display: 'flex', gap: 8 }}>
@@ -319,6 +398,75 @@ export default function LauncherCustom() {
                           }}
                         >{label}</button>
                       ))}
+                    </div>
+                  </div>
+
+                  {/* Attack Strategy */}
+                  <div>
+                    <MonoLabel style={{ marginBottom: 8 }}>Attack Strategy</MonoLabel>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      {[
+                        { id: 'sanhedrin', label: 'Sanhedrin', color: t.magenta },
+                        { id: 'first_principles', label: 'First Principles', color: t.cyan },
+                        { id: 'customer_lens', label: 'Customer Lens', color: t.gold },
+                      ].map(({ id, label, color }) => (
+                        <button
+                          key={id}
+                          onClick={() => setDaAttackStrategy(id)}
+                          style={{
+                            flex: 1, padding: '6px 10px', borderRadius: 6, cursor: 'pointer',
+                            background: daAttackStrategy === id ? `${color}1a` : t.surfaceRaised,
+                            border: `1px solid ${daAttackStrategy === id ? color : t.border}`,
+                            fontSize: 10, fontFamily: font.mono, fontWeight: 600,
+                            color: daAttackStrategy === id ? color : t.textMuted,
+                            textTransform: 'uppercase', letterSpacing: '0.06em',
+                          }}
+                        >{label}</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Critique Focus */}
+                  <div>
+                    <MonoLabel style={{ marginBottom: 8 }}>Critique Focus</MonoLabel>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {[
+                        { id: 'market_viability', label: 'Market Viability' },
+                        { id: 'originality', label: 'Originality' },
+                        { id: 'execution_risk', label: 'Execution Risk' },
+                        { id: 'legal_compliance', label: 'Legal' },
+                        { id: 'cultural', label: 'Cultural' },
+                        { id: 'competitive', label: 'Competitive' },
+                      ].map(({ id, label }) => {
+                        const active = daCritiqueFocus.includes(id);
+                        return (
+                          <button
+                            key={id}
+                            onClick={() => toggleDaCritiqueFocus(id)}
+                            style={{
+                              padding: '5px 10px', borderRadius: 4, cursor: 'pointer',
+                              background: active ? `${t.magenta}1a` : t.surfaceRaised,
+                              border: `1px solid ${active ? t.magenta : t.border}`,
+                              fontSize: 10, fontFamily: font.mono, fontWeight: 600,
+                              color: active ? t.magenta : t.textMuted,
+                            }}
+                          >{label}</button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Max Elimination */}
+                  <div>
+                    <MonoLabel style={{ marginBottom: 8 }}>Max Elimination ({daMaxElimination}%)</MonoLabel>
+                    <input
+                      type="range" min={0} max={100} step={10}
+                      value={daMaxElimination}
+                      onChange={(e) => setDaMaxElimination(Number(e.target.value))}
+                      style={{ width: '100%', accentColor: t.magenta }}
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, fontFamily: font.mono, color: t.textMuted, marginTop: 4 }}>
+                      <span>0%</span><span>100%</span>
                     </div>
                   </div>
                 </div>

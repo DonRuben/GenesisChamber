@@ -269,9 +269,7 @@ export default function LauncherQuick() {
               <Tag color={count >= 3 ? t.green : t.magenta} label={`${count} selected`} />
             </div>
             {MOCK_TEAMS.map((team) => {
-              const teamPersonas = team.personas.filter((p) =>
-                preset?.personas?.includes(p.id) || selectedPersonas.has(p.id)
-              );
+              const teamPersonas = team.personas.filter((p) => selectedPersonas.has(p.id));
               if (teamPersonas.length === 0) return null;
               const selectedInTeam = teamPersonas.filter((p) => selectedPersonas.has(p.id));
               return (

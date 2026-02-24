@@ -15,6 +15,14 @@ export const useChamberStore = create((set, get) => ({
   brief: '',
   daEnabled: false,
   daAggression: 'balanced',
+  daModel: null,
+  daThinkingMode: 'off',
+  daWebSearch: false,
+  daCritiqueFocus: [],
+  daAttackStrategy: 'sanhedrin',
+  daMaxElimination: 60,
+  moderatorModel: null,
+  evaluatorModel: null,
   expandedTeam: null,
   modelAssignments: {},       // { personaId: modelId }
   thinkingMode: 'off',        // 'off' | 'thinking' | 'deep'
@@ -71,6 +79,20 @@ export const useChamberStore = create((set, get) => ({
   setBrief: (brief) => set({ brief }),
   setDaEnabled: (enabled) => set({ daEnabled: enabled }),
   setDaAggression: (level) => set({ daAggression: level }),
+  setDaModel: (m) => set({ daModel: m }),
+  setDaThinkingMode: (m) => set({ daThinkingMode: m }),
+  setDaWebSearch: (v) => set({ daWebSearch: v }),
+  setDaCritiqueFocus: (f) => set({ daCritiqueFocus: f }),
+  toggleDaCritiqueFocus: (id) => set((s) => {
+    const next = s.daCritiqueFocus.includes(id)
+      ? s.daCritiqueFocus.filter((x) => x !== id)
+      : [...s.daCritiqueFocus, id];
+    return { daCritiqueFocus: next };
+  }),
+  setDaAttackStrategy: (s) => set({ daAttackStrategy: s }),
+  setDaMaxElimination: (v) => set({ daMaxElimination: v }),
+  setModeratorModel: (m) => set({ moderatorModel: m }),
+  setEvaluatorModel: (m) => set({ evaluatorModel: m }),
   setExpandedTeam: (team) => set((s) => ({
     expandedTeam: s.expandedTeam === team ? null : team,
   })),
@@ -92,7 +114,10 @@ export const useChamberStore = create((set, get) => ({
   resetLauncher: () => set({
     launchMode: null, launchStep: 0, selectedPreset: null,
     selectedPersonas: new Set(), brief: '', daEnabled: false,
-    daAggression: 'balanced', expandedTeam: null,
+    daAggression: 'balanced', daModel: null, daThinkingMode: 'off',
+    daWebSearch: false, daCritiqueFocus: [], daAttackStrategy: 'sanhedrin',
+    daMaxElimination: 60, moderatorModel: null, evaluatorModel: null,
+    expandedTeam: null,
     modelAssignments: {}, thinkingMode: 'off', thinkingOverrides: {},
     enableWebSearch: false,
   }),

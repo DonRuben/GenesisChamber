@@ -78,6 +78,31 @@ class CreateConversationRequest(BaseModel):
     pass
 
 
+class ChairmanConfig(BaseModel):
+    """Chairman AI configuration."""
+    model: Optional[str] = None
+    thinking_mode: str = "off"
+    web_search: bool = False
+
+class RoleConfig(BaseModel):
+    """Moderator/Evaluator role configuration."""
+    soul_id: Optional[str] = None
+    model: Optional[str] = None
+    thinking_mode: str = "off"
+    web_search: bool = False
+    also_participant: bool = False
+
+class DevilsAdvocateConfig(BaseModel):
+    """Devil's Advocate configuration."""
+    enabled: bool = False
+    model: Optional[str] = None
+    thinking_mode: str = "off"
+    web_search: bool = False
+    aggression: str = "aggressive"
+    critique_focus: Optional[List[str]] = None
+    attack_strategy: str = "sanhedrin"
+    max_elimination_pct: int = 60
+
 class SendMessageRequest(BaseModel):
     """Request to send a message in a conversation."""
     content: str
@@ -86,6 +111,10 @@ class SendMessageRequest(BaseModel):
     thinking_mode: str = "off"  # "off", "thinking", or "deep"
     model_thinking_modes: Optional[Dict[str, str]] = None  # per-model overrides
     enable_web_search: bool = False
+    chairman: Optional[ChairmanConfig] = None
+    moderator: Optional[RoleConfig] = None
+    evaluator: Optional[RoleConfig] = None
+    devils_advocate: Optional[DevilsAdvocateConfig] = None
 
 
 class RenameRequest(BaseModel):
@@ -240,9 +269,13 @@ async def send_message_stream(conversation_id: str, request: SendMessageRequest)
 
             # Stage 3: Synthesize final answer
             yield f"data: {json.dumps({'type': 'stage3_start'})}\n\n"
+            # Resolve chairman model: explicit config > legacy field > default
+            resolved_chairman_model = request.chairman_model
+            if request.chairman and request.chairman.model:
+                resolved_chairman_model = request.chairman.model
             stage3_result = await stage3_synthesize_final(
                 request.content, stage1_results, stage2_results,
-                chairman_model=request.chairman_model,
+                chairman_model=resolved_chairman_model,
                 thinking_mode=request.thinking_mode,
                 enable_web_search=request.enable_web_search,
                 model_thinking_modes=request.model_thinking_modes)
