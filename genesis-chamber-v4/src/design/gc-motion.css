@@ -60,6 +60,27 @@
   50%      { opacity: 0.4; }
 }
 
+@keyframes avatarPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--avatar-rgb), 0.4); }
+  50%      { box-shadow: 0 0 0 8px rgba(var(--avatar-rgb), 0); }
+}
+
+@keyframes typingDot {
+  0%, 20%  { opacity: 0.2; }
+  40%      { opacity: 1; }
+  60%, 100% { opacity: 0.2; }
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cardComplete {
+  0%   { opacity: 0.7; transform: scale(0.97); border-color: rgba(0, 217, 255, 0.3); box-shadow: 0 0 20px rgba(0, 217, 255, 0.1); }
+  100% { opacity: 1; transform: scale(1); border-color: rgba(233, 231, 228, 0.06); box-shadow: none; }
+}
+
 /* ── Utility Classes ── */
 
 .gc-enter {

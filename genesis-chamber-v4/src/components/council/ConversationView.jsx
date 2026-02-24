@@ -12,7 +12,8 @@ import { Tag, ModelDot } from '../../design/shared';
 import { useCouncilStore } from '../../stores/councilStore';
 import { useAppStore } from '../../stores/appStore';
 import { PRESETS, MOCK_RESPONSES } from '../../data/mock';
-import { SkeletonResponseCard, StageIndicator, ErrorCard } from '../../design/skeletons';
+import { SkeletonResponseCard, StageIndicator, StageProgressBar, ErrorCard } from '../../design/skeletons';
+import { MOCK_TEAMS } from '../../data/mock';
 import ResponseCard from './ResponseCard';
 import SynthesisPanel from './SynthesisPanel';
 import ChatInput from './ChatInput';
@@ -326,6 +327,33 @@ export default function ConversationView({ onSubmit }) {
   const currentStage = useCouncilStore((s) => s.currentStage);
   const error = useCouncilStore((s) => s.error);
   const activeModels = useCouncilStore((s) => s.activeModels);
+  const modelThinkingModes = useCouncilStore((s) => s.modelThinkingModes);
+  const thinkingMode = useCouncilStore((s) => s.thinkingMode);
+
+  // Build soul info for skeleton cards from active models
+  const skeletonSouls = activeModels.map((modelId) => {
+    const modelInfo = lookupModel(modelId);
+    // Find a team for this model
+    let group = null;
+    for (const team of MOCK_TEAMS) {
+      if (team.personas.some((p) => p.model === modelId)) {
+        group = team.id;
+        break;
+      }
+    }
+    const effectiveThinking = modelThinkingModes[modelId] || thinkingMode;
+    return {
+      id: modelId,
+      name: modelInfo.name,
+      group,
+      modelId,
+      thinkingMode: effectiveThinking,
+    };
+  });
+
+  // Track completed responses for progress bar
+  const completedCount = responses ? responses.length : 0;
+  const totalParticipants = activeModels.length;
 
   // Determine data source: live API or mock fallback
   const responses = stage1Results || (backendOnline === false ? MOCK_RESPONSES : null);
@@ -422,7 +450,7 @@ export default function ConversationView({ onSubmit }) {
   // Previous turns: everything except the last pair (current turn)
   const prevMessages = messages.length > 0 ? messages.slice(0, -1) : [];
 
-  // Render a single response card
+  // Render a single response card (with completion transition from skeleton)
   const renderResponseCard = (resp, i) => {
     const modelId = resp.model || resp.modelId;
     const isWinner = revealed && winner && (winner.model || winner.modelId) === modelId;
@@ -430,15 +458,18 @@ export default function ConversationView({ onSubmit }) {
       ? ranked.findIndex((r) => (r.model || r.modelId) === modelId) + 1
       : null;
     return (
-      <ResponseCard
-        key={modelId || i}
-        response={resp}
-        index={i}
-        revealed={revealed}
-        isWinner={isWinner}
-        rank={rank}
-        score={resp._score}
-      />
+      <div key={modelId || i} style={{
+        animation: loading ? 'cardComplete 0.5s ease-out' : undefined,
+      }}>
+        <ResponseCard
+          response={resp}
+          index={i}
+          revealed={revealed}
+          isWinner={isWinner}
+          rank={rank}
+          score={resp._score}
+        />
+      </div>
     );
   };
 
@@ -474,6 +505,15 @@ export default function ConversationView({ onSubmit }) {
         {/* Stage indicator when loading */}
         {loading && currentStage && (
           <StageIndicator currentStage={currentStage} />
+        )}
+
+        {/* Stage progress bar during generation */}
+        {loading && (currentStage === 'stage1' || !currentStage) && (
+          <StageProgressBar
+            completedCount={completedCount}
+            totalParticipants={totalParticipants}
+            stageName="Stage 1: Generation"
+          />
         )}
 
         {/* Model participation bar + reveal toggle + compare toggle */}
@@ -523,7 +563,9 @@ export default function ConversationView({ onSubmit }) {
         {/* Skeleton cards during stage1 */}
         {loading && (currentStage === 'stage1' || !currentStage) && !responses && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
-            {activeModels.map((_, i) => <SkeletonResponseCard key={i} />)}
+            {skeletonSouls.map((soul, i) => (
+              <SkeletonResponseCard key={soul.id} soul={soul} cardIndex={i} />
+            ))}
           </div>
         )}
 
