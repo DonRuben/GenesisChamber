@@ -1,7 +1,7 @@
 """3-stage LLM Council orchestration."""
 
 from typing import List, Dict, Any, Optional, Tuple
-from .openrouter import query_models_parallel, query_models_parallel_individual, query_model, get_reasoning_config
+from .openrouter import query_models_parallel, query_models_parallel_individual, query_model, get_reasoning_config, strip_base64_images
 from .config import COUNCIL_MODELS, CHAIRMAN_MODEL
 
 
@@ -101,9 +101,9 @@ async def stage2_collect_rankings(
         for label, result in zip(labels, stage1_results)
     }
 
-    # Build the ranking prompt
+    # Build the ranking prompt (strip base64 images to avoid token overflow)
     responses_text = "\n\n".join([
-        f"Response {label}:\n{result['response']}"
+        f"Response {label}:\n{strip_base64_images(result['response'])}"
         for label, result in zip(labels, stage1_results)
     ])
 
@@ -195,9 +195,9 @@ async def stage3_synthesize_final(
     Returns:
         Dict with 'model' and 'response' keys
     """
-    # Build comprehensive context for chairman
+    # Build comprehensive context for chairman (strip base64 images to avoid token overflow)
     stage1_text = "\n\n".join([
-        f"Model: {result['model']}\nResponse: {result['response']}"
+        f"Model: {result['model']}\nResponse: {strip_base64_images(result['response'])}"
         for result in stage1_results
     ])
 

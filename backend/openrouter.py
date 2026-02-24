@@ -1,8 +1,38 @@
 """OpenRouter API client for making LLM requests."""
 
+import re
 import httpx
 from typing import List, Dict, Any, Optional
 from .config import OPENROUTER_API_KEY, OPENROUTER_API_URL
+
+# Models that support image output (modalities: ["text", "image"])
+IMAGE_CAPABLE_MODELS = {
+    'openai/gpt-5-image',
+    'google/gemini-3-pro-image-preview',
+    'google/gemini-2.5-flash-image-preview',
+}
+
+
+def is_image_capable(model: str) -> bool:
+    """Check if a model supports image output."""
+    return model in IMAGE_CAPABLE_MODELS
+
+
+def strip_base64_images(text: str) -> str:
+    """Strip base64 image data from text to avoid token overflow.
+
+    Removes:
+    - Markdown images with base64 data: ![alt](data:image/...)
+    - Raw base64 data URIs: data:image/png;base64,...
+    - Inline base64 blocks
+    """
+    if not text:
+        return text
+    # Remove markdown images with base64 src
+    text = re.sub(r'!\[[^\]]*\]\(data:image/[^)]+\)', '[image removed]', text)
+    # Remove standalone data URIs
+    text = re.sub(r'data:image/[a-zA-Z]+;base64,[A-Za-z0-9+/=]{100,}', '[base64 image removed]', text)
+    return text
 
 
 def _extract_response(message: Dict[str, Any]) -> Dict[str, Any]:
@@ -89,6 +119,8 @@ async def query_model(
         "model": model,
         "messages": messages,
     }
+    if is_image_capable(model):
+        payload["modalities"] = ["text", "image"]
     if reasoning:
         payload["reasoning"] = reasoning
         payload["max_tokens"] = 16000
@@ -227,6 +259,8 @@ async def query_with_soul(
         "temperature": temperature,
         "max_tokens": effective_max_tokens,
     }
+    if is_image_capable(model):
+        payload["modalities"] = ["text", "image"]
     if reasoning:
         payload["reasoning"] = reasoning
     if plugins:

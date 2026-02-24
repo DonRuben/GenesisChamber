@@ -4,11 +4,12 @@
 // Ref: gc-v4-llm-council.jsx:88-135
 // ─────────────────────────────────────────────────────────
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { useCouncilStore } from '../../stores/councilStore';
 import { useAppStore } from '../../stores/appStore';
+import { listSessions, deleteSession } from '../../utils/sessionStorage';
 import PresetBar from './PresetBar';
 import ChatInput from './ChatInput';
 import { useTokens } from '../../hooks/useTokens';
@@ -16,10 +17,17 @@ import { useTokens } from '../../hooks/useTokens';
 export default function LandingState({ onPreset, onSubmit }) {
   const t = useTokens();
   const [q, setQ] = useState('');
+  const [showRecent, setShowRecent] = useState(false);
+  const [sessions, setSessions] = useState([]);
   const preset = useCouncilStore((s) => s.preset);
   const setPreset = useCouncilStore((s) => s.setPreset);
+  const loadSavedSession = useCouncilStore((s) => s.loadSavedSession);
   const backendOnline = useAppStore((s) => s.backendOnline);
   const inputRef = useRef(null);
+
+  useEffect(() => {
+    setSessions(listSessions());
+  }, [showRecent]);
 
   // Wrap onPreset to populate input with placeholder text
   const handlePreset = (p) => {
@@ -126,6 +134,87 @@ export default function LandingState({ onPreset, onSubmit }) {
         value={q} onChange={setQ} onSubmit={submit}
         placeholder={preset ? 'Edit your question, then press Enter...' : 'Ask your question... (Shift+Enter for new line, Enter to send)'}
       />
+
+      {/* Recent Sessions */}
+      <div style={{ width: '100%', maxWidth: 560, marginTop: 16 }}>
+        <button
+          onClick={() => setShowRecent(!showRecent)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            fontSize: 10, fontFamily: font.mono, color: t.textMuted,
+            textTransform: 'uppercase', letterSpacing: '0.08em',
+            padding: '4px 0',
+          }}
+        >
+          <span style={{ fontSize: 12 }}>{IC.history || IC.clock}</span>
+          Recent Sessions ({sessions.length})
+          <span style={{ fontSize: 10 }}>{showRecent ? IC.chevUp : IC.chevDown}</span>
+        </button>
+
+        {showRecent && sessions.length > 0 && (
+          <div style={{
+            marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4,
+            maxHeight: 240, overflowY: 'auto',
+            animation: 'fadeSlideUp 0.15s ease-out',
+          }}>
+            {sessions.map((s) => {
+              const date = new Date(s.timestamp);
+              const dateStr = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+              const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+              const truncQ = s.question.length > 50 ? s.question.slice(0, 50) + '...' : s.question;
+              return (
+                <div key={s.key} style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '8px 12px', borderRadius: 6,
+                  background: t.surface, border: `1px solid ${t.border}`,
+                  cursor: 'pointer', transition: 'background 0.1s',
+                }}
+                  onClick={() => loadSavedSession(s.key)}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = t.surfaceRaised; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = t.surface; }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: 12, color: t.text, whiteSpace: 'nowrap',
+                      overflow: 'hidden', textOverflow: 'ellipsis',
+                    }}>{truncQ}</div>
+                    <div style={{ fontSize: 9, fontFamily: font.mono, color: t.textMuted, marginTop: 2 }}>
+                      {dateStr} {timeStr} · {s.models.length} models
+                    </div>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteSession(s.key);
+                      setSessions(listSessions());
+                    }}
+                    style={{
+                      background: 'transparent', border: 'none', cursor: 'pointer',
+                      color: t.textMuted, fontSize: 12, padding: 4,
+                      flexShrink: 0, opacity: 0.5,
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.5'; }}
+                  >
+                    {IC.x}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {showRecent && sessions.length === 0 && (
+          <div style={{
+            marginTop: 8, padding: '12px 16px', borderRadius: 6,
+            background: t.surface, border: `1px solid ${t.border}`,
+            fontSize: 11, color: t.textMuted, textAlign: 'center',
+          }}>
+            No saved sessions yet
+          </div>
+        )}
+      </div>
     </div>
   );
 }

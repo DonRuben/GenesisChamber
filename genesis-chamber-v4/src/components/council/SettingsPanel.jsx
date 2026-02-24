@@ -139,7 +139,24 @@ export default function SettingsPanel() {
                           fontSize: 12, fontWeight: 500,
                           color: active ? t.text : t.textMuted,
                           flex: 1, textAlign: 'left',
-                        }}>{m.name}</span>
+                          display: 'flex', alignItems: 'center', gap: 5,
+                        }}>
+                          {m.name}
+                          {m.capabilities?.includes('image') && (
+                            <span style={{
+                              fontSize: 8, fontFamily: font.mono, fontWeight: 700,
+                              color: '#4ADE80', background: 'rgba(74,222,128,0.12)',
+                              padding: '1px 4px', borderRadius: 3, letterSpacing: '0.06em',
+                            }}>IMG</span>
+                          )}
+                          {m.capabilities?.includes('search') && (
+                            <span style={{
+                              fontSize: 8, fontFamily: font.mono, fontWeight: 700,
+                              color: '#6366F1', background: 'rgba(99,102,241,0.12)',
+                              padding: '1px 4px', borderRadius: 3, letterSpacing: '0.06em',
+                            }}>SEARCH</span>
+                          )}
+                        </span>
                         {/* Per-model thinking dropdown */}
                         {active && (
                           <select
@@ -284,7 +301,24 @@ export default function SettingsPanel() {
                     fontSize: 11, fontWeight: 500,
                     color: chairmanModel === m.id ? t.text : t.textMuted,
                     flex: 1, textAlign: 'left',
-                  }}>{m.name}</span>
+                    display: 'flex', alignItems: 'center', gap: 5,
+                  }}>
+                    {m.name}
+                    {m.capabilities?.includes('image') && (
+                      <span style={{
+                        fontSize: 8, fontFamily: font.mono, fontWeight: 700,
+                        color: '#4ADE80', background: 'rgba(74,222,128,0.12)',
+                        padding: '1px 4px', borderRadius: 3, letterSpacing: '0.06em',
+                      }}>IMG</span>
+                    )}
+                    {m.capabilities?.includes('search') && (
+                      <span style={{
+                        fontSize: 8, fontFamily: font.mono, fontWeight: 700,
+                        color: '#6366F1', background: 'rgba(99,102,241,0.12)',
+                        padding: '1px 4px', borderRadius: 3, letterSpacing: '0.06em',
+                      }}>SEARCH</span>
+                    )}
+                  </span>
                   {chairmanModel === m.id && (
                     <span style={{
                       fontSize: 8, fontFamily: font.mono, fontWeight: 600,

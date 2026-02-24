@@ -241,7 +241,7 @@ export default function LauncherCustom() {
                                   style={selectStyle(t)}
                                 >
                                   {models.map((m) => (
-                                    <option key={m.id} value={m.id}>{m.name}</option>
+                                    <option key={m.id} value={m.id}>{m.name}{m.capabilities?.includes('image') ? ' [IMG]' : ''}{m.capabilities?.includes('search') ? ' [SEARCH]' : ''}</option>
                                   ))}
                                 </select>
                                 <div style={{ display: 'flex', gap: 2 }}>
@@ -323,7 +323,7 @@ export default function LauncherCustom() {
                         style={{ ...selectStyle(t), flex: 1 }}
                       >
                         {models.map((m) => (
-                          <option key={m.id} value={m.id}>{m.name}</option>
+                          <option key={m.id} value={m.id}>{m.name}{m.capabilities?.includes('image') ? ' [IMG]' : ''}{m.capabilities?.includes('search') ? ' [SEARCH]' : ''}</option>
                         ))}
                       </select>
                     </div>
@@ -379,7 +379,7 @@ export default function LauncherCustom() {
                         style={{ ...selectStyle(t), flex: 1 }}
                       >
                         {models.map((m) => (
-                          <option key={m.id} value={m.id}>{m.name}</option>
+                          <option key={m.id} value={m.id}>{m.name}{m.capabilities?.includes('image') ? ' [IMG]' : ''}{m.capabilities?.includes('search') ? ' [SEARCH]' : ''}</option>
                         ))}
                       </select>
                     </div>
@@ -451,7 +451,7 @@ export default function LauncherCustom() {
                       style={{ ...selectStyle(t), width: '100%' }}
                     >
                       {models.map((m) => (
-                        <option key={m.id} value={m.id}>{m.name}</option>
+                        <option key={m.id} value={m.id}>{m.name}{m.capabilities?.includes('image') ? ' [IMG]' : ''}{m.capabilities?.includes('search') ? ' [SEARCH]' : ''}</option>
                       ))}
                     </select>
                   </div>

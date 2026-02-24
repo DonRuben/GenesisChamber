@@ -7,6 +7,7 @@
 import { create } from 'zustand';
 import { useAppStore } from './appStore';
 import { MOCK_TEAMS } from '../data/mock';
+import { saveSession, loadSession as loadSessionFromStorage } from '../utils/sessionStorage';
 
 export const useCouncilStore = create((set, get) => ({
   // ── UI State ──
@@ -194,6 +195,23 @@ export const useCouncilStore = create((set, get) => ({
           _abortController: null,
           messages: [...s.messages, assistantMsg],
         });
+        // Auto-save session to localStorage
+        if (s.stage1Results || s.stage3Result) {
+          try {
+            saveSession({
+              question: s.question,
+              models: s.activeModels,
+              responses: s.stage1Results,
+              rankings: s.stage2Results,
+              synthesis: s.stage3Result,
+              config: {
+                thinkingMode: s.thinkingMode,
+                enableWebSearch: s.enableWebSearch,
+                chairmanModel: s.chairmanModel,
+              },
+            });
+          } catch (e) { /* silent */ }
+        }
         break;
       }
       case 'error':
@@ -213,6 +231,29 @@ export const useCouncilStore = create((set, get) => ({
   addUserMessage: (content) => set((s) => ({
     messages: [...s.messages, { role: 'user', content }],
   })),
+
+  // ── Load saved session from localStorage ──
+  loadSavedSession: (key) => {
+    const data = loadSessionFromStorage(key);
+    if (!data) return;
+    set({
+      view: 'conversation',
+      question: data.question || '',
+      activeModels: data.models || get().activeModels,
+      stage1Results: data.responses || null,
+      stage2Results: data.rankings || null,
+      stage3Result: data.synthesis || null,
+      loading: false,
+      currentStage: null,
+      error: null,
+      revealed: true,
+      showSynthesis: true,
+      selectedResponseTab: 0,
+      thinkingMode: data.config?.thinkingMode || 'off',
+      enableWebSearch: data.config?.enableWebSearch || false,
+      chairmanModel: data.config?.chairmanModel || get().chairmanModel,
+    });
+  },
 
   // ── Full reset ──
   reset: () => set({
