@@ -12,7 +12,7 @@ import { ModelDot, Toggle } from '../../design/shared';
 import { useCouncilStore } from '../../stores/councilStore';
 import { useTokens } from '../../hooks/useTokens';
 import { useModels } from '../../hooks/useModels';
-import { MODEL_TIERS } from '../../data/mock';
+import { MODEL_TIERS, MOCK_TEAMS } from '../../data/mock';
 
 export default function SettingsPanel() {
   const t = useTokens();
@@ -33,6 +33,15 @@ export default function SettingsPanel() {
   const setChairmanModel = useCouncilStore((s) => s.setChairmanModel);
   const chairman = useCouncilStore((s) => s.chairman);
   const setChairmanConfig = useCouncilStore((s) => s.setChairmanConfig);
+  const moderator = useCouncilStore((s) => s.moderator);
+  const setModeratorConfig = useCouncilStore((s) => s.setModeratorConfig);
+  const setModerator = useCouncilStore((s) => s.setModerator);
+  const evaluator = useCouncilStore((s) => s.evaluator);
+  const setEvaluatorConfig = useCouncilStore((s) => s.setEvaluatorConfig);
+  const setEvaluator = useCouncilStore((s) => s.setEvaluator);
+  const da = useCouncilStore((s) => s.devilsAdvocate);
+  const setDAConfig = useCouncilStore((s) => s.setDAConfig);
+  const toggleDAFocus = useCouncilStore((s) => s.toggleDAFocus);
 
   // Collapsible chairman tiers
   const [expandedChairTier, setExpandedChairTier] = useState('premium');
@@ -323,6 +332,442 @@ export default function SettingsPanel() {
           }}>
             Chairman synthesizes all responses in Stage 3. Deep thinking produces more nuanced synthesis.
           </div>
+        </div>
+
+        {/* ── Devil's Advocate Full Config ── */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          marginBottom: 12,
+        }}>
+          <span style={{
+            fontSize: 9, fontFamily: font.mono, color: '#EF4444',
+            textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 600,
+          }}>DEVIL&apos;S ADVOCATE</span>
+          <Toggle enabled={da.enabled} onChange={(v) => setDAConfig({ enabled: v })} color="#EF4444" />
+        </div>
+
+        {da.enabled && (
+          <div style={{
+            padding: 16, background: t.surfaceRaised, border: `1px solid ${t.border}`,
+            borderLeft: '2px solid #EF4444', borderRadius: 6, marginBottom: 28,
+          }}>
+            <div style={{
+              fontSize: 10, color: t.textMuted, marginBottom: 14, lineHeight: 1.4,
+            }}>
+              Adversarial critique using the Sanhedrin principle: if everyone agrees, something is wrong.
+            </div>
+
+            {/* DA Model */}
+            <div style={{
+              fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+              textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6,
+            }}>LLM MODEL</div>
+            <select
+              value={da.modelId}
+              onChange={(e) => setDAConfig({ modelId: e.target.value })}
+              style={{
+                width: '100%', padding: '8px 10px', fontSize: 11, fontFamily: font.mono,
+                background: t.surface, border: `1px solid ${t.border}`,
+                borderRadius: 5, color: t.text, cursor: 'pointer', outline: 'none',
+                marginBottom: 14,
+              }}
+            >
+              {grouped.map(({ tier, models: tierModels }) => (
+                <optgroup key={tier.id} label={tier.name}>
+                  {tierModels.map((m) => (
+                    <option key={m.id} value={m.id}>{m.name}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+
+            {/* DA Thinking */}
+            <div style={{
+              fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+              textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6,
+            }}>Thinking</div>
+            <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+              {thinkingModes.map(({ id, label, color }) => (
+                <button
+                  key={id}
+                  onClick={() => setDAConfig({ thinkingMode: id })}
+                  style={{
+                    flex: 1, padding: '6px 10px', borderRadius: 5, cursor: 'pointer',
+                    background: da.thinkingMode === id ? `${color}1a` : 'transparent',
+                    border: `1px solid ${da.thinkingMode === id ? color : t.border}`,
+                    fontSize: 10, fontFamily: font.mono, fontWeight: 600,
+                    color: da.thinkingMode === id ? color : t.textMuted,
+                    textTransform: 'uppercase', letterSpacing: '0.06em',
+                  }}
+                >{label}</button>
+              ))}
+            </div>
+
+            {/* DA Web Search */}
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              marginBottom: 14,
+            }}>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 500, color: t.text }}>Web Search</div>
+                <div style={{ fontSize: 10, color: t.textMuted, marginTop: 1 }}>
+                  {da.webSearch ? 'DA can search the web' : 'No internet access'}
+                </div>
+              </div>
+              <Toggle enabled={da.webSearch} onChange={(v) => setDAConfig({ webSearch: v })} color="#EF4444" />
+            </div>
+
+            {/* DA Aggression Level */}
+            <div style={{
+              fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+              textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6,
+            }}>AGGRESSION LEVEL</div>
+            <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+              {[
+                { id: 'analytical', label: 'Analytical', color: t.cyan },
+                { id: 'aggressive', label: 'Aggressive', color: '#EF4444' },
+                { id: 'ruthless', label: 'Ruthless', color: '#DC2626' },
+              ].map(({ id, label, color }) => (
+                <button
+                  key={id}
+                  onClick={() => setDAConfig({ aggressionLevel: id })}
+                  style={{
+                    flex: 1, padding: '6px 10px', borderRadius: 5, cursor: 'pointer',
+                    background: da.aggressionLevel === id ? `${color}1a` : 'transparent',
+                    border: `1px solid ${da.aggressionLevel === id ? color : t.border}`,
+                    fontSize: 10, fontFamily: font.mono, fontWeight: 600,
+                    color: da.aggressionLevel === id ? color : t.textMuted,
+                    textTransform: 'uppercase', letterSpacing: '0.06em',
+                  }}
+                >{label}</button>
+              ))}
+            </div>
+
+            {/* DA Critique Focus */}
+            <div style={{
+              fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+              textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6,
+            }}>CRITIQUE FOCUS</div>
+            <div style={{
+              display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 14,
+            }}>
+              {[
+                { id: 'market_viability', label: 'Market Viability' },
+                { id: 'originality', label: 'Originality' },
+                { id: 'execution_risk', label: 'Execution Risk' },
+                { id: 'legal_compliance', label: 'Legal/Compliance' },
+                { id: 'cultural', label: 'Cultural' },
+                { id: 'competitive', label: 'Competitive' },
+              ].map(({ id, label }) => {
+                const active = da.critiqueFocus.includes(id);
+                return (
+                  <button
+                    key={id}
+                    onClick={() => toggleDAFocus(id)}
+                    style={{
+                      padding: '6px 8px', borderRadius: 4, cursor: 'pointer',
+                      background: active ? 'rgba(239,68,68,0.08)' : 'transparent',
+                      border: `1px solid ${active ? '#EF4444' : t.border}`,
+                      fontSize: 10, fontFamily: font.mono,
+                      color: active ? '#EF4444' : t.textMuted,
+                      textAlign: 'left',
+                    }}
+                  >
+                    <span style={{ marginRight: 4 }}>{active ? '\u2611' : '\u2610'}</span>
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* DA Attack Strategy */}
+            <div style={{
+              fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+              textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6,
+            }}>ATTACK STRATEGY</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 14 }}>
+              {[
+                { id: 'sanhedrin', label: 'Sanhedrin', desc: 'If unanimous agreement, force dissent' },
+                { id: 'first_principles', label: 'First Principles', desc: 'Break down to fundamental truths' },
+                { id: 'customer_lens', label: 'Customer Lens', desc: 'Attack from the customer perspective' },
+              ].map(({ id, label, desc }) => {
+                const active = da.attackStrategy === id;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => setDAConfig({ attackStrategy: id })}
+                    style={{
+                      padding: '8px 10px', borderRadius: 5, cursor: 'pointer',
+                      background: active ? 'rgba(239,68,68,0.08)' : 'transparent',
+                      border: `1px solid ${active ? '#EF4444' : t.border}`,
+                      textAlign: 'left',
+                    }}
+                  >
+                    <div style={{
+                      fontSize: 11, fontWeight: 600, color: active ? '#EF4444' : t.text,
+                    }}>{label}</div>
+                    <div style={{
+                      fontSize: 9, color: t.textMuted, marginTop: 2,
+                    }}>{desc}</div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* DA Max Elimination % */}
+            <div style={{
+              fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+              textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6,
+            }}>MAX ELIMINATION %</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={da.maxEliminationPct}
+                onChange={(e) => setDAConfig({ maxEliminationPct: Number(e.target.value) })}
+                style={{ flex: 1, accentColor: '#EF4444' }}
+              />
+              <span style={{
+                fontSize: 11, fontFamily: font.mono, fontWeight: 600,
+                color: '#EF4444', minWidth: 32, textAlign: 'right',
+              }}>{da.maxEliminationPct}%</span>
+            </div>
+            <div style={{
+              fontSize: 9, color: t.textMuted, marginTop: 4, lineHeight: 1.4,
+            }}>
+              Up to {da.maxEliminationPct}% of concepts can be eliminated per round
+            </div>
+          </div>
+        )}
+
+        {!da.enabled && <div style={{ marginBottom: 28 }} />}
+
+        {/* ── Leadership: Moderator ── */}
+        <div style={{
+          fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+          textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12,
+        }}>MODERATOR</div>
+
+        <div style={{
+          padding: 16, background: t.surfaceRaised, border: `1px solid ${t.border}`,
+          borderLeft: `2px solid ${t.gold}`, borderRadius: 6, marginBottom: 28,
+        }}>
+          {/* Persona selector */}
+          <div style={{
+            fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+            textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6,
+          }}>Persona</div>
+          <select
+            value={moderator.soulId}
+            onChange={(e) => setModerator(e.target.value)}
+            style={{
+              width: '100%', padding: '8px 10px', fontSize: 11, fontFamily: font.mono,
+              background: t.surface, border: `1px solid ${t.border}`,
+              borderRadius: 5, color: t.text, cursor: 'pointer', outline: 'none',
+              marginBottom: 14,
+            }}
+          >
+            {MOCK_TEAMS.map((team) => (
+              <optgroup key={team.id} label={team.name}>
+                {team.personas.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+
+          {/* Model selector */}
+          <div style={{
+            fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+            textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6,
+          }}>Model</div>
+          <select
+            value={moderator.modelId}
+            onChange={(e) => setModeratorConfig({ modelId: e.target.value })}
+            style={{
+              width: '100%', padding: '8px 10px', fontSize: 11, fontFamily: font.mono,
+              background: t.surface, border: `1px solid ${t.border}`,
+              borderRadius: 5, color: t.text, cursor: 'pointer', outline: 'none',
+              marginBottom: 14,
+            }}
+          >
+            {grouped.map(({ tier, models: tierModels }) => (
+              <optgroup key={tier.id} label={tier.name}>
+                {tierModels.map((m) => (
+                  <option key={m.id} value={m.id}>{m.name}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+
+          {/* Thinking */}
+          <div style={{
+            fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+            textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6,
+          }}>Thinking</div>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+            {thinkingModes.map(({ id, label, color }) => (
+              <button
+                key={id}
+                onClick={() => setModeratorConfig({ thinkingMode: id })}
+                style={{
+                  flex: 1, padding: '6px 10px', borderRadius: 5, cursor: 'pointer',
+                  background: moderator.thinkingMode === id ? `${color}1a` : 'transparent',
+                  border: `1px solid ${moderator.thinkingMode === id ? color : t.border}`,
+                  fontSize: 10, fontFamily: font.mono, fontWeight: 600,
+                  color: moderator.thinkingMode === id ? color : t.textMuted,
+                  textTransform: 'uppercase', letterSpacing: '0.06em',
+                }}
+              >{label}</button>
+            ))}
+          </div>
+
+          {/* Web Search + Also Participant */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            marginBottom: 10,
+          }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 500, color: t.text }}>Web Search</div>
+              <div style={{ fontSize: 10, color: t.textMuted, marginTop: 1 }}>
+                {moderator.webSearch ? 'Moderator can search the web' : 'No internet access'}
+              </div>
+            </div>
+            <Toggle enabled={moderator.webSearch} onChange={(v) => setModeratorConfig({ webSearch: v })} color={t.gold} />
+          </div>
+
+          <button
+            onClick={() => setModeratorConfig({ alsoParticipant: !moderator.alsoParticipant })}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              background: 'transparent', border: 'none', cursor: 'pointer', padding: 0,
+            }}
+          >
+            <div style={{
+              width: 14, height: 14, borderRadius: 3,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: moderator.alsoParticipant ? t.gold : 'transparent',
+              border: `1.5px solid ${moderator.alsoParticipant ? t.gold : t.border}`,
+            }}>
+              {moderator.alsoParticipant && <span style={{ fontSize: 9, color: '#fff', fontWeight: 700 }}>{'\u2713'}</span>}
+            </div>
+            <span style={{ fontSize: 11, color: t.text }}>Also participating as team member</span>
+          </button>
+        </div>
+
+        {/* ── Leadership: Evaluator ── */}
+        <div style={{
+          fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+          textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12,
+        }}>EVALUATOR</div>
+
+        <div style={{
+          padding: 16, background: t.surfaceRaised, border: `1px solid ${t.border}`,
+          borderLeft: '2px solid #8B5CF6', borderRadius: 6, marginBottom: 28,
+        }}>
+          {/* Persona selector */}
+          <div style={{
+            fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+            textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6,
+          }}>Persona</div>
+          <select
+            value={evaluator.soulId}
+            onChange={(e) => setEvaluator(e.target.value)}
+            style={{
+              width: '100%', padding: '8px 10px', fontSize: 11, fontFamily: font.mono,
+              background: t.surface, border: `1px solid ${t.border}`,
+              borderRadius: 5, color: t.text, cursor: 'pointer', outline: 'none',
+              marginBottom: 14,
+            }}
+          >
+            {MOCK_TEAMS.map((team) => (
+              <optgroup key={team.id} label={team.name}>
+                {team.personas.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+
+          {/* Model selector */}
+          <div style={{
+            fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+            textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6,
+          }}>Model</div>
+          <select
+            value={evaluator.modelId}
+            onChange={(e) => setEvaluatorConfig({ modelId: e.target.value })}
+            style={{
+              width: '100%', padding: '8px 10px', fontSize: 11, fontFamily: font.mono,
+              background: t.surface, border: `1px solid ${t.border}`,
+              borderRadius: 5, color: t.text, cursor: 'pointer', outline: 'none',
+              marginBottom: 14,
+            }}
+          >
+            {grouped.map(({ tier, models: tierModels }) => (
+              <optgroup key={tier.id} label={tier.name}>
+                {tierModels.map((m) => (
+                  <option key={m.id} value={m.id}>{m.name}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+
+          {/* Thinking */}
+          <div style={{
+            fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+            textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6,
+          }}>Thinking</div>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+            {thinkingModes.map(({ id, label, color }) => (
+              <button
+                key={id}
+                onClick={() => setEvaluatorConfig({ thinkingMode: id })}
+                style={{
+                  flex: 1, padding: '6px 10px', borderRadius: 5, cursor: 'pointer',
+                  background: evaluator.thinkingMode === id ? `${color}1a` : 'transparent',
+                  border: `1px solid ${evaluator.thinkingMode === id ? color : t.border}`,
+                  fontSize: 10, fontFamily: font.mono, fontWeight: 600,
+                  color: evaluator.thinkingMode === id ? color : t.textMuted,
+                  textTransform: 'uppercase', letterSpacing: '0.06em',
+                }}
+              >{label}</button>
+            ))}
+          </div>
+
+          {/* Web Search + Also Participant */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            marginBottom: 10,
+          }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 500, color: t.text }}>Web Search</div>
+              <div style={{ fontSize: 10, color: t.textMuted, marginTop: 1 }}>
+                {evaluator.webSearch ? 'Evaluator can search the web' : 'No internet access'}
+              </div>
+            </div>
+            <Toggle enabled={evaluator.webSearch} onChange={(v) => setEvaluatorConfig({ webSearch: v })} color="#8B5CF6" />
+          </div>
+
+          <button
+            onClick={() => setEvaluatorConfig({ alsoParticipant: !evaluator.alsoParticipant })}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              background: 'transparent', border: 'none', cursor: 'pointer', padding: 0,
+            }}
+          >
+            <div style={{
+              width: 14, height: 14, borderRadius: 3,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: evaluator.alsoParticipant ? '#8B5CF6' : 'transparent',
+              border: `1.5px solid ${evaluator.alsoParticipant ? '#8B5CF6' : t.border}`,
+            }}>
+              {evaluator.alsoParticipant && <span style={{ fontSize: 9, color: '#fff', fontWeight: 700 }}>{'\u2713'}</span>}
+            </div>
+            <span style={{ fontSize: 11, color: t.text }}>Also participating as team member</span>
+          </button>
         </div>
 
         {/* Anonymization toggle */}
