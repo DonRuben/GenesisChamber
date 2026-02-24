@@ -8,6 +8,7 @@ import { useAppStore } from '../../stores/appStore';
 import { MOCK_TEAMS, MOCK_LEADERSHIP } from '../../data/mock';
 import * as api from '../../services/api';
 import PersonaChip from './PersonaChip';
+import SoulInfoModal from './SoulInfoModal';
 import LeaderCard from './LeaderCard';
 import BriefInput from './BriefInput';
 import { useTokens } from '../../hooks/useTokens';
@@ -27,6 +28,7 @@ export default function LauncherCustom() {
   const navigate = useNavigate();
   const { models } = useModels();
   const [launching, setLaunching] = useState(false);
+  const [infoSoulId, setInfoSoulId] = useState(null);
   const backendOnline = useAppStore((s) => s.backendOnline);
   const {
     launchStep, nextStep, prevStep,
@@ -194,6 +196,9 @@ export default function LauncherCustom() {
                             key={p.id} persona={p} teamColor={team.color}
                             selected={selectedPersonas.has(p.id)}
                             onToggle={() => togglePersona(p.id)}
+                            thinkingMode={thinkingOverrides[p.id] || 'default'}
+                            globalThinkingMode={thinkingMode}
+                            onShowInfo={setInfoSoulId}
                           />
                         ))}
                       </div>
@@ -392,6 +397,7 @@ export default function LauncherCustom() {
           </Btn>
         )}
       </div>
+      {infoSoulId && <SoulInfoModal soulId={infoSoulId} onClose={() => setInfoSoulId(null)} />}
     </div>
   );
 }
