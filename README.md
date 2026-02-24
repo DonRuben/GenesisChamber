@@ -17,7 +17,7 @@ Evolved from Karpathy's [llm-council](https://github.com/karpathy/llm-council). 
 ### 🔮 Genesis Chamber Mode (Full Simulation)
 
 <p align="center">
-  <img src="genesis-pipeline.png" width="100%" alt="Genesis Chamber 6-round simulation pipeline">
+  <img src="GENESIS SIMULATION PIPELINE.png" width="100%" alt="Genesis Chamber 6-round simulation pipeline">
 </p>
 
 The flagship creative engine. 19 soul-loaded personas compete through up to 6 rounds of structured creative evolution:
@@ -37,7 +37,7 @@ Brief + Souls → Round 1: DIVERGE → Round 2: CONVERGE → Round 3: DEEPEN
 ### ⚡ Council Mode (Classic LLM Council)
 
 <p align="center">
-  <img src="council-mode.png" width="100%" alt="Classic 3-stage LLM Council mode">
+  <img src="COUNCIL MODE.png" width="100%" alt="Classic 3-stage LLM Council mode">
 </p>
 
 The original Karpathy llm-council, upgraded with 19 personas and SSE streaming. Toggle to "Council" mode in the sidebar for the classic 3-stage flow:
