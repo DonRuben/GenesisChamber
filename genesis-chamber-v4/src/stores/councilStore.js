@@ -36,6 +36,30 @@ export const useCouncilStore = create((set, get) => ({
   modelThinkingModes: {},      // per-model overrides
   enableWebSearch: false,
 
+  // ── Phase 9: Thinking Hierarchy + Leadership ──
+  defaultThinkingMode: 'off',   // 'off' | 'thinking' | 'deep' — global default
+
+  chairman: {
+    thinkingMode: 'off',
+    webSearch: false,
+  },
+
+  moderator: {
+    soulId: 'steve-jobs',
+    modelId: 'anthropic/claude-opus-4-6',
+    thinkingMode: 'off',
+    webSearch: false,
+    alsoParticipant: true,
+  },
+
+  evaluator: {
+    soulId: 'jony-ive',
+    modelId: 'anthropic/claude-sonnet-4-6',
+    thinkingMode: 'off',
+    webSearch: false,
+    alsoParticipant: true,
+  },
+
   // ── API State ──
   conversationId: null,
   loading: false,
@@ -74,6 +98,24 @@ export const useCouncilStore = create((set, get) => ({
     modelThinkingModes: { ...s.modelThinkingModes, [modelId]: mode },
   })),
   setEnableWebSearch: (enabled) => set({ enableWebSearch: enabled }),
+
+  // ── Phase 9: Thinking Hierarchy Actions ──
+  setDefaultThinkingMode: (mode) => set({ defaultThinkingMode: mode, thinkingMode: mode }),
+  setParticipantThinking: (modelId, mode) => set((s) => {
+    const next = { ...s.modelThinkingModes };
+    if (mode === 'default') delete next[modelId];
+    else next[modelId] = mode;
+    return { modelThinkingModes: next };
+  }),
+  setChairmanConfig: (updates) => set((s) => ({
+    chairman: { ...s.chairman, ...updates },
+  })),
+  setModeratorConfig: (updates) => set((s) => ({
+    moderator: { ...s.moderator, ...updates },
+  })),
+  setEvaluatorConfig: (updates) => set((s) => ({
+    evaluator: { ...s.evaluator, ...updates },
+  })),
 
   // ── API State Actions ──
   setConversationId: (id) => set({ conversationId: id }),

@@ -206,14 +206,21 @@ export default function LauncherCustom() {
                           <MonoLabel style={{ marginBottom: 8 }}>MODEL ASSIGNMENT</MonoLabel>
                           {selectedInTeam.map((p) => {
                             const assignedModel = modelAssignments[p.id] || p.model;
-                            const effectiveThinking = thinkingOverrides[p.id] || thinkingMode;
+                            const override = thinkingOverrides[p.id];
+                            const isDefault = override === undefined;
+                            const thinkBtns = [
+                              { id: 'default', label: 'Default', icon: '\u2193', isActive: isDefault, bg: t.surfaceRaised, color: t.textMuted, border: t.border },
+                              { id: 'off', label: 'Off', isActive: !isDefault && override === 'off', bg: t.surfaceRaised, color: t.textMuted, border: t.border },
+                              { id: 'thinking', label: 'Think', isActive: !isDefault && override === 'thinking', bg: 'rgba(0,217,255,0.12)', color: t.cyan, border: t.cyan },
+                              { id: 'deep', label: 'Deep', isActive: !isDefault && override === 'deep', bg: 'rgba(139,92,246,0.12)', color: '#8B5CF6', border: '#8B5CF6' },
+                            ];
                             return (
                               <div key={p.id} style={{
                                 display: 'flex', alignItems: 'center', gap: 8,
                                 padding: '6px 0',
                               }}>
                                 <span style={{
-                                  flex: 1, fontSize: 11, color: t.text,
+                                  flex: 1, fontSize: 11, color: t.text, minWidth: 0,
                                   whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                                 }}>{p.name}</span>
                                 <select
@@ -225,17 +232,25 @@ export default function LauncherCustom() {
                                     <option key={m.id} value={m.id}>{m.name}</option>
                                   ))}
                                 </select>
-                                {thinkingMode !== 'off' && (
-                                  <select
-                                    value={effectiveThinking}
-                                    onChange={(e) => setThinkingOverride(p.id, e.target.value)}
-                                    style={selectStyle(t)}
-                                  >
-                                    <option value="off">Off</option>
-                                    <option value="thinking">Thinking</option>
-                                    <option value="deep">Deep</option>
-                                  </select>
-                                )}
+                                <div style={{ display: 'flex', gap: 2 }}>
+                                  {thinkBtns.map((btn) => (
+                                    <button
+                                      key={btn.id}
+                                      onClick={() => setThinkingOverride(p.id, btn.id)}
+                                      style={{
+                                        padding: '3px 6px', borderRadius: 4, cursor: 'pointer',
+                                        background: btn.isActive ? btn.bg : 'transparent',
+                                        border: `1px solid ${btn.isActive ? btn.border : t.border}`,
+                                        fontSize: 9, fontFamily: font.mono, fontWeight: 600,
+                                        color: btn.isActive ? btn.color : t.textMuted,
+                                        whiteSpace: 'nowrap',
+                                      }}
+                                    >
+                                      {btn.id === 'default' && btn.isActive ? `${btn.label} \u2193` : btn.label}
+                                      {btn.isActive && btn.id !== 'default' && !isDefault ? ' \u2022' : ''}
+                                    </button>
+                                  ))}
+                                </div>
                               </div>
                             );
                           })}

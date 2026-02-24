@@ -77,10 +77,10 @@ export const useChamberStore = create((set, get) => ({
   setModelAssignment: (personaId, modelId) => set((s) => ({
     modelAssignments: { ...s.modelAssignments, [personaId]: modelId },
   })),
-  setThinkingMode: (mode) => set({ thinkingMode: mode, thinkingOverrides: {} }),
+  setThinkingMode: (mode) => set({ thinkingMode: mode }),
   setThinkingOverride: (personaId, mode) => set((s) => {
     const next = { ...s.thinkingOverrides };
-    if (mode === s.thinkingMode) delete next[personaId];
+    if (mode === 'default') delete next[personaId];
     else next[personaId] = mode;
     return { thinkingOverrides: next };
   }),

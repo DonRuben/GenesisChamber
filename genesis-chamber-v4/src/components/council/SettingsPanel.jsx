@@ -31,9 +31,15 @@ export default function SettingsPanel() {
   const setEnableWebSearch = useCouncilStore((s) => s.setEnableWebSearch);
   const chairmanModel = useCouncilStore((s) => s.chairmanModel);
   const setChairmanModel = useCouncilStore((s) => s.setChairmanModel);
+  const chairman = useCouncilStore((s) => s.chairman);
+  const setChairmanConfig = useCouncilStore((s) => s.setChairmanConfig);
 
   // Collapsible chairman tiers
   const [expandedChairTier, setExpandedChairTier] = useState('premium');
+
+  // Override counter: how many active models have per-model thinking overrides
+  const overrideCount = activeModels.filter((id) => modelThinkingModes[id] !== undefined).length;
+  const defaultCount = activeModels.length - overrideCount;
 
   if (!settingsOpen) return null;
 
@@ -151,11 +157,26 @@ export default function SettingsPanel() {
 
         {/* Thinking Mode (global default) */}
         <div style={{
-          fontSize: 9, fontFamily: font.mono, color: t.textMuted,
-          textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12,
-        }}>THINKING MODE</div>
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          marginBottom: 12,
+        }}>
+          <span style={{
+            fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+            textTransform: 'uppercase', letterSpacing: '0.12em',
+          }}>THINKING MODE</span>
+          <span style={{
+            fontSize: 9, fontFamily: font.mono,
+            color: overrideCount === 0 ? t.textMuted : overrideCount === activeModels.length ? t.gold : t.cyan,
+          }}>
+            {overrideCount === 0
+              ? `All ${activeModels.length} using default`
+              : overrideCount === activeModels.length
+                ? `0 of ${activeModels.length} — all overridden`
+                : `${defaultCount} of ${activeModels.length} using default`}
+          </span>
+        </div>
 
-        <div style={{ display: 'flex', gap: 6, marginBottom: 28 }}>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
           {thinkingModes.map(({ id, label, color }) => (
             <button
               key={id}
@@ -170,6 +191,11 @@ export default function SettingsPanel() {
               }}
             >{label}</button>
           ))}
+        </div>
+        <div style={{
+          fontSize: 10, color: t.textMuted, marginBottom: 28, lineHeight: 1.4,
+        }}>
+          Sets default for all models. Override per model in the list above.
         </div>
 
         {/* Internet Search */}
@@ -247,6 +273,56 @@ export default function SettingsPanel() {
               ))}
             </div>
           ))}
+        </div>
+
+        {/* Chairman AI Capabilities */}
+        <div style={{
+          fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+          textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 12,
+        }}>CHAIRMAN AI CAPABILITIES</div>
+
+        <div style={{
+          padding: 16, background: t.surfaceRaised, border: `1px solid ${t.border}`,
+          borderLeft: `2px solid ${t.gold}`, borderRadius: 6, marginBottom: 28,
+        }}>
+          <div style={{ marginBottom: 14 }}>
+            <div style={{
+              fontSize: 9, fontFamily: font.mono, color: t.textMuted,
+              textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8,
+            }}>Thinking</div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {thinkingModes.map(({ id, label, color }) => (
+                <button
+                  key={id}
+                  onClick={() => setChairmanConfig({ thinkingMode: id })}
+                  style={{
+                    flex: 1, padding: '6px 10px', borderRadius: 5, cursor: 'pointer',
+                    background: chairman.thinkingMode === id ? `${color}1a` : 'transparent',
+                    border: `1px solid ${chairman.thinkingMode === id ? color : t.border}`,
+                    fontSize: 10, fontFamily: font.mono, fontWeight: 600,
+                    color: chairman.thinkingMode === id ? color : t.textMuted,
+                    textTransform: 'uppercase', letterSpacing: '0.06em',
+                  }}
+                >{label}</button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 500, color: t.text }}>Web Search</div>
+              <div style={{ fontSize: 10, color: t.textMuted, marginTop: 1 }}>
+                {chairman.webSearch ? 'Chairman can search the web' : 'No internet access'}
+              </div>
+            </div>
+            <Toggle enabled={chairman.webSearch} onChange={(v) => setChairmanConfig({ webSearch: v })} color={t.gold} />
+          </div>
+
+          <div style={{
+            fontSize: 10, color: t.textMuted, marginTop: 12, lineHeight: 1.4,
+          }}>
+            Chairman synthesizes all responses in Stage 3. Deep thinking produces more nuanced synthesis.
+          </div>
         </div>
 
         {/* Anonymization toggle */}
