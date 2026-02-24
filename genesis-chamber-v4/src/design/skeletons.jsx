@@ -50,41 +50,46 @@ export function SkeletonResponseCard({ soul, cardIndex = 0 }) {
     : '??';
   const modelInfo = soul?.modelId ? lookupModel(soul.modelId) : null;
   const thinkingLabel = soul?.thinkingMode === 'deep'
-    ? '\uD83E\uDDE0\uD83E\uDDE0 Deep'
+    ? 'DEEP'
     : soul?.thinkingMode === 'thinking'
-      ? '\uD83E\uDDE0 Think'
+      ? 'THINK'
       : null;
+
+  // Stagger delay for shimmer bars within this card
+  const barWidths = ['100%', '88%', '95%', '72%', '40%'];
+  const barHeights = [10, 10, 10, 10, 8];
 
   return (
     <div style={{
       background: t.surface,
-      border: `1px dashed rgba(233,231,228,0.08)`,
+      border: `1px dashed rgba(233,231,228,0.12)`,
       borderLeft: `3px solid ${teamColor}`,
       borderRadius: 8, padding: '20px 24px',
       opacity: 0,
-      animation: `fadeSlideIn 0.4s ease-out forwards`,
-      animationDelay: `${cardIndex * 150}ms`,
+      animation: `fadeSlideIn 0.5s ease-out forwards`,
+      animationDelay: `${cardIndex * 120}ms`,
     }}>
       {/* Header: Avatar + Name + Status */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-        {/* Pulsing avatar */}
+        {/* Pulsing avatar with team-color glow */}
         <div style={{
-          width: 32, height: 32, borderRadius: 16, flexShrink: 0,
+          width: 34, height: 34, borderRadius: 17, flexShrink: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 11, fontFamily: font.mono, fontWeight: 700,
           color: teamColor, background: `${teamColor}1a`,
           border: `1.5px solid ${teamColor}44`,
           '--avatar-rgb': teamRgb,
           animation: 'avatarPulse 2s ease-in-out infinite',
+          animationDelay: `${cardIndex * 200}ms`,
         }}>
           {initials}
         </div>
 
-        {/* Typing dots */}
-        <div style={{ display: 'flex', gap: 2, marginLeft: -4 }}>
+        {/* Typing dots — staggered opacity */}
+        <div style={{ display: 'flex', gap: 3, marginLeft: -2 }}>
           {[0, 1, 2].map((i) => (
             <div key={i} style={{
-              width: 3, height: 3, borderRadius: 2,
+              width: 4, height: 4, borderRadius: 2,
               background: teamColor,
               animation: 'typingDot 1.4s infinite',
               animationDelay: `${i * 0.2}s`,
@@ -97,7 +102,10 @@ export function SkeletonResponseCard({ soul, cardIndex = 0 }) {
           <span style={{ fontSize: 12, fontWeight: 600, color: t.text }}>
             {soul?.name || 'Loading'}
           </span>
-          <span style={{ fontSize: 12, color: t.textMuted, marginLeft: 4 }}>
+          <span style={{
+            fontSize: 12, color: t.textMuted, marginLeft: 4,
+            animation: 'pulse 3s ease-in-out infinite',
+          }}>
             {STATUS_TEXTS[statusIdx]}
           </span>
         </div>
@@ -109,6 +117,10 @@ export function SkeletonResponseCard({ soul, cardIndex = 0 }) {
           display: 'flex', alignItems: 'center', gap: 6,
           marginBottom: 14,
         }}>
+          <div style={{
+            width: 6, height: 6, borderRadius: 3,
+            background: modelInfo.color || t.textMuted,
+          }} />
           <span style={{
             fontSize: 10, fontFamily: font.mono, color: modelInfo.color || t.textMuted,
           }}>
@@ -116,19 +128,24 @@ export function SkeletonResponseCard({ soul, cardIndex = 0 }) {
           </span>
           {thinkingLabel && (
             <span style={{
-              fontSize: 10, fontFamily: font.mono, color: soul.thinkingMode === 'deep' ? '#8B5CF6' : '#00D9FF',
+              fontSize: 9, fontFamily: font.mono, fontWeight: 700,
+              color: soul.thinkingMode === 'deep' ? '#8B5CF6' : '#00D9FF',
+              background: soul.thinkingMode === 'deep' ? 'rgba(139,92,246,0.12)' : 'rgba(0,217,255,0.12)',
+              padding: '2px 6px', borderRadius: 6,
+              textTransform: 'uppercase', letterSpacing: '0.04em',
             }}>
-              {'\u00B7'} {thinkingLabel}
+              {thinkingLabel}
             </span>
           )}
         </div>
       )}
 
-      {/* Shimmer bars */}
+      {/* Shimmer bars — staggered widths + delays */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {['100%', '85%', '92%', '60%'].map((w, i) => (
+        {barWidths.map((w, i) => (
           <div key={i} className="gc-skeleton" style={{
-            width: w, height: 12, borderRadius: 4,
+            width: w, height: barHeights[i], borderRadius: 4,
+            animationDelay: `${i * 0.15}s`,
           }} />
         ))}
       </div>
@@ -163,12 +180,14 @@ export function StageProgressBar({ completedCount, totalParticipants, stageName 
       <div style={{
         height: 4, borderRadius: 9999,
         background: 'rgba(255,255,255,0.06)',
+        overflow: 'hidden',
       }}>
         <div style={{
           height: '100%', borderRadius: 9999,
           background: 'linear-gradient(90deg, #00D9FF, #8B5CF6)',
           width: `${pct}%`,
           transition: 'width 0.5s ease-out',
+          boxShadow: pct > 0 ? '0 0 8px rgba(0,217,255,0.4)' : 'none',
         }} />
       </div>
       {remaining > 0 && (

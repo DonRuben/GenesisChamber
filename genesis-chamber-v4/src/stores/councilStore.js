@@ -13,10 +13,10 @@ export const useCouncilStore = create((set, get) => ({
   view: 'landing',
   question: '',
   preset: null,
-  revealed: false,
-  showSynthesis: false,
+  revealed: true,
+  showSynthesis: true,
   settingsOpen: false,
-  anonymized: true,
+  anonymized: false,
   followUp: '',
   selectedResponseTab: 0,       // 0-based index | 'all' | 'leaderboard' | 'synthesis'
 
@@ -109,8 +109,8 @@ export const useCouncilStore = create((set, get) => ({
     stage3Result: null,
     error: null,
     currentStage: null,
-    showSynthesis: false,
-    revealed: false,
+    showSynthesis: true,
+    revealed: true,
     selectedResponseTab: 0,
     compareMode: false,
     compareLeft: 0,
@@ -138,6 +138,9 @@ export const useCouncilStore = create((set, get) => ({
         set({ currentStage: 'stage1' });
         break;
       case 'stage1_complete':
+        if (import.meta.env.DEV && data.data) {
+          console.debug('[SSE] stage1_complete payload keys:', data.data.map?.((r) => Object.keys(r)));
+        }
         set({ stage1Results: data.data, currentStage: 'stage2' });
         break;
       case 'stage2_start':
@@ -157,6 +160,9 @@ export const useCouncilStore = create((set, get) => ({
         set({ currentStage: 'stage3' });
         break;
       case 'stage3_complete': {
+        if (import.meta.env.DEV) {
+          console.debug('[SSE] stage3_complete payload keys:', Object.keys(data.data || {}));
+        }
         const result = Array.isArray(data.data) ? data.data[0] : data.data;
         if (result?.error || result?.response?.startsWith('Error:')) {
           set({ error: result.response || 'Synthesis failed', stage3Result: null });
@@ -211,7 +217,7 @@ export const useCouncilStore = create((set, get) => ({
   // ── Full reset ──
   reset: () => set({
     view: 'landing', question: '', preset: null,
-    revealed: false, showSynthesis: false, followUp: '', selectedResponseTab: 0,
+    revealed: true, showSynthesis: true, followUp: '', selectedResponseTab: 0,
     compareMode: false, compareLeft: 0, compareRight: 1,
     conversationId: null, loading: false, currentStage: null,
     stage1Results: null, stage2Results: null, stage3Result: null,

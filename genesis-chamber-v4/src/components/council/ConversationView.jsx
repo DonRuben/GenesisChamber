@@ -459,7 +459,7 @@ export default function ConversationView({ onSubmit }) {
       : null;
     return (
       <div key={modelId || i} style={{
-        animation: loading ? 'cardComplete 0.5s ease-out' : undefined,
+        animation: 'cardComplete 0.5s ease-out',
       }}>
         <ResponseCard
           response={resp}

@@ -51,8 +51,8 @@
 }
 
 @keyframes shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0%   { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
 }
 
 @keyframes pulse {
@@ -100,14 +100,14 @@
 }
 
 .gc-skeleton {
-  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite linear;
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 100%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
 }
 
 [data-theme="light"] .gc-skeleton {
-  background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 75%);
-  background-size: 200% 100%;
+  background: linear-gradient(90deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.10) 50%, rgba(0,0,0,0.04) 100%);
+  background-size: 200px 100%;
 }
 
 .gc-pulse {
@@ -135,6 +135,35 @@
 .gc-stagger > *:nth-child(6) { animation: fadeSlideUp 210ms cubic-bezier(0, 0, 0.2, 1) both; animation-delay: 250ms; }
 .gc-stagger > *:nth-child(7) { animation: fadeSlideUp 210ms cubic-bezier(0, 0, 0.2, 1) both; animation-delay: 300ms; }
 .gc-stagger > *:nth-child(8) { animation: fadeSlideUp 210ms cubic-bezier(0, 0, 0.2, 1) both; animation-delay: 350ms; }
+
+/* ── Dark Scrollbar ── */
+.gc-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.gc-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.gc-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 3px;
+}
+.gc-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.2);
+}
+.gc-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.12) transparent;
+}
+
+[data-theme="light"] .gc-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.12);
+}
+[data-theme="light"] .gc-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.2);
+}
+[data-theme="light"] .gc-scrollbar {
+  scrollbar-color: rgba(0,0,0,0.12) transparent;
+}
 
 /* ── Reduced Motion ── */
 @media (prefers-reduced-motion: reduce) {

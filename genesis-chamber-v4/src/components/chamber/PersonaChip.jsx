@@ -23,8 +23,7 @@ export default function PersonaChip({
 
   const badgeColor = effective === 'deep' ? '#8B5CF6' : '#00D9FF';
   const badgeBg = effective === 'deep' ? 'rgba(139,92,246,0.12)' : 'rgba(0,217,255,0.12)';
-  const badgeLabel = effective === 'deep' ? 'Deep' : 'Think';
-  const badgeIcon = effective === 'deep' ? '\uD83E\uDDE0\uD83E\uDDE0' : '\uD83E\uDDE0';
+  const badgeLabel = effective === 'deep' ? 'DEEP' : 'THINK';
 
   // Dual-role badge
   const showDualRole = selected && isLeader && leaderRole;
@@ -85,16 +84,16 @@ export default function PersonaChip({
         whiteSpace: 'nowrap',
       }}>{modelInfo.name}</span>
 
-      {/* Thinking badge */}
+      {/* Thinking badge — clean pill */}
       {showBadge && (
         <span style={{
-          fontSize: 10, fontFamily: font.mono, fontWeight: 600,
+          fontSize: 9, fontFamily: font.mono, fontWeight: 700,
           color: badgeColor, background: badgeBg,
           padding: '2px 6px', borderRadius: 6,
-          whiteSpace: 'nowrap',
+          whiteSpace: 'nowrap', textTransform: 'uppercase',
+          letterSpacing: '0.04em',
         }}>
-          {isInherited ? `\u2193 ${badgeLabel}` : `${badgeIcon} ${badgeLabel}`}
-          {isOverride ? ' \u2022' : ''}
+          {isInherited ? '\u2193 ' : ''}{badgeLabel}{isOverride ? ' \u2022' : ''}
         </span>
       )}
 
