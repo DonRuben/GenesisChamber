@@ -14,6 +14,7 @@ import { useModelLookup } from '../../hooks/useModels';
 import Markdown from '../../design/Markdown';
 import ReadFullModal, { sanitizeFilename, questionSlug } from './ReadFullModal';
 import CollapsibleSources from './CollapsibleSources';
+import ImageOutput from './ImageOutput';
 import { useCouncilStore } from '../../stores/councilStore';
 
 // Detect full HTML responses (e.g. models returning styled HTML instead of markdown)
@@ -201,18 +202,19 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
 
         {/* Inline images from response */}
         {response.images && response.images.length > 0 && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
-            {response.images.map((img, imgIdx) => (
-              <img
-                key={imgIdx}
-                src={typeof img === 'string' ? img : img.url || img.data}
-                alt={`Generated ${imgIdx + 1}`}
-                style={{
-                  maxWidth: '100%', maxHeight: 300, borderRadius: 8,
-                  objectFit: 'contain', border: `1px solid ${t.border}`,
-                }}
-              />
-            ))}
+          <div style={{ marginTop: 12 }}>
+            <ImageOutput
+              images={response.images}
+              modelColor={model.color}
+              variant="thumbnail"
+              onImageClick={() => openArtifact({
+                content: text,
+                modelName: model.name,
+                modelColor: model.color,
+                sources: annotations,
+                images: response.images,
+              })}
+            />
           </div>
         )}
 

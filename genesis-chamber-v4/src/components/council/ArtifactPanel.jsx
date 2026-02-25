@@ -15,6 +15,7 @@ import CollapsibleSources from './CollapsibleSources';
 import { downloadBlob } from './ReadFullModal';
 import { exportToPDF } from '../../utils/exportPDF';
 import { CanvasIcon } from './CouncilIcons';
+import ImageOutput from './ImageOutput';
 
 function isHTMLContent(text) {
   if (!text || typeof text !== 'string') return false;
@@ -460,37 +461,15 @@ export default function ArtifactPanel({
                 )}
 
                 {/* Images */}
-                {images && images.length > 0 && images.map((img, i) => (
-                  <div key={i} style={{ margin: '24px 0' }}>
-                    <img
-                      src={typeof img === 'string' ? img : img.url}
-                      alt={img.alt || `Generated image ${i + 1}`}
-                      style={{
-                        maxWidth: '100%', borderRadius: 12,
-                        border: `1px solid ${t.border}`,
-                      }}
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
-                      }}
+                {images && images.length > 0 && (
+                  <div style={{ marginTop: 24 }}>
+                    <ImageOutput
+                      images={images}
+                      modelColor={modelColor}
+                      variant="full"
                     />
-                    <div style={{
-                      display: 'none', alignItems: 'center', justifyContent: 'center',
-                      gap: 8, padding: 24, borderRadius: 12,
-                      background: t.surfaceRaised, color: t.textMuted,
-                    }}>
-                      <CanvasIcon size={24} />
-                      <span style={{ fontSize: 11, fontFamily: font.mono }}>Image failed to load</span>
-                    </div>
-                    {img.alt && img.alt !== 'Generated image' && (
-                      <p style={{
-                        fontSize: 11, color: t.textMuted, textAlign: 'center', marginTop: 8,
-                      }}>
-                        {img.alt}
-                      </p>
-                    )}
                   </div>
-                ))}
+                )}
 
                 {/* Sources in preview */}
                 {sources && sources.length > 0 && (
