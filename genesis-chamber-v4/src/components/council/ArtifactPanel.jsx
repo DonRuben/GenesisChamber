@@ -6,13 +6,14 @@
 // Keyframes: artifactSlideIn, artifactFadeIn (gc-motion.css)
 // ─────────────────────────────────────────────────────────
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { useTokens } from '../../hooks/useTokens';
 import Markdown from '../../design/Markdown';
 import CollapsibleSources from './CollapsibleSources';
-import { downloadBlob, openPrintWindow, PRINT_CSS } from './ReadFullModal';
+import { downloadBlob } from './ReadFullModal';
+import { exportToPDF } from '../../utils/exportPDF';
 import { CanvasIcon } from './CouncilIcons';
 
 function isHTMLContent(text) {
@@ -218,6 +219,7 @@ export default function ArtifactPanel({
   const [copied, setCopied] = useState(false);
   const [showDownload, setShowDownload] = useState(false);
   const [activeSourceIdx, setActiveSourceIdx] = useState(null);
+  const contentRef = useRef(null);
 
   // ESC key handler
   const handleEsc = useCallback((e) => {
@@ -261,10 +263,15 @@ export default function ArtifactPanel({
     setShowDownload(false);
   };
 
-  const handleDownloadPDF = () => {
-    const slug = modelName || 'response';
-    openPrintWindow(slug, `<h1>${modelName}</h1><div>${content}</div>`);
+  const handleDownloadPDF = async () => {
     setShowDownload(false);
+    if (contentRef.current) {
+      await exportToPDF(contentRef.current, {
+        filename: modelName,
+        title: modelName,
+        modelName,
+      });
+    }
   };
 
   const theme = typeof document !== 'undefined'
@@ -423,7 +430,7 @@ export default function ArtifactPanel({
         {/* Body — main content + source sidebar */}
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
           {/* Content area */}
-          <div style={{
+          <div ref={contentRef} style={{
             flex: 1, overflow: 'auto', padding: '24px 32px',
           }}>
             {mode === 'preview' ? (

@@ -12,9 +12,9 @@ import { ModelDot } from '../../design/shared';
 import { useCouncilStore } from '../../stores/councilStore';
 import { useAppStore } from '../../stores/appStore';
 import { MOCK_RESPONSES, MOCK_SYNTHESIS } from '../../data/mock';
-import { SkeletonSynthesis } from '../../design/skeletons';
 import { useTokens } from '../../hooks/useTokens';
 import { useModelLookup } from '../../hooks/useModels';
+import SynthesisWaiting from './SynthesisWaiting';
 import Markdown from '../../design/Markdown';
 import ReadFullModal, { sanitizeFilename, questionSlug } from './ReadFullModal';
 
@@ -74,9 +74,21 @@ export default function SynthesisPanel() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Show skeleton during stage3 loading
+  // Show synthesis waiting animation during stage3 loading
   if (loading && currentStage === 'stage3') {
-    return <SkeletonSynthesis />;
+    const chairmanModelId = useCouncilStore.getState().chairmanModel;
+    const chairmanInfo = chairmanModelId ? lookupModel(chairmanModelId) : null;
+    return (
+      <SynthesisWaiting
+        completedModels={stage1Results?.map((r) => ({
+          model: r.model,
+          color: lookupModel(r.model).color,
+        })) || []}
+        totalModels={stage1Results?.length || 0}
+        chairmanModel={chairmanInfo?.name || 'Chairman'}
+        chairmanColor={chairmanInfo?.color || ''}
+      />
+    );
   }
 
   if (!showSynthesis) {

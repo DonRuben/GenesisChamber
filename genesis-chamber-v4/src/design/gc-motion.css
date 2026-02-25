@@ -192,6 +192,36 @@
   to { opacity: 1; }
 }
 
+/* ── SynthesisWaiting — gold shimmer sweep ── */
+@keyframes synthShim {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* ── LeaderboardSkeleton — name skeleton shimmer ── */
+@keyframes shimr {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ── LeaderboardSkeleton — score bar flowing streak ── */
+@keyframes flowbar {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
+
+/* ── SynthesisWaiting + LeaderboardSkeleton — dot pulse ── */
+@keyframes dotpulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* ── GenesisRoundCard — progress bar oscillation ── */
+@keyframes gprog {
+  0% { width: 30%; }
+  100% { width: 85%; }
+}
+
 /* ── Reduced Motion ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

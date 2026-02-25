@@ -143,6 +143,91 @@ body {
   animation: tcWaveDash linear infinite;
 }
 
+/* ── SynthesisWaiting ── */
+.synth-card {
+  position: relative;
+  overflow: hidden;
+}
+.synth-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(201,169,110,0.15), transparent);
+  animation: synthShim 3s infinite;
+  pointer-events: none;
+}
+[data-theme="light"] .synth-card::after {
+  background: linear-gradient(90deg, transparent, rgba(154,123,79,0.12), transparent);
+}
+
+/* Chairman ring — reuses tcBorderSpin + --tc-angle from ThinkingCard */
+.synth-ring {
+  position: relative;
+}
+.synth-ring::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: conic-gradient(from var(--tc-angle), transparent, #F27123 15%, transparent 30%);
+  animation: tcBorderSpin 2.5s linear infinite;
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+}
+
+/* ── LeaderboardSkeleton ── */
+.lb-rank {
+  position: relative;
+}
+.lb-rank::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from var(--tc-angle), transparent, var(--lb-mc, #C9A96E) 12%, transparent 25%);
+  animation: tcBorderSpin 2s linear infinite;
+  animation-delay: var(--lb-dl, 0s);
+  mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1.5px));
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1.5px));
+}
+
+.lb-name-skel {
+  position: relative;
+  overflow: hidden;
+}
+.lb-name-skel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(201,169,110,0.15), transparent);
+  animation: shimr 2.5s infinite;
+  animation-delay: var(--lb-dl, 0s);
+}
+[data-theme="light"] .lb-name-skel::after {
+  background: linear-gradient(90deg, transparent, rgba(154,123,79,0.12), transparent);
+}
+
+.lb-bar {
+  position: relative;
+  overflow: hidden;
+}
+.lb-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, transparent, var(--lb-mc, #C9A96E), transparent);
+  opacity: 0.3;
+  animation: flowbar 2.2s ease-in-out infinite;
+  animation-delay: var(--lb-dl, 0s);
+}
+
 /* ── Mobile TopBar Visibility ── */
 .gc-mobile-topbar {
   display: none !important;

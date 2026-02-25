@@ -9,6 +9,7 @@ import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { useTokens } from '../../hooks/useTokens';
 import Markdown from '../../design/Markdown';
+import { exportToPDF } from '../../utils/exportPDF';
 
 // Shared filename sanitizer — exported for full report use
 export function sanitizeFilename(...parts) {
@@ -98,9 +99,13 @@ export default function ReadFullModal({ title, subtitle, text, accentColor, anno
     downloadBlob(text, `${baseName}.md`, 'text/markdown');
   };
 
-  const handleDownloadPDF = () => {
-    const html = contentRef.current?.innerHTML || `<pre>${text}</pre>`;
-    openPrintWindow(title || 'Response', html);
+  const handleDownloadPDF = async () => {
+    if (contentRef.current) {
+      await exportToPDF(contentRef.current, {
+        filename: baseName,
+        title: title || 'Response',
+      });
+    }
   };
 
   const accent = accentColor || t.cyan;

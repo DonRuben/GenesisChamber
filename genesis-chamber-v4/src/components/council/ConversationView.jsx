@@ -24,6 +24,7 @@ import { useIsMobile } from '../../hooks/useMediaQuery';
 import Markdown from '../../design/Markdown';
 import ReadFullModal, { sanitizeFilename, questionSlug, downloadBlob, openPrintWindow, PRINT_CSS } from './ReadFullModal';
 import ArtifactPanel from './ArtifactPanel';
+import LeaderboardSkeleton from './LeaderboardSkeleton';
 
 function UserBubble({ text, color, muted }) {
   const t = useTokens();
@@ -696,6 +697,11 @@ export default function ConversationView({ onSubmit }) {
             totalParticipants={totalParticipants}
             stageName="Stage 1: Generation"
           />
+        )}
+
+        {/* LeaderboardSkeleton during stage2 */}
+        {loading && currentStage === 'stage2' && (
+          <LeaderboardSkeleton modelCount={activeModels.length} />
         )}
 
         {/* Model participation bar + reveal toggle + compare toggle */}
