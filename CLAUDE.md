@@ -6,7 +6,7 @@ Multi-persona AI creative council. 19 legendary personas across Marketing, Desig
 ## What
 Full-stack app: React 19 + Vite frontend, Python FastAPI backend, Neon PostgreSQL database.
 Frontend on Vercel, backend on Render. SSE streaming for real-time council responses.
-For backend-specific context (API endpoints, engines, DB schema): see `backend/CLAUDE.md`.
+For backend-specific context (API endpoints, engines, DB schema): see `backend/backend-CLAUDE.md`.
 
 ```
 genesis-chamber-v4/
@@ -110,7 +110,7 @@ Backend streams Server-Sent Events: `response_start` → `response_chunk` → `r
 Update store incrementally per-soul as events arrive — never batch/wait for all.
 
 ### Simulation pipeline
-3-stage council: Ideation (all souls generate) → Refinement (Moderator guides) → Evaluation (Evaluator scores + DA challenges). See `backend/CLAUDE.md` for engine details.
+3-stage council: Ideation (all souls generate) → Refinement (Moderator guides) → Evaluation (Evaluator scores + DA challenges). See `backend/backend-CLAUDE.md` for engine details.
 
 ### Current phase
 Phase 9 spec exists in `docs/phase9-final-spec.md` but is NOT YET INTEGRATED. Features planned: per-soul thinking modes, Chairman AI, Devil's Advocate config, premium loading states, 10 council presets. Read the spec before starting any Phase 9 work.
