@@ -273,6 +273,7 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
           text={text}
           accentColor={revealed ? model.color : t.textMuted}
           annotations={annotations}
+          images={response.images}
           filename={sanitizeFilename('response', model.name, questionSlug(question))}
           onClose={() => setShowModal(false)}
         />

@@ -69,6 +69,8 @@ async def stage1_collect_responses(user_query: str, models: List[str] = None,
                 result['reasoning'] = response['reasoning']
             if response.get('annotations'):
                 result['annotations'] = response['annotations']
+            if response.get('images'):
+                result['images'] = response['images']
             stage1_results.append(result)
 
     return stage1_results

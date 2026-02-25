@@ -26,8 +26,8 @@ def strip_base64_images(text: str) -> str:
     - Raw base64 data URIs: data:image/png;base64,...
     - Inline base64 blocks
     """
-    if not text:
-        return text
+    if not text or not isinstance(text, str):
+        return text if isinstance(text, str) else ''
     # Remove markdown images with base64 src
     text = re.sub(r'!\[[^\]]*\]\(data:image/[^)]+\)', '[image removed]', text)
     # Remove standalone data URIs
@@ -36,13 +36,47 @@ def strip_base64_images(text: str) -> str:
 
 
 def _extract_response(message: Dict[str, Any]) -> Dict[str, Any]:
-    """Extract content, reasoning, and annotations from an OpenRouter response message."""
-    return {
-        'content': message.get('content'),
+    """Extract content, reasoning, and annotations from an OpenRouter response message.
+
+    Handles both string content and array content (used by image models):
+    - String: "Here is the design..."
+    - Array: [{"type": "text", "text": "..."}, {"type": "image_url", "image_url": {"url": "data:..."}}]
+    """
+    raw_content = message.get('content')
+    images = []
+
+    if isinstance(raw_content, list):
+        # Array content from image models — separate text and image parts
+        text_parts = []
+        for part in raw_content:
+            if isinstance(part, dict):
+                if part.get('type') == 'text':
+                    text_parts.append(part.get('text', ''))
+                elif part.get('type') == 'image_url':
+                    url = part.get('image_url', {}).get('url', '')
+                    if url:
+                        images.append(url)
+            elif isinstance(part, str):
+                text_parts.append(part)
+        content = '\n\n'.join(text_parts)
+    elif isinstance(raw_content, str):
+        content = raw_content
+        # Extract embedded markdown base64 images from text
+        md_images = re.findall(r'!\[[^\]]*\]\((data:image/[^)]+)\)', content)
+        if md_images:
+            images.extend(md_images)
+    else:
+        content = ''
+
+    result = {
+        'content': content,
         'reasoning': message.get('reasoning'),
         'reasoning_details': message.get('reasoning_details'),
         'annotations': message.get('annotations'),
     }
+    if images:
+        result['images'] = images
+    return result
 
 
 def get_reasoning_config(model: str, thinking_mode: str = "thinking") -> Dict[str, Any]:

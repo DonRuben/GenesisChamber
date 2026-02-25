@@ -74,7 +74,7 @@ const MODAL_COLORS = {
   border: 'rgba(255,255,255,0.08)',
 };
 
-export default function ReadFullModal({ title, subtitle, text, accentColor, annotations, filename, onClose }) {
+export default function ReadFullModal({ title, subtitle, text, accentColor, annotations, images, filename, onClose }) {
   const t = useTokens();
   const contentRef = useRef(null);
   const [copied, setCopied] = useState(false);
@@ -184,6 +184,23 @@ export default function ReadFullModal({ title, subtitle, text, accentColor, anno
         >
           <Markdown colors={MODAL_COLORS}>{text}</Markdown>
         </div>
+
+        {/* Generated images */}
+        {images && images.length > 0 && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12, flexShrink: 0 }}>
+            {images.map((img, i) => (
+              <img
+                key={i}
+                src={typeof img === 'string' ? img : img.url || img.data}
+                alt={`Generated ${i + 1}`}
+                style={{
+                  maxWidth: '100%', maxHeight: 400, borderRadius: 8,
+                  objectFit: 'contain', border: '1px solid rgba(255,255,255,0.08)',
+                }}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Sources — deduplicated */}
         {(() => {
