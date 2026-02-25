@@ -42,6 +42,9 @@ export default function ImageOutput({
   const mc = modelColor || t.cyan;
 
   if (!images || images.length === 0) return null;
+  if (process.env.NODE_ENV !== 'production') {
+    console.debug('[ImageOutput] render:', images.length, 'image(s), variant:', variant);
+  }
 
   if (variant === 'full') {
     return (

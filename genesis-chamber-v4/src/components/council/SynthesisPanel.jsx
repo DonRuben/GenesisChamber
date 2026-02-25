@@ -16,7 +16,6 @@ import { useTokens } from '../../hooks/useTokens';
 import { useModelLookup } from '../../hooks/useModels';
 import SynthesisWaiting from './SynthesisWaiting';
 import Markdown from '../../design/Markdown';
-import ReadFullModal, { sanitizeFilename, questionSlug } from './ReadFullModal';
 
 export default function SynthesisPanel() {
   const t = useTokens();
@@ -25,8 +24,8 @@ export default function SynthesisPanel() {
   const toggleSynthesis = useCouncilStore((s) => s.toggleSynthesis);
   const backendOnline = useAppStore((s) => s.backendOnline);
   const question = useCouncilStore((s) => s.question);
+  const openArtifact = useCouncilStore((s) => s.openArtifact);
   const [copied, setCopied] = useState(false);
-  const [showModal, setShowModal] = useState(false);
 
   // Live data
   const stage3Result = useCouncilStore((s) => s.stage3Result);
@@ -158,10 +157,16 @@ export default function SynthesisPanel() {
           )}
         </div>
 
-        {/* Read full synthesis — opens modal */}
+        {/* Read full synthesis — opens artifact panel */}
         {isLong && (
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => openArtifact({
+              content: synthesis,
+              modelName: chairman?.name || 'Chairman',
+              modelColor: chairman?.color || t.gold,
+              sources: annotations,
+              images: [],
+            })}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               marginTop: 4, padding: '6px 12px',
@@ -265,7 +270,13 @@ export default function SynthesisPanel() {
             {copied ? 'Copied' : 'Copy'}
           </button>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => openArtifact({
+              content: synthesis,
+              modelName: chairman?.name || 'Chairman',
+              modelColor: chairman?.color || t.gold,
+              sources: annotations,
+              images: [],
+            })}
             style={{
               display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px',
               background: 'transparent', border: 'none', cursor: 'pointer',
@@ -273,7 +284,7 @@ export default function SynthesisPanel() {
             }}
           >
             <span style={{ fontSize: 12 }}>{IC.exportArrow}</span>
-            Export
+            Read Full
           </button>
           <span style={{ fontSize: 10, fontFamily: font.mono, color: t.textMuted }}>
             {wordCount.toLocaleString()} words
@@ -287,18 +298,6 @@ export default function SynthesisPanel() {
         </div>
       </div>
 
-      {/* Modal */}
-      {showModal && (
-        <ReadFullModal
-          title="Council Synthesis"
-          subtitle={chairman?.name || 'Chairman'}
-          text={synthesis}
-          accentColor={t.gold}
-          annotations={annotations}
-          filename={sanitizeFilename('synthesis', questionSlug(question))}
-          onClose={() => setShowModal(false)}
-        />
-      )}
     </>
   );
 }

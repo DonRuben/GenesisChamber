@@ -23,10 +23,18 @@ const QUOTES = [
 
 function getWaveSpeeds(modelId, thinkingMode) {
   if (modelId?.includes('grok') || thinkingMode === 'binary')
-    return ['1.3s', '1.7s', '2.1s'];
+    return ['2.5s', '3.2s', '2.8s'];
   if (modelId?.includes('claude') && (thinkingMode === 'high' || thinkingMode === 'max'))
-    return ['2.5s', '3.2s', '3.8s'];
-  return ['2s', '2.6s', '3.2s'];
+    return ['4.5s', '6s', '5s'];
+  return ['4s', '5.5s', '3.5s'];
+}
+
+function getWavePulseSpeeds(modelId, thinkingMode) {
+  if (modelId?.includes('grok') || thinkingMode === 'binary')
+    return ['4s', '5s', '4.5s'];
+  if (modelId?.includes('claude') && (thinkingMode === 'high' || thinkingMode === 'max'))
+    return ['7s', '9s', '8s'];
+  return ['6s', '8s', '7s'];
 }
 
 function getProviderFromId(modelId) {
@@ -70,6 +78,7 @@ export default function ThinkingCard({
 
   const mc = modelColor || t.cyan;
   const speeds = getWaveSpeeds(modelId, thinkingMode);
+  const pulseSpeeds = getWavePulseSpeeds(modelId, thinkingMode);
   const provider = getProviderFromId(modelId);
   const modeLabel = thinkingMode === 'binary' ? 'Binary' :
     thinkingMode === 'max' ? 'Max' :
@@ -137,11 +146,14 @@ export default function ThinkingCard({
           </div>
         </div>
 
-        {/* Neural waves */}
+        {/* Neural waves — dash + opacity pulse */}
         <svg className="think-wave" width="100%" height={32} style={{ display: 'block', marginBottom: 12 }}>
-          <line x1="0" y1="16" x2="400" y2="16" stroke={mc} strokeWidth="1.5" opacity=".5" style={{ animationDuration: speeds[0] }} />
-          <line x1="0" y1="10" x2="400" y2="10" stroke={mc} strokeWidth="1" opacity=".25" style={{ animationDuration: speeds[1] }} />
-          <line x1="0" y1="22" x2="400" y2="22" stroke={mc} strokeWidth="1" opacity=".15" style={{ animationDuration: speeds[2] }} />
+          <line x1="0" y1="16" x2="400" y2="16" stroke={mc} strokeWidth="1.5" opacity=".5"
+            style={{ animationDuration: speeds[0], animation: `tcWaveDash ${speeds[0]} ease-in-out infinite, tcWavePulse ${pulseSpeeds[0]} ease-in-out infinite` }} />
+          <line x1="0" y1="10" x2="400" y2="10" stroke={mc} strokeWidth="1" opacity=".25"
+            style={{ animationDuration: speeds[1], animation: `tcWaveDash ${speeds[1]} ease-in-out infinite, tcWavePulse ${pulseSpeeds[1]} ease-in-out infinite` }} />
+          <line x1="0" y1="22" x2="400" y2="22" stroke={mc} strokeWidth="1" opacity=".15"
+            style={{ animationDuration: speeds[2], animation: `tcWaveDash ${speeds[2]} ease-in-out infinite, tcWavePulse ${pulseSpeeds[2]} ease-in-out infinite` }} />
         </svg>
 
         {/* Quote */}

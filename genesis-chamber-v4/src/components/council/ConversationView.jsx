@@ -22,7 +22,6 @@ import { useModels } from '../../hooks/useModels';
 import { useModelLookup } from '../../hooks/useModels';
 import { useIsMobile } from '../../hooks/useMediaQuery';
 import Markdown from '../../design/Markdown';
-import ReadFullModal, { sanitizeFilename, questionSlug, downloadBlob, openPrintWindow, PRINT_CSS } from './ReadFullModal';
 import ArtifactPanel from './ArtifactPanel';
 import LeaderboardSkeleton from './LeaderboardSkeleton';
 import ThinkingCard from './ThinkingCard';
@@ -112,9 +111,9 @@ function ResponseTabBar({ tabs, selectedTab, onSelect, t }) {
 // ─── Leaderboard Panel ──────────────────────────────────
 function LeaderboardPanel({ stage2Results, t, question }) {
   const lookupModel = useModelLookup();
+  const openArtifact = useCouncilStore((s) => s.openArtifact);
   const [showRawEvals, setShowRawEvals] = useState(false);
   const [rawEvalTab, setRawEvalTab] = useState(0);
-  const [evalModal, setEvalModal] = useState(null);
 
   const aggregateRankings = stage2Results?.aggregateRankings;
   const rankings = stage2Results?.rankings;
@@ -173,6 +172,7 @@ function LeaderboardPanel({ stage2Results, t, question }) {
           return (
             <div key={modelId || i} style={{
               display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0',
+              animation: `fadeSlideIn 300ms ease-out ${i * 80}ms both`,
             }}>
               {/* Rank medal */}
               <span style={{
@@ -307,7 +307,7 @@ function LeaderboardPanel({ stage2Results, t, question }) {
                     </div>
                     {evalIsLong && (
                       <button
-                        onClick={() => setEvalModal({ title: `Evaluation — ${evalModel.name}`, subtitle: rankings[rawEvalTab].model, text: rankingText, color: evalModel.color, modelName: evalModel.name })}
+                        onClick={() => openArtifact({ content: rankingText, modelName: evalModel.name, modelColor: evalModel.color, sources: [], images: [] })}
                         style={{
                           display: 'flex', alignItems: 'center', gap: 6,
                           marginTop: 4, padding: '6px 12px',
@@ -328,18 +328,6 @@ function LeaderboardPanel({ stage2Results, t, question }) {
         </div>
       )}
 
-      {/* Evaluation modal */}
-      {evalModal && (
-        <ReadFullModal
-          title={evalModal.title}
-          subtitle={evalModal.subtitle}
-          text={evalModal.text}
-          accentColor={evalModal.color}
-          annotations={[]}
-          filename={sanitizeFilename('evaluation', evalModal.modelName, questionSlug(question))}
-          onClose={() => setEvalModal(null)}
-        />
-      )}
     </div>
   );
 }
@@ -548,8 +536,6 @@ export default function ConversationView({ onSubmit }) {
   };
 
   // ── Full Session Export ──
-  const [showReport, setShowReport] = useState(false);
-
   const buildFullReport = () => {
     const date = new Date().toISOString().split('T')[0];
     const modelNames = activeModels.map((id) => lookupModel(id).name);
@@ -677,8 +663,6 @@ export default function ConversationView({ onSubmit }) {
     return lines.join('\n');
   };
 
-  const reportFilename = sanitizeFilename('council-report', questionSlug(question), new Date().toISOString().split('T')[0]);
-
   return (
     <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
       <div style={{ maxWidth: 760, margin: '0 auto', width: '100%', padding: '32px 24px' }}>
@@ -762,7 +746,13 @@ export default function ConversationView({ onSubmit }) {
             </button>
             {/* Export full report */}
             <button
-              onClick={() => setShowReport(true)}
+              onClick={() => openArtifact({
+                content: buildFullReport(),
+                modelName: 'Council Report',
+                modelColor: t.gold,
+                sources: [],
+                images: [],
+              })}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px',
                 background: 'transparent', border: `1px solid ${t.border}`, borderRadius: 5,
@@ -906,19 +896,6 @@ export default function ConversationView({ onSubmit }) {
           />
         </div>
       </div>
-
-      {/* Full report modal */}
-      {showReport && (
-        <ReadFullModal
-          title="LLM Council Report"
-          subtitle={`${activeModels.length} models \u00B7 ${new Date().toISOString().split('T')[0]}`}
-          text={buildFullReport()}
-          accentColor={t.gold}
-          annotations={[]}
-          filename={reportFilename}
-          onClose={() => setShowReport(false)}
-        />
-      )}
 
       {/* Artifact Panel */}
       <ArtifactPanel

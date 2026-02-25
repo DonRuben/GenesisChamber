@@ -175,9 +175,15 @@
   to { --tc-angle: 360deg; }
 }
 
-/* ── ThinkingCard — neural wave dash ── */
+/* ── ThinkingCard — neural wave dash (ease-in-out for organic feel) ── */
 @keyframes tcWaveDash {
   to { stroke-dashoffset: -40; }
+}
+
+/* ── ThinkingCard — neural wave opacity pulse ── */
+@keyframes tcWavePulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.3; }
 }
 
 /* ── ArtifactPanel — slide in from right ── */

@@ -99,6 +99,14 @@ def _extract_response(message: Dict[str, Any]) -> Dict[str, Any]:
             seen.add(img)
             unique_images.append(img)
 
+    # Strip MiniMax tool_call XML artifacts and invoke blocks from content
+    if content:
+        content = re.sub(r'<minimax:tool_call>.*?</minimax:tool_call>', '', content, flags=re.DOTALL)
+        content = re.sub(r'<invoke\s+name="[^"]*">.*?</invoke>', '', content, flags=re.DOTALL)
+        content = content.strip()
+        if not content:
+            content = '*[Response contained only tool call markup — no text output]*'
+
     result = {
         'content': content,
         'reasoning': message.get('reasoning'),
@@ -107,6 +115,7 @@ def _extract_response(message: Dict[str, Any]) -> Dict[str, Any]:
     }
     if unique_images:
         result['images'] = unique_images
+        print(f"[openrouter] Images extracted: {len(unique_images)} image(s)")
     return result
 
 
@@ -220,7 +229,11 @@ async def query_model(
 
             data = response.json()
             message = data['choices'][0]['message']
-            return _extract_response(message)
+            result = _extract_response(message)
+            if is_image_capable(model):
+                img_count = len(result.get('images', []))
+                print(f"[openrouter] Image-capable model {model}: {img_count} image(s) in response")
+            return result
 
     except httpx.TimeoutException as e:
         print(f"[openrouter] TIMEOUT querying {model} after {timeout}s: {e}")

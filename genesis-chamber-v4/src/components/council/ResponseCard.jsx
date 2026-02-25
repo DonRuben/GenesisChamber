@@ -12,7 +12,6 @@ import { Tag, ModelDot } from '../../design/shared';
 import { useTokens } from '../../hooks/useTokens';
 import { useModelLookup } from '../../hooks/useModels';
 import Markdown from '../../design/Markdown';
-import ReadFullModal, { sanitizeFilename, questionSlug } from './ReadFullModal';
 import CollapsibleSources from './CollapsibleSources';
 import ImageOutput from './ImageOutput';
 import { useCouncilStore } from '../../stores/councilStore';
@@ -31,7 +30,6 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
   const openArtifact = useCouncilStore((s) => s.openArtifact);
   const [showThinking, setShowThinking] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [showModal, setShowModal] = useState(false);
   const [hovered, setHovered] = useState(false);
 
   // Accept both mock format {modelId, text, score} and backend format {model, response, reasoning}
@@ -76,8 +74,13 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const modalTitle = revealed ? model.name : `Model ${String.fromCharCode(65 + index)}`;
-  const modalSubtitle = revealed && modelId ? modelId.split('/')[0] : null;
+  const handleOpenArtifact = () => openArtifact({
+    content: text,
+    modelName: model.name,
+    modelColor: model.color,
+    sources: annotations,
+    images: response.images || [],
+  });
 
   return (
     <>
@@ -218,10 +221,10 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
           </div>
         )}
 
-        {/* Read full response — opens modal */}
+        {/* Read full response — opens artifact panel */}
         {isLong && (
           <button
-            onClick={() => setShowModal(true)}
+            onClick={handleOpenArtifact}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               marginTop: 4, padding: '6px 12px',
@@ -254,27 +257,8 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
             <span style={{ fontSize: 12 }}>{copied ? IC.check : IC.copy}</span>
             {copied ? 'Copied' : 'Copy'}
           </button>
-          {!isLong && (
-            <button
-              onClick={() => setShowModal(true)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px',
-                background: 'transparent', border: 'none', cursor: 'pointer',
-                fontSize: 11, color: t.textMuted, fontFamily: font.mono,
-              }}
-            >
-              <span style={{ fontSize: 12 }}>{IC.exportArrow}</span>
-              Export
-            </button>
-          )}
           <button
-            onClick={() => openArtifact({
-              content: text,
-              modelName: model.name,
-              modelColor: model.color,
-              sources: annotations,
-              images: response.images || [],
-            })}
+            onClick={handleOpenArtifact}
             style={{
               display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px',
               background: 'transparent', border: 'none', cursor: 'pointer',
@@ -282,24 +266,11 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
             }}
           >
             <span style={{ fontSize: 12 }}>{IC.exportArrow}</span>
-            Artifact
+            Read Full
           </button>
         </div>
       </div>
 
-      {/* Modal */}
-      {showModal && (
-        <ReadFullModal
-          title={modalTitle}
-          subtitle={modalSubtitle}
-          text={text}
-          accentColor={revealed ? model.color : t.textMuted}
-          annotations={annotations}
-          images={response.images}
-          filename={sanitizeFilename('response', model.name, questionSlug(question))}
-          onClose={() => setShowModal(false)}
-        />
-      )}
     </>
   );
 }
