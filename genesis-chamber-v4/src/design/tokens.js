@@ -22,6 +22,7 @@ export const T = {
   amber: '#F59E0B',
   red: '#EF4444',
   blue: '#3B82F6',
+  councilGold: '#C9A96E',
 
   // Text
   text: '#E8E6E3',
@@ -95,6 +96,7 @@ export const TLight = {
   amber: '#B87400',
   red: '#C42E2E',
   blue: '#2563EB',
+  councilGold: '#9A7B4F',
 };
 
 // Font stacks

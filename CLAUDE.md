@@ -73,6 +73,7 @@ Default active: 7 models (6 Premium + Grok 4.1 Fast). Defined in `mock.js:MODELS
 - **Claude 4.6** (Opus/Sonnet): supports all 5 levels + Adaptive mode (`{"exclude": False}` = no budget cap)
 - **O3-Pro**: always `{"effort": "high"}` regardless of setting — SettingsPanel shows fixed "MAX" badge
 - **Sonar** (search models): no reasoning support — returns `{}` — SettingsPanel shows fixed "SEARCH" badge
+- **Grok 4.1 Fast**: binary thinking (ON/OFF toggle, not 5-level). Backend returns `{"enabled": true/false}`. Model has `binaryThinking: true` flag.
 - **All others**: effort-based (`low`/`medium`/`high`), `max` maps to `high`
 
 **Adaptive mode:** When enabled + Claude 4.6, sends `{"exclude": False}` (model decides own reasoning depth). Separate toggles for participants and chairman. Stored as `adaptiveMode` (store) / `adaptive_mode` (API).
@@ -122,6 +123,9 @@ Phase 9 spec exists in `docs/phase9-final-spec.md` but is NOT YET INTEGRATED. Fe
 - **Tier collapsing**: Premium + Balanced expanded by default. Specialist tier shows warning badge.
 - **Price display**: `$inputPrice` shown per model from `m.inputPrice` field.
 
+## Sacred Rules
+- NEVER autonomously change model ID strings (the `id` field in MODELS array). Model IDs must match OpenRouter's API exactly. Even small changes (hyphens vs dots, version numbers) cause 404 errors and billing failures.
+
 ## Rules
 
 - Font sizes are numbers, not strings: `fontSize: 11` not `fontSize: '11px'`.
@@ -149,6 +153,9 @@ Phase 9 spec exists in `docs/phase9-final-spec.md` but is NOT YET INTEGRATED. Fe
 - Chairman Stage 3 uses its OWN thinking/adaptive/webSearch config from `request.chairman`, not the global `request.thinking_mode`. See `main.py` streaming endpoint.
 - `IMAGE_CAPABLE_MODELS` in `openrouter.py` — only `openai/gpt-5-image` and `google/gemini-3-pro-image-preview`. Do NOT add models that don't return `modalities: ["text", "image"]`.
 - **NEVER change model IDs autonomously.** If OpenRouter verification shows a model is unavailable, STOP and ask the user which model to use instead. Do not substitute a different model on your own.
+- 2 models support image output via OpenRouter modalities: Nano Banana Pro, GPT-5 Image. Grok Aurora is NOT available via OpenRouter — do not add to IMAGE_CAPABLE_MODELS.
+- CouncilIcons.jsx provides 12 geometric SVG icons for council presets. Use `councilGold` token (or `.council-icon` CSS class) for color. Never use emoji in council UI.
+- Never hardcode hex colors in components — use token values from `useTokens()`. Light mode must work.
 
 ## Environment
 ```

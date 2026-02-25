@@ -6,6 +6,15 @@
 @import './design/fonts.css';
 @import './design/gc-motion.css';
 
+/* ── Council Icon Token ── */
+:root {
+  --council-gold: #C9A96E;
+}
+[data-theme="light"] {
+  --council-gold: #9A7B4F;
+}
+.council-icon { color: var(--council-gold); }
+
 /* ── Reset ── */
 *, *::before, *::after {
   box-sizing: border-box;

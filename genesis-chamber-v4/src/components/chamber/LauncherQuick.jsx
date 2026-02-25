@@ -7,6 +7,7 @@ import { useChamberStore } from '../../stores/chamberStore';
 import { useAppStore } from '../../stores/appStore';
 import { MOCK_PRESETS, MOCK_TEAMS, COUNCIL_PRESETS, DEFAULT_PERSONA_MODELS } from '../../data/mock';
 import * as api from '../../services/api';
+import { COUNCIL_ICONS } from '../council/CouncilIcons';
 import PresetCard from './PresetCard';
 import PersonaChip from './PersonaChip';
 import BriefInput from './BriefInput';
@@ -209,7 +210,13 @@ export default function LauncherQuick() {
                             }}
                           >
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                              <span style={{ fontSize: 16 }}>{p.icon}</span>
+                              {COUNCIL_ICONS[p.icon] ? (
+                                <span className="council-icon" style={{ lineHeight: 1, display: 'flex' }}>
+                                  {(() => { const Icon = COUNCIL_ICONS[p.icon]; return <Icon size={16} />; })()}
+                                </span>
+                              ) : (
+                                <span style={{ fontSize: 16 }}>{p.icon}</span>
+                              )}
                               <span style={{ fontSize: 13, fontWeight: 600, color: t.text }}>{p.name}</span>
                               {p.recommended && (
                                 <span style={{
