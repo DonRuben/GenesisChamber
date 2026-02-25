@@ -25,6 +25,7 @@ import Markdown from '../../design/Markdown';
 import ReadFullModal, { sanitizeFilename, questionSlug, downloadBlob, openPrintWindow, PRINT_CSS } from './ReadFullModal';
 import ArtifactPanel from './ArtifactPanel';
 import LeaderboardSkeleton from './LeaderboardSkeleton';
+import ThinkingCard from './ThinkingCard';
 
 function UserBubble({ text, color, muted }) {
   const t = useTokens();
@@ -380,6 +381,20 @@ export default function ConversationView({ onSubmit }) {
   const activeModels = useCouncilStore((s) => s.activeModels);
   const modelThinkingModes = useCouncilStore((s) => s.modelThinkingModes);
   const thinkingMode = useCouncilStore((s) => s.thinkingMode);
+
+  // Elapsed timer for ThinkingCard during stage1
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!loading || (currentStage !== 'stage1' && currentStage !== null)) {
+      setElapsed(0);
+      return;
+    }
+    const start = Date.now();
+    const tick = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - start) / 1000));
+    }, 1000);
+    return () => clearInterval(tick);
+  }, [loading, currentStage]);
 
   // Build soul info for skeleton cards from active models
   const skeletonSouls = activeModels.map((modelId) => {
@@ -761,12 +776,28 @@ export default function ConversationView({ onSubmit }) {
           </div>
         )}
 
-        {/* Skeleton cards during stage1 */}
+        {/* ThinkingCard / Skeleton cards during stage1 */}
         {loading && (currentStage === 'stage1' || !currentStage) && !responses && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
-            {skeletonSouls.map((soul, i) => (
-              <SkeletonResponseCard key={soul.id} soul={soul} cardIndex={i} />
-            ))}
+            {skeletonSouls.map((soul, i) => {
+              const modelInfo = lookupModel(soul.modelId);
+              if (soul.thinkingMode && soul.thinkingMode !== 'off') {
+                return (
+                  <ThinkingCard
+                    key={soul.id}
+                    modelName={modelInfo.name}
+                    modelColor={modelInfo.color}
+                    modelLetter={modelInfo.letter || '??'}
+                    modelId={soul.modelId}
+                    tier={modelInfo.tier || ''}
+                    thinkingMode={soul.thinkingMode}
+                    elapsed={elapsed}
+                    soulName={soul.name}
+                  />
+                );
+              }
+              return <SkeletonResponseCard key={soul.id} soul={soul} cardIndex={i} />;
+            })}
           </div>
         )}
 
