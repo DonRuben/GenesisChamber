@@ -53,12 +53,12 @@ Special: devils-advocate (Promoter of the Faith)
 | Tier | Models | Price Range |
 |------|--------|------------|
 | **Premium** (6) | Claude Opus 4.6, Gemini 3.1 Pro, Sonar Pro Search, Nano Banana Pro, GPT-5 Image, GPT-5.2 | $3–$75/M |
-| **Balanced** (4) | Gemini 3 Pro, Grok 4, Claude Sonnet 4.6, GPT-5.3 Codex | $2.5–$15/M |
-| **Efficient** (6) | Claude Haiku 4.5, Gemini 3 Flash, GPT-5.2 Chat, MiniMax M2.5, Kimi K2.5, Kimi K2 Thinking | $0.15–$4/M |
+| **Balanced** (3) | Gemini 3 Pro, Claude Sonnet 4.6, GPT-5.3 Codex | $2.5–$15/M |
+| **Efficient** (7) | Claude Haiku 4.5, Gemini 3 Flash, GPT-5.2 Chat, MiniMax M2.5, Kimi K2.5, Kimi K2 Thinking, Grok 4.1 Fast | $0.15–$4/M |
 | **Budget** (4) | DeepSeek V3.2, Gemini 2.5 Flash Lite, GPT-4.1 Nano, Llama 4 Maverick | $0.075–$1.1/M |
 | **Specialist** (1) | O3-Pro (always max reasoning, 30x expensive) | $60–$240/M |
 
-Default active: all 6 Premium models. Defined in `mock.js:MODELS` and `mock.js:DEFAULT_COUNCIL_MODELS`.
+Default active: 7 models (6 Premium + Grok 4.1 Fast). Defined in `mock.js:MODELS` and `mock.js:DEFAULT_COUNCIL_MODELS`.
 
 ### 5-Level Thinking System
 | Level | Key | Behavior | Token Scaling |
@@ -135,7 +135,7 @@ Phase 9 spec exists in `docs/phase9-final-spec.md` but is NOT YET INTEGRATED. Fe
 - Thinking mode values are `'off'`|`'low'`|`'medium'`|`'high'`|`'max'` — never use old `'thinking'`/`'deep'` values in new code.
 - O3-Pro (`openai/o3-pro`) is Specialist tier — always warn about 30x cost. Never include in defaults.
 - Sonar models have `capabilities: ['search']` — they don't support reasoning config.
-- Model IDs use the exact OpenRouter format: `x-ai/grok-4` (not `xai/`), `anthropic/claude-sonnet-4.6` (dot notation).
+- Model IDs use the exact OpenRouter format: `x-ai/grok-4.1-fast` (not `xai/`), `anthropic/claude-sonnet-4.6` (dot notation).
 
 ## Gotchas
 
@@ -148,6 +148,7 @@ Phase 9 spec exists in `docs/phase9-final-spec.md` but is NOT YET INTEGRATED. Fe
 - Port is 8001 (NOT 8000). Configured via `os.getenv('PORT', '8001')` in main.py.
 - Chairman Stage 3 uses its OWN thinking/adaptive/webSearch config from `request.chairman`, not the global `request.thinking_mode`. See `main.py` streaming endpoint.
 - `IMAGE_CAPABLE_MODELS` in `openrouter.py` — only `openai/gpt-5-image` and `google/gemini-3-pro-image-preview`. Do NOT add models that don't return `modalities: ["text", "image"]`.
+- **NEVER change model IDs autonomously.** If OpenRouter verification shows a model is unavailable, STOP and ask the user which model to use instead. Do not substitute a different model on your own.
 
 ## Environment
 ```

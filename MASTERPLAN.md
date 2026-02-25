@@ -85,7 +85,7 @@ Different LLMs per persona for cognitive diversity (all via OpenRouter):
 | Evaluator (Ive) | Claude Opus 4.6 **or** GPT-5.2 | Craft precision — needs deep aesthetic reasoning |
 | Analytical personas | Gemini 2.5 Pro | Research, long context |
 | Creative personas | GPT-5.1 | Emotional depth |
-| Bold/provocative | Grok 4 | Unfiltered |
+| Bold/provocative | Grok 4.1 Fast | Unfiltered |
 | Direct/efficient | Llama 4 Maverick | No-nonsense |
 
 ### High-End Model Strategy for Moderator & Evaluator

@@ -130,10 +130,10 @@ def get_reasoning_config(model: str, thinking_mode: str = "medium", adaptive: bo
         effective = "high" if thinking_mode == "max" else thinking_mode
         return {"effort": effective, "exclude": False}
 
-    # Grok — effort-based
+    # Grok 4.1 Fast — binary reasoning toggle (on/off, no effort levels)
     if 'grok-4' in model_lower or 'grok-3' in model_lower:
-        effective = "high" if thinking_mode == "max" else thinking_mode
-        return {"effort": effective, "exclude": False}
+        enabled = thinking_mode != "off"
+        return {"enabled": enabled}
 
     # Others — effort-based, cap at high
     effective = "high" if thinking_mode == "max" else thinking_mode

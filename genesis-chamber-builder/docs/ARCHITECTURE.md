@@ -136,7 +136,7 @@ Each persona uses a DIFFERENT underlying model for maximum cognitive diversity:
     "ogilvy": { "model": "anthropic/claude-sonnet-4.6", "temperature": 0.7 },
     "hopkins": { "model": "google/gemini-2.5-pro", "temperature": 0.6 },
     "burnett": { "model": "openai/gpt-5.1", "temperature": 0.8 },
-    "wells": { "model": "x-ai/grok-4", "temperature": 0.7 },
+    "wells": { "model": "x-ai/grok-4.1-fast", "temperature": 0.7 },
     "halbert": { "model": "meta/llama-4-maverick", "temperature": 0.9 }
   },
   "moderator": {

@@ -48,6 +48,7 @@ function getModelThinkingType(modelId) {
       id.includes('claude-sonnet-4-6') || id.includes('claude-sonnet-4.6')) return 'full';
   if (id.includes('o3-pro')) return 'fixed';
   if (id.includes('sonar')) return 'fixed';
+  if (id.includes('grok-4')) return 'binary';
   return 'standard';
 }
 
@@ -131,6 +132,24 @@ export default function SettingsPanel() {
           background: m.id.includes('o3-pro') ? 'rgba(239,68,68,0.12)' : 'rgba(99,102,241,0.12)',
           padding: '1px 4px', borderRadius: 3, letterSpacing: '0.06em',
         }} title={hint}>{label}</span>
+      );
+    }
+    if (type === 'binary') {
+      const isOn = (modelThinkingModes[m.id] || thinkingMode) !== 'off';
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }} onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={(e) => { e.stopPropagation(); setModelThinkingMode(m.id, isOn ? 'off' : 'low'); }}
+            style={{
+              fontSize: 8, fontFamily: font.mono, fontWeight: 700, cursor: 'pointer',
+              color: isOn ? '#E5375E' : t.textMuted,
+              background: isOn ? 'rgba(229,55,94,0.12)' : 'transparent',
+              border: `1px solid ${isOn ? '#E5375E' : t.border}`,
+              padding: '1px 6px', borderRadius: 3, letterSpacing: '0.06em',
+            }}
+          >{isOn ? 'ON' : 'OFF'}</button>
+          <InfoTooltip text="Grok reasoning is on/off — no effort levels" t={t} />
+        </div>
       );
     }
     return (

@@ -40,18 +40,18 @@ export const MODELS = [
   { id: 'google/gemini-3-pro-image-preview', name: 'Nano Banana Pro', color: '#2DD4BF', letter: 'NB', tier: 'premium', inputPrice: 5, outputPrice: 10, capabilities: ['image'] },
   { id: 'openai/gpt-5-image', name: 'GPT-5 Image', color: '#4ADE80', letter: 'GI', tier: 'premium', inputPrice: 5, outputPrice: 15, capabilities: ['image'] },
   { id: 'openai/gpt-5.2', name: 'GPT-5.2', color: '#34D399', letter: 'G', tier: 'premium', inputPrice: 3, outputPrice: 12 },
-  // Tier 2 — Balanced (4)
+  // Tier 2 — Balanced (3)
   { id: 'google/gemini-3-pro-preview', name: 'Gemini 3 Pro', color: '#06B6D4', letter: 'Gp', tier: 'balanced', inputPrice: 2.5, outputPrice: 10 },
-  { id: 'x-ai/grok-4', name: 'Grok 4', color: '#E5375E', letter: 'Gk', tier: 'balanced', inputPrice: 3, outputPrice: 9 },
   { id: 'anthropic/claude-sonnet-4.6', name: 'Claude Sonnet 4.6', color: '#F97316', letter: 'CS', tier: 'balanced', inputPrice: 3, outputPrice: 15 },
   { id: 'openai/gpt-5.3-codex', name: 'GPT-5.3 Codex', color: '#22C55E', letter: 'GC', tier: 'balanced', inputPrice: 2.5, outputPrice: 10 },
-  // Tier 3 — Efficient (6)
+  // Tier 3 — Efficient (7)
   { id: 'anthropic/claude-haiku-4.5', name: 'Claude Haiku 4.5', color: '#FB923C', letter: 'CH', tier: 'efficient', inputPrice: 0.8, outputPrice: 4 },
   { id: 'google/gemini-3-flash-preview', name: 'Gemini 3 Flash', color: '#22D3EE', letter: 'G3', tier: 'efficient', inputPrice: 0.15, outputPrice: 0.6 },
   { id: 'openai/gpt-5.2-chat', name: 'GPT-5.2 Chat', color: '#67E8F9', letter: 'Gc', tier: 'efficient', inputPrice: 0.5, outputPrice: 2 },
   { id: 'minimax/minimax-m2.5', name: 'MiniMax M2.5', color: '#818CF8', letter: 'MM', tier: 'efficient', inputPrice: 0.3, outputPrice: 1.1 },
   { id: 'moonshotai/kimi-k2.5', name: 'Kimi K2.5', color: '#38BDF8', letter: 'K2', tier: 'efficient', inputPrice: 0.6, outputPrice: 3 },
   { id: 'moonshotai/kimi-k2-thinking', name: 'Kimi K2 Thinking', color: '#7DD3FC', letter: 'KT', tier: 'efficient', inputPrice: 0.6, outputPrice: 2.5 },
+  { id: 'x-ai/grok-4.1-fast', name: 'Grok 4.1 Fast', color: '#E5375E', letter: 'Gk', tier: 'efficient', inputPrice: 0.2, outputPrice: 0.5 },
   // Tier 4 — Budget (4)
   { id: 'deepseek/deepseek-v3.2', name: 'DeepSeek V3.2', color: '#A78BFA', letter: 'DS', tier: 'budget', inputPrice: 0.27, outputPrice: 1.1 },
   { id: 'google/gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite', color: '#5EEAD4', letter: 'Gl', tier: 'budget', inputPrice: 0.075, outputPrice: 0.3 },
@@ -64,7 +64,7 @@ export const MODELS = [
 // ── Model lookup map ──
 export const MODEL_MAP = Object.fromEntries(MODELS.map(m => [m.id, m]));
 
-// ── Default 6 premium models for council mode ──
+// ── Default 7 models for council mode (6 Premium + Grok) ──
 export const DEFAULT_COUNCIL_MODELS = [
   'anthropic/claude-opus-4.6',
   'google/gemini-3.1-pro-preview',
@@ -72,6 +72,7 @@ export const DEFAULT_COUNCIL_MODELS = [
   'google/gemini-3-pro-image-preview',
   'openai/gpt-5-image',
   'openai/gpt-5.2',
+  'x-ai/grok-4.1-fast',
 ];
 
 // ── Default persona → model mapping ──
@@ -80,21 +81,21 @@ export const DEFAULT_PERSONA_MODELS = {
   'claude-hopkins': 'anthropic/claude-sonnet-4.6',
   'leo-burnett': 'openai/gpt-5.2',
   'mary-wells': 'google/gemini-3-pro-preview',
-  'gary-halbert': 'x-ai/grok-4',
+  'gary-halbert': 'x-ai/grok-4.1-fast',
   'paul-rand': 'google/gemini-3.1-pro-preview',
   'paula-scher': 'openai/gpt-5.2',
   'saul-bass': 'anthropic/claude-sonnet-4.6',
   'susan-kare': 'google/gemini-3-pro-preview',
-  'rob-janoff': 'x-ai/grok-4',
+  'rob-janoff': 'x-ai/grok-4.1-fast',
   'tobias-vs': 'google/gemini-3.1-pro-preview',
-  'elon-musk': 'x-ai/grok-4',
+  'elon-musk': 'x-ai/grok-4.1-fast',
   'jeff-bezos': 'anthropic/claude-sonnet-4.6',
   'warren-buffett': 'google/gemini-3.1-pro-preview',
   'richard-branson': 'google/gemini-3-pro-preview',
   'dietrich-mateschitz': 'deepseek/deepseek-v3.2',
   'steve-jobs': 'anthropic/claude-opus-4.6',
   'jony-ive': 'anthropic/claude-sonnet-4.6',
-  'devils-advocate': 'x-ai/grok-4',
+  'devils-advocate': 'x-ai/grok-4.1-fast',
 };
 
 // ── LLM Council Presets ──
@@ -111,7 +112,7 @@ export const MOCK_RESPONSES = [
   { modelId: 'anthropic/claude-sonnet-4.6', text: "The key differentiator lies in the execution model. React's virtual DOM reconciliation is well-understood and battle-tested, but Svelte's compile-time approach eliminates the runtime overhead entirely. For a dashboard with frequent state updates, Svelte's surgical DOM updates yield measurably better frame rates. However, React's ecosystem depth — particularly for complex data visualization with D3 integration — remains unmatched. My recommendation: Svelte for greenfield dashboards under 50 components; React for enterprise-scale with heavy charting requirements.", score: 88 },
   { modelId: 'openai/gpt-5.2', text: "From a developer experience standpoint, Svelte reduces boilerplate by approximately 40% compared to React for equivalent functionality. The reactive declarations ($:) replace useState/useEffect patterns with more intuitive syntax. But the trade-off is significant: React's job market is 10× larger, component libraries like shadcn/ui have no Svelte equivalent at the same quality tier, and React Server Components offer a server-first paradigm Svelte hasn't matched. For your dashboard rebuild: if the team knows React, stay with React. The productivity gains from Svelte don't offset the migration cost and ecosystem gap.", score: 82 },
   { modelId: 'google/gemini-3.1-pro-preview', text: "The performance benchmarks tell a clear story: Svelte outperforms React by 2-3× in initial render and 1.5× in updates for typical dashboard patterns. But benchmarks aren't production. In real-world dashboards, the bottleneck is rarely the framework — it's data fetching, chart rendering, and WebSocket management. Both frameworks handle these comparably. The deciding factor should be team velocity: which framework lets your specific team ship quality code faster? That's an organizational question, not a technical one.", score: 85 },
-  { modelId: 'x-ai/grok-4', text: "Consider the long-term architecture. React 19 with Server Components and the new compiler eliminates most performance criticism — automatic memoization, streaming SSR, and reduced bundle sizes make the framework gap negligible. Svelte 5 with runes also converges toward a similar reactivity model. The frameworks are converging. Your decision should weight: (1) existing codebase investment, (2) team expertise distribution, (3) dependency on third-party component ecosystems. For most production dashboards, React remains the pragmatic choice despite Svelte's elegance.", score: 79 },
+  { modelId: 'x-ai/grok-4.1-fast', text: "Consider the long-term architecture. React 19 with Server Components and the new compiler eliminates most performance criticism — automatic memoization, streaming SSR, and reduced bundle sizes make the framework gap negligible. Svelte 5 with runes also converges toward a similar reactivity model. The frameworks are converging. Your decision should weight: (1) existing codebase investment, (2) team expertise distribution, (3) dependency on third-party component ecosystems. For most production dashboards, React remains the pragmatic choice despite Svelte's elegance.", score: 79 },
 ];
 
 export const MOCK_SYNTHESIS = "The council reaches consensus on a nuanced position: **Svelte offers superior developer experience and raw performance**, while **React provides ecosystem depth and hiring advantages**. The pragmatic recommendation depends on context — greenfield projects with small teams favor Svelte; enterprise environments with existing React investment should stay the course. Key insight from the debate: framework performance gaps are narrowing rapidly, making ecosystem and team factors the decisive criteria.";
@@ -128,7 +129,7 @@ export const MOCK_RANKINGS = [
   { model: 'Claude Sonnet 4.6', avgRank: 1.33, pct: 100, color: '#F27123' },
   { model: 'Gemini 3 Pro', avgRank: 1.67, pct: 82, color: '#00D9FF' },
   { model: 'GPT-5.2', avgRank: 2.67, pct: 48, color: '#34D399' },
-  { model: 'Grok 4', avgRank: 3.33, pct: 28, color: '#E5375E' },
+  { model: 'Grok 4.1 Fast', avgRank: 3.33, pct: 28, color: '#E5375E' },
 ];
 
 // ── DA Arena — Mock Interactions ──
@@ -270,7 +271,7 @@ export const MOCK_TEAMS = [
       { id: 'claude-hopkins', name: 'Claude Hopkins', title: 'Scientific Advertising', era: '1920s', model: 'anthropic/claude-sonnet-4.6', thinkingMode: 'default' },
       { id: 'leo-burnett', name: 'Leo Burnett', title: 'Heartland Storyteller', era: '1950s', model: 'openai/gpt-5.2', thinkingMode: 'default' },
       { id: 'mary-wells', name: 'Mary Wells Lawrence', title: 'Creative Revolution', era: '1960s', model: 'google/gemini-3-pro-preview', thinkingMode: 'default' },
-      { id: 'gary-halbert', name: 'Gary Halbert', title: 'Prince of Print', era: '1980s', model: 'x-ai/grok-4', thinkingMode: 'default' },
+      { id: 'gary-halbert', name: 'Gary Halbert', title: 'Prince of Print', era: '1980s', model: 'x-ai/grok-4.1-fast', thinkingMode: 'default' },
     ],
   },
   {
@@ -280,7 +281,7 @@ export const MOCK_TEAMS = [
       { id: 'paula-scher', name: 'Paula Scher', title: 'Typographic Powerhouse', era: '1990s', model: 'openai/gpt-5.2', thinkingMode: 'default' },
       { id: 'saul-bass', name: 'Saul Bass', title: 'Title Sequence Master', era: '1960s', model: 'anthropic/claude-sonnet-4.6', thinkingMode: 'default' },
       { id: 'susan-kare', name: 'Susan Kare', title: 'Pixel Art Pioneer', era: '1980s', model: 'google/gemini-3-pro-preview', thinkingMode: 'default' },
-      { id: 'rob-janoff', name: 'Rob Janoff', title: 'Apple Logo Creator', era: '1977', model: 'x-ai/grok-4', thinkingMode: 'default' },
+      { id: 'rob-janoff', name: 'Rob Janoff', title: 'Apple Logo Creator', era: '1977', model: 'x-ai/grok-4.1-fast', thinkingMode: 'default' },
       { id: 'tobias-vs', name: 'Tobias van Schneider', title: 'Dark UI Visionary', era: '2010s', model: 'google/gemini-3.1-pro-preview', thinkingMode: 'default' },
       { id: 'jony-ive', name: 'Jony Ive', title: 'CRAFT PERFECTIONIST', subtitle: 'Design is how it works', group: 'design', model: 'anthropic/claude-sonnet-4.6', defaultModel: 'anthropic/claude-sonnet-4.6', thinkingMode: 'default', canBeLeader: true, leaderRoles: ['moderator', 'evaluator'] },
     ],
@@ -288,7 +289,7 @@ export const MOCK_TEAMS = [
   {
     id: 'business', name: 'Business & Strategy', color: T.cyan,
     personas: [
-      { id: 'elon-musk', name: 'Elon Musk', title: 'First Principles Thinker', era: '2000s', model: 'x-ai/grok-4', thinkingMode: 'default' },
+      { id: 'elon-musk', name: 'Elon Musk', title: 'First Principles Thinker', era: '2000s', model: 'x-ai/grok-4.1-fast', thinkingMode: 'default' },
       { id: 'jeff-bezos', name: 'Jeff Bezos', title: 'Customer Obsessed', era: '2000s', model: 'anthropic/claude-sonnet-4.6', thinkingMode: 'default' },
       { id: 'warren-buffett', name: 'Warren Buffett', title: 'Value Investor', era: '1970s', model: 'google/gemini-3.1-pro-preview', thinkingMode: 'default' },
       { id: 'richard-branson', name: 'Richard Branson', title: 'Brand Maverick', era: '1980s', model: 'google/gemini-3-pro-preview', thinkingMode: 'default' },
@@ -302,7 +303,7 @@ export const MOCK_TEAMS = [
 export const MOCK_LEADERSHIP = {
   moderator: { id: 'steve-jobs', name: 'Steve Jobs', title: 'Moderator', model: 'anthropic/claude-opus-4.6', color: '#6B7280' },
   evaluator: { id: 'jony-ive', name: 'Jony Ive', title: 'Evaluator', model: 'anthropic/claude-sonnet-4.6', color: '#9CA3AF' },
-  da: { id: 'devils-advocate', name: 'Advocatus Diaboli', title: "Devil's Advocate", model: 'x-ai/grok-4', color: T.magenta },
+  da: { id: 'devils-advocate', name: 'Advocatus Diaboli', title: "Devil's Advocate", model: 'x-ai/grok-4.1-fast', color: T.magenta },
 };
 
 // ── Simulation Stages ──
@@ -372,7 +373,7 @@ export const MOCK_SIMULATION = {
     },
     {
       id: 'c5', name: 'H2Luxe', persona: 'Elon Musk', personaId: 'elon-musk',
-      model: 'x-ai/grok-4', modelColor: '#E5375E', status: 'eliminated', score: 45,
+      model: 'x-ai/grok-4.1-fast', modelColor: '#E5375E', status: 'eliminated', score: 45,
       headline: 'Water, Reimagined.', tagline: 'The Tesla of hydration.',
       idea: 'Subscription-based smart water with IoT-connected bottle tracking hydration. Gamified wellness.',
       visual_direction: 'LED-integrated bottle, app interface mockups, futuristic metallic finish.',
@@ -407,7 +408,7 @@ export const MOCK_SIMULATION = {
     { id: 'paula-scher', name: 'Paula Scher', model: 'openai/gpt-5.2', modelColor: '#34D399', concept: 'Glacier Protocol', score: 85, status: 'surviving' },
     { id: 'saul-bass', name: 'Saul Bass', model: 'anthropic/claude-sonnet-4.6', modelColor: '#F27123', concept: 'Still Life', score: 78, status: 'surviving' },
     { id: 'leo-burnett', name: 'Leo Burnett', model: 'openai/gpt-5.2', modelColor: '#34D399', concept: 'Nordic Myth', score: 62, status: 'eliminated' },
-    { id: 'elon-musk', name: 'Elon Musk', model: 'x-ai/grok-4', modelColor: '#E5375E', concept: 'H2Luxe', score: 45, status: 'eliminated' },
+    { id: 'elon-musk', name: 'Elon Musk', model: 'x-ai/grok-4.1-fast', modelColor: '#E5375E', concept: 'H2Luxe', score: 45, status: 'eliminated' },
   ],
   media: [
     { id: 'm1', type: 'image', concept: 'Volcanic Essence', creator: 'David Ogilvy', model: 'Recraft V4', modelColor: '#00D9FF', prompt: 'Ultra-premium black matte water bottle, gold metallic cap, minimalist volcanic cross-section label design', status: 'winner', score: 92, aspect: '4/5' },

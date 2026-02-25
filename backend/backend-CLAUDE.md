@@ -29,7 +29,7 @@ fal.ai integration. Supports Kling, Minimax Hailuo, Luma Ray. Generates video fr
 
 ## Model Roster (21 models, 5 tiers)
 
-### Default Council Models (6 Premium)
+### Default Council Models (7: 6 Premium + Grok)
 ```python
 COUNCIL_MODELS = [
     "anthropic/claude-opus-4.6",
@@ -38,6 +38,7 @@ COUNCIL_MODELS = [
     "google/gemini-3-pro-image-preview",
     "openai/gpt-5-image",
     "openai/gpt-5.2",
+    "x-ai/grok-4.1-fast",
 ]
 ```
 
@@ -45,8 +46,8 @@ COUNCIL_MODELS = [
 | Tier | Models |
 |------|--------|
 | **Premium** (6) | Claude Opus 4.6, Gemini 3.1 Pro, Sonar Pro Search, Nano Banana Pro, GPT-5 Image, GPT-5.2 |
-| **Balanced** (4) | Gemini 3 Pro (`google/gemini-3-pro-preview`), Grok 4, Claude Sonnet 4.6, GPT-5.3 Codex (`openai/gpt-5.3-codex`) |
-| **Efficient** (6) | Claude Haiku 4.5, Gemini 3 Flash (`google/gemini-3-flash-preview`), GPT-5.2 Chat (`openai/gpt-5.2-chat`), MiniMax M2.5 (`minimax/minimax-m2.5`), Kimi K2.5 (`moonshotai/kimi-k2.5`), Kimi K2 Thinking (`moonshotai/kimi-k2-thinking`) |
+| **Balanced** (3) | Gemini 3 Pro (`google/gemini-3-pro-preview`), Claude Sonnet 4.6, GPT-5.3 Codex (`openai/gpt-5.3-codex`) |
+| **Efficient** (7) | Claude Haiku 4.5, Gemini 3 Flash (`google/gemini-3-flash-preview`), GPT-5.2 Chat (`openai/gpt-5.2-chat`), MiniMax M2.5 (`minimax/minimax-m2.5`), Kimi K2.5 (`moonshotai/kimi-k2.5`), Kimi K2 Thinking (`moonshotai/kimi-k2-thinking`), Grok 4.1 Fast (`x-ai/grok-4.1-fast`) |
 | **Budget** (4) | DeepSeek V3.2, Gemini 2.5 Flash Lite (`google/gemini-2.5-flash-lite`), GPT-4.1 Nano (`openai/gpt-4.1-nano`), Llama 4 Maverick (`meta-llama/llama-4-maverick`) |
 | **Specialist** (1) | O3-Pro (`openai/o3-pro`) — always max reasoning, 30x cost |
 
@@ -55,7 +56,7 @@ COUNCIL_MODELS = [
 - Claude Sonnet 4.6: Hopkins, Bass, Bezos, Ive
 - GPT-5.2: Burnett, Scher
 - Gemini 3 Pro: Mary Wells, Susan Kare, Branson
-- Grok 4: Halbert, Janoff, Musk, DA
+- Grok 4.1 Fast: Halbert, Janoff, Musk, DA
 - DeepSeek V3.2: Mateschitz
 - Claude Opus 4.6: Jobs (moderator)
 
@@ -167,7 +168,7 @@ Central config file containing:
 - `DEFAULT_PARTICIPANTS`: 19 soul definitions (id, name, team, role, model, temperature, max_tokens, color)
 - `DEFAULT_MODERATOR`: Steve Jobs on Claude Opus 4.6
 - `DEFAULT_EVALUATOR`: Jony Ive on Claude Sonnet 4.6
-- `DEFAULT_DEVILS_ADVOCATE`: Advocatus Diaboli on Grok 4
+- `DEFAULT_DEVILS_ADVOCATE`: Advocatus Diaboli on Grok 4.1 Fast
 - `PERSONA_COLORS`: 19 color mappings for UI
 - `PERSONA_TEAMS`: team membership + cross-team roles
 - OpenRouter API settings (base URL, API key)
@@ -187,12 +188,13 @@ Central config file containing:
 - `FAL_KEY` is separate from `OPENROUTER_API_KEY`. Both required for full functionality.
 - Simulation store is in-memory — if backend restarts mid-simulation, active sims are lost. Completed ones persist in PostgreSQL.
 - Never build reasoning dicts manually — always use `get_reasoning_config()` from `openrouter.py`.
+- Grok 4.1 Fast reasoning is binary: `{"enabled": true/false}`, not effort-based. Any non-off thinking mode maps to `{"enabled": true}`.
 - Chairman Stage 3 uses `request.chairman.thinking_mode` / `request.chairman.adaptive_mode` / `request.chairman.web_search`, NOT the global participant settings.
 - `strip_base64_images()` before passing Stage 1 responses into Stage 2/3 prompts to avoid token overflow.
 - `_is_claude46(model)` helper in `council.py` determines which models get the adaptive flag.
 - `IMAGE_CAPABLE_MODELS` — only `openai/gpt-5-image` and `google/gemini-3-pro-image-preview`. Do NOT add models that don't support `modalities: ["text", "image"]`.
 - `gemini-2.5-flash-image-preview` was REMOVED from IMAGE_CAPABLE_MODELS.
-- `grok-4.1-fast` replaced with `grok-4.1` everywhere.
+- `grok-4` replaced with `grok-4.1-fast` everywhere — binary reasoning, $0.20/$0.50, Efficient tier.
 - `llama-4-maverick` replaced with `gemini-3-pro-preview` — no Meta models in current roster.
 - `gpt-5.1` replaced with `gpt-5.2` — no GPT-5.1 in current roster.
 - Old thinking modes `'thinking'`/`'deep'` may still appear in saved sessions — frontend migrates on load, backend should treat unknown values gracefully.

@@ -14,8 +14,6 @@
       "models": [
         { "id": "anthropic/claude-sonnet-4.6", "cost_per_1m_tokens": 3.0, "context": "1M", "best_for": "Near-Opus quality — Evaluator (Ive), precise personas (Hopkins, Bass, Bezos)" },
         { "id": "google/gemini-2.5-pro", "cost_per_1m_tokens": 2.5, "context": "1M", "best_for": "Research-heavy personas" },
-        { "id": "x-ai/grok-4", "cost_per_1m_tokens": 3.0, "context": "128K", "best_for": "Bold, provocative — Devil's Advocate, Musk, Halbert, Janoff" },
-        { "id": "x-ai/grok-4", "cost_per_1m_tokens": 3.0, "context": "128K", "best_for": "Latest Grok, improved reasoning" },
         { "id": "mistralai/mistral-large", "cost_per_1m_tokens": 2.0, "context": "128K", "best_for": "EU alternative, strong reasoning" }
       ]
     },
@@ -28,7 +26,8 @@
         { "id": "deepseek/deepseek-v3.2", "cost_per_1m_tokens": 0.28, "context": "128K", "best_for": "Frontier-killer value — 90% quality at 1/50th cost (Mateschitz)" },
         { "id": "deepseek/deepseek-r1", "cost_per_1m_tokens": 0.55, "context": "128K", "best_for": "Reasoning chain, open source" },
         { "id": "google/gemini-3-flash", "cost_per_1m_tokens": 0.10, "context": "1M", "best_for": "Ultra fast, huge context" },
-        { "id": "qwen/qwen-3-235b", "cost_per_1m_tokens": 0.30, "context": "128K", "best_for": "Strong open source" }
+        { "id": "qwen/qwen-3-235b", "cost_per_1m_tokens": 0.30, "context": "128K", "best_for": "Strong open source" },
+        { "id": "x-ai/grok-4.1-fast", "cost_per_1m_tokens": 0.20, "context": "2M", "best_for": "Bold, provocative — Devil's Advocate, Musk, Halbert, Janoff. Binary reasoning toggle." }
       ]
     },
     "tier_4_budget": {
@@ -47,21 +46,21 @@
       "hopkins": "claude-sonnet-4.6 (precise, scientific, 1M context)",
       "burnett": "gpt-5.1 (emotional, storytelling)",
       "wells_lawrence": "llama-4-maverick (bold, direct, budget)",
-      "halbert": "grok-4 (raw, provocative, urgent)",
+      "halbert": "grok-4.1-fast (raw, provocative, urgent)",
       "rand": "gemini-3-pro (systematic, intellectual)",
       "scher": "gpt-5.1 (expressive, bold typography)",
       "bass": "claude-sonnet-4.6 (precise, iconic reduction)",
       "kare": "llama-4-maverick (human, accessible, budget)",
-      "janoff": "grok-4 (unconventional simplicity)",
+      "janoff": "grok-4.1-fast (unconventional simplicity)",
       "van_schneider": "gemini-3-pro (modern, digital-first)",
-      "musk": "grok-4 (his own AI company)",
+      "musk": "grok-4.1-fast (his own AI company)",
       "bezos": "claude-sonnet-4.6 (methodical, customer-obsessed)",
       "buffett": "gemini-3-pro (patient analyst, 2M context)",
       "branson": "llama-4-maverick (gut-instinct, budget)",
       "mateschitz": "deepseek-v3.2 (silent strategist, budget wild card)",
       "jobs_moderator": "claude-opus-4-6 (ONLY Opus usage — elimination decisions need deep reasoning)",
       "ive_evaluator": "claude-sonnet-4.6 (structured scoring, downgrade from Opus)",
-      "devils_advocate": "grok-4 (naturally adversarial, NOT Claude)"
+      "devils_advocate": "grok-4.1-fast (naturally adversarial, NOT Claude)"
     }
   },
   "cost_estimates": {

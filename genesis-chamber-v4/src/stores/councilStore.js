@@ -34,6 +34,7 @@ export const useCouncilStore = create((set, get) => ({
     'google/gemini-3-pro-image-preview',
     'openai/gpt-5-image',
     'openai/gpt-5.2',
+    'x-ai/grok-4.1-fast',
   ],
   chairmanModel: 'anthropic/claude-opus-4.6',
   thinkingMode: 'medium',       // 'off' | 'low' | 'medium' | 'high' | 'max'

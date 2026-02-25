@@ -314,7 +314,7 @@ For technical implementation details, see `CLAUDE.md`. For backend-specific docs
 |-------|-----------|
 | Frontend | React 19, Vite, Zustand, inline styles via useTokens() |
 | Backend | FastAPI, Python 3.10+, async httpx, Pydantic v2 |
-| LLM Access | OpenRouter (GPT-5.1, Claude Opus 4.6, Gemini 3 Pro, Grok 4, Llama 4) |
+| LLM Access | OpenRouter (GPT-5.1, Claude Opus 4.6, Gemini 3 Pro, Grok 4.1 Fast, Llama 4) |
 | Image Gen | fal.ai (Flux, Recraft, Ideogram, SDXL) |
 | Video Gen | fal.ai (Kling 2.6, Minimax Hailuo 2.3, Luma Ray 2) |
 | Database | Neon PostgreSQL (async SQLAlchemy) + JSON state persistence |

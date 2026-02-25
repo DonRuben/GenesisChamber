@@ -10,7 +10,7 @@ load_dotenv()
 # OpenRouter API key
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-# Council members - list of OpenRouter model identifiers (6 premium defaults)
+# Council members - list of OpenRouter model identifiers (7 defaults)
 COUNCIL_MODELS = [
     "anthropic/claude-opus-4.6",
     "google/gemini-3.1-pro-preview",
@@ -18,6 +18,7 @@ COUNCIL_MODELS = [
     "google/gemini-3-pro-image-preview",
     "openai/gpt-5-image",
     "openai/gpt-5.2",
+    "x-ai/grok-4.1-fast",
 ]
 
 # Chairman model - synthesizes final response
@@ -244,7 +245,7 @@ DEFAULT_PARTICIPANTS = {
     },
     "gary-halbert": {
         "name": "Gary Halbert",
-        "model": "x-ai/grok-4",
+        "model": "x-ai/grok-4.1-fast",
         "soul_document": "souls/gary-halbert.md",
         "role": "participant",
         "team": "marketing",
@@ -295,7 +296,7 @@ DEFAULT_PARTICIPANTS = {
     },
     "rob-janoff": {
         "name": "Rob Janoff",
-        "model": "x-ai/grok-4",
+        "model": "x-ai/grok-4.1-fast",
         "soul_document": "souls/rob-janoff.md",
         "role": "participant",
         "team": "design",
@@ -316,7 +317,7 @@ DEFAULT_PARTICIPANTS = {
     # --- Business & Strategy Team ---
     "elon-musk": {
         "name": "Elon Musk",
-        "model": "x-ai/grok-4",
+        "model": "x-ai/grok-4.1-fast",
         "soul_document": "souls/elon-musk.md",
         "role": "participant",
         "team": "business",
@@ -407,7 +408,7 @@ DEFAULT_EVALUATOR = {
 # OPTIONAL — activated per simulation via the devils_advocate toggle.
 DEFAULT_DEVILS_ADVOCATE = {
     "name": "Advocatus Diaboli",
-    "model": "x-ai/grok-4",
+    "model": "x-ai/grok-4.1-fast",
     "soul_document": "souls/devils-advocate.md",
     "role": "devils_advocate",
     "team": "leadership",

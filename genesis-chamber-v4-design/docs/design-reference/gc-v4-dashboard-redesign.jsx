@@ -68,7 +68,7 @@ const concepts = [
   { id: 2, name: "Liquid Architecture", persona: "Paul Rand", model: "GPT-4o", score: 87, status: "surviving", summary: "Geometric abstraction of water in premium spaces. The bottle becomes a design object, architectural photography with water as the hero element." },
   { id: 3, name: "The Thirst Economy", persona: "Elon Musk", model: "Gemini Pro", score: 84, status: "surviving", summary: "First-principles positioning — why does premium water exist? Because status hydration is a $47B market. DTC with radical transparency on sourcing." },
   { id: 4, name: "Club AquaLux", persona: "Mary Wells Lawrence", model: "Claude Opus", score: 76, status: "eliminated", round: 4, summary: "Membership experience — exclusive tasting events, limited editions, celebrity partnerships." },
-  { id: 5, name: "Street Hydration", persona: "Gary Halbert", model: "Grok 4", score: 61, status: "eliminated", round: 3, summary: "Direct response approach — free bottle with survey, build email list, hard-sell health benefits." },
+  { id: 5, name: "Street Hydration", persona: "Gary Halbert", model: "Grok 4.1 Fast", score: 61, status: "eliminated", round: 3, summary: "Direct response approach — free bottle with survey, build email list, hard-sell health benefits." },
 ];
 
 // ── Critique Data ──

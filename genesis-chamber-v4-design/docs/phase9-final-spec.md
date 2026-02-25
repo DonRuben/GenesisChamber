@@ -310,7 +310,7 @@ DA section only has toggle + aggression. Missing: LLM model, thinking, web searc
 │ Adversarial critique · Sanhedrin principle         │
 │                                                   │
 │ LLM MODEL                                         │
-│ [x-ai/grok-4 ▾]                                │
+│ [x-ai/grok-4.1-fast ▾]                                │
 │                                                   │
 │ AI CAPABILITIES                                   │
 │ Thinking: [Off] [Think] [Deep]                    │
@@ -341,7 +341,7 @@ DA section only has toggle + aggression. Missing: LLM model, thinking, web searc
 ```js
 devilsAdvocate: {
   enabled: true,
-  modelId: 'x-ai/grok-4',
+  modelId: 'x-ai/grok-4.1-fast',
   thinkingMode: 'off',
   webSearch: false,
   aggressionLevel: 'aggressive',    // analytical | aggressive | ruthless
