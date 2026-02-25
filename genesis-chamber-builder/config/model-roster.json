@@ -3,7 +3,7 @@
     "tier_1_premium": {
       "description": "Best quality, highest cost. Reserved for Moderator (Jobs) — the most critical reasoning role.",
       "models": [
-        { "id": "anthropic/claude-opus-4-6", "cost_per_1m_tokens": 15.0, "context": "200K", "best_for": "Moderator (Jobs) — deepest reasoning, best synthesis, nuanced judgment" },
+        { "id": "anthropic/claude-opus-4.6", "cost_per_1m_tokens": 15.0, "context": "200K", "best_for": "Moderator (Jobs) — deepest reasoning, best synthesis, nuanced judgment" },
         { "id": "openai/gpt-5.2", "cost_per_1m_tokens": 15.0, "context": "128K", "best_for": "Alternative Moderator — strong creative reasoning, benchmark against Claude Opus 4.6" },
         { "id": "openai/gpt-5.1", "cost_per_1m_tokens": 5.0, "context": "128K", "best_for": "Strong creative reasoning — warm, emotional personas (Burnett, Scher)" },
         { "id": "google/gemini-3-pro", "cost_per_1m_tokens": 7.0, "context": "2M", "best_for": "Long context, full soul doc injection — analytical personas (Ogilvy, Rand, Buffett)" }
@@ -14,8 +14,8 @@
       "models": [
         { "id": "anthropic/claude-sonnet-4.6", "cost_per_1m_tokens": 3.0, "context": "1M", "best_for": "Near-Opus quality — Evaluator (Ive), precise personas (Hopkins, Bass, Bezos)" },
         { "id": "google/gemini-2.5-pro", "cost_per_1m_tokens": 2.5, "context": "1M", "best_for": "Research-heavy personas" },
-        { "id": "x-ai/grok-4.1", "cost_per_1m_tokens": 3.0, "context": "128K", "best_for": "Bold, provocative — Devil's Advocate, Musk, Halbert, Janoff" },
-        { "id": "x-ai/grok-4.1", "cost_per_1m_tokens": 3.0, "context": "128K", "best_for": "Latest Grok, improved reasoning" },
+        { "id": "x-ai/grok-4", "cost_per_1m_tokens": 3.0, "context": "128K", "best_for": "Bold, provocative — Devil's Advocate, Musk, Halbert, Janoff" },
+        { "id": "x-ai/grok-4", "cost_per_1m_tokens": 3.0, "context": "128K", "best_for": "Latest Grok, improved reasoning" },
         { "id": "mistralai/mistral-large", "cost_per_1m_tokens": 2.0, "context": "128K", "best_for": "EU alternative, strong reasoning" }
       ]
     },

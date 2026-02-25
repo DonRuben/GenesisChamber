@@ -540,7 +540,7 @@ const MOCK_CONCEPTS = [
     brief: "Technical-focused brand targeting professional audio engineers and studio producers.",
   },
   {
-    id: 5, name: "BassNova", persona: "Grok", model: "Grok 4.1",
+    id: 5, name: "BassNova", persona: "Grok", model: "Grok 4",
     score: 45, isWinner: false, isEliminated: true, eliminatedRound: 2,
     tagline: "Bass that moves you.",
     brief: "Bass-heavy lifestyle brand for hip-hop and EDM enthusiasts with emphasis on club culture.",

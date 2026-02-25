@@ -27,26 +27,27 @@ fal.ai integration. Supports multiple models (Flux, Recraft, Ideogram, SDXL). Ge
 ### Video Generator (`video_generator.py`)
 fal.ai integration. Supports Kling, Minimax Hailuo, Luma Ray. Generates video from winning concepts or reference images. Requires `FAL_KEY`.
 
-## Model Roster (17 models, 5 tiers)
+## Model Roster (21 models, 5 tiers)
 
-### Default Council Models (5 Premium)
+### Default Council Models (6 Premium)
 ```python
 COUNCIL_MODELS = [
-    "anthropic/claude-opus-4-6",
+    "anthropic/claude-opus-4.6",
     "google/gemini-3.1-pro-preview",
     "perplexity/sonar-pro-search",
     "google/gemini-3-pro-image-preview",
     "openai/gpt-5-image",
+    "openai/gpt-5.2",
 ]
 ```
 
 ### All Tiers
 | Tier | Models |
 |------|--------|
-| **Premium** (5) | Claude Opus 4.6, Gemini 3.1 Pro, Sonar Pro Search, Nano Banana Pro, GPT-5 Image |
-| **Balanced** (5) | GPT-5.2, Gemini 3 Pro (`google/gemini-3-pro-preview`), Grok 4.1, Claude Sonnet 4.6, GPT-5.3 Codex (`openai/gpt-5.3-codex`) |
-| **Efficient** (3) | Claude Haiku 4.5, Gemini 3 Flash (`google/gemini-3-flash-preview`), GPT-5.2 Chat (`openai/gpt-5.2-chat`) |
-| **Budget** (3) | DeepSeek V3.2, Gemini 2.5 Flash Lite (`google/gemini-2.5-flash-lite`), GPT-4.1 Nano (`openai/gpt-4.1-nano`) |
+| **Premium** (6) | Claude Opus 4.6, Gemini 3.1 Pro, Sonar Pro Search, Nano Banana Pro, GPT-5 Image, GPT-5.2 |
+| **Balanced** (4) | Gemini 3 Pro (`google/gemini-3-pro-preview`), Grok 4, Claude Sonnet 4.6, GPT-5.3 Codex (`openai/gpt-5.3-codex`) |
+| **Efficient** (6) | Claude Haiku 4.5, Gemini 3 Flash (`google/gemini-3-flash-preview`), GPT-5.2 Chat (`openai/gpt-5.2-chat`), MiniMax M2.5 (`minimax/minimax-m2.5`), Kimi K2.5 (`moonshotai/kimi-k2.5`), Kimi K2 Thinking (`moonshotai/kimi-k2-thinking`) |
+| **Budget** (4) | DeepSeek V3.2, Gemini 2.5 Flash Lite (`google/gemini-2.5-flash-lite`), GPT-4.1 Nano (`openai/gpt-4.1-nano`), Llama 4 Maverick (`meta-llama/llama-4-maverick`) |
 | **Specialist** (1) | O3-Pro (`openai/o3-pro`) — always max reasoning, 30x cost |
 
 ### Persona → Model Mapping (`config.py:DEFAULT_PARTICIPANTS`)
@@ -54,7 +55,7 @@ COUNCIL_MODELS = [
 - Claude Sonnet 4.6: Hopkins, Bass, Bezos, Ive
 - GPT-5.2: Burnett, Scher
 - Gemini 3 Pro: Mary Wells, Susan Kare, Branson
-- Grok 4.1: Halbert, Janoff, Musk, DA
+- Grok 4: Halbert, Janoff, Musk, DA
 - DeepSeek V3.2: Mateschitz
 - Claude Opus 4.6: Jobs (moderator)
 
@@ -166,7 +167,7 @@ Central config file containing:
 - `DEFAULT_PARTICIPANTS`: 19 soul definitions (id, name, team, role, model, temperature, max_tokens, color)
 - `DEFAULT_MODERATOR`: Steve Jobs on Claude Opus 4.6
 - `DEFAULT_EVALUATOR`: Jony Ive on Claude Sonnet 4.6
-- `DEFAULT_DEVILS_ADVOCATE`: Advocatus Diaboli on Grok 4.1
+- `DEFAULT_DEVILS_ADVOCATE`: Advocatus Diaboli on Grok 4
 - `PERSONA_COLORS`: 19 color mappings for UI
 - `PERSONA_TEAMS`: team membership + cross-team roles
 - OpenRouter API settings (base URL, API key)

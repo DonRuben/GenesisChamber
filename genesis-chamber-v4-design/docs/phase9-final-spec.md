@@ -191,7 +191,7 @@ Web Search: [━━● ON]
 │ [SJ] Steve Jobs                            │
 │ MODERATOR                   [Change ▾]     │
 │                                            │
-│ Model: [anthropic/claude-opus-4-6 ▾]      │
+│ Model: [anthropic/claude-opus-4.6 ▾]      │
 │ Thinking: [Off] [Think] [Deep]             │
 │ Web Search: [toggle]                       │
 │                                            │
@@ -206,7 +206,7 @@ Web Search: [━━● ON]
 │ [JI] Jony Ive                              │
 │ EVALUATOR                   [Change ▾]     │
 │                                            │
-│ Model: [anthropic/claude-sonnet-4-6 ▾]    │
+│ Model: [anthropic/claude-sonnet-4.6 ▾]    │
 │ Thinking: [Off] [Think] [Deep]             │
 │ Web Search: [toggle]                       │
 │                                            │
@@ -227,13 +227,13 @@ Jobs = ONLY moderator. Ive = ONLY evaluator. Can't also participate as team memb
 // Business & Strategy group, add:
 { id: 'steve-jobs', name: 'Steve Jobs', title: 'VISIONARY PROVOCATEUR',
   subtitle: 'The intersection of technology & liberal arts',
-  group: 'business', defaultModel: 'anthropic/claude-opus-4-6',
+  group: 'business', defaultModel: 'anthropic/claude-opus-4.6',
   canBeLeader: true, leaderRoles: ['moderator', 'evaluator'] }
 
 // Design & Visual group, add:
 { id: 'jony-ive', name: 'Jony Ive', title: 'CRAFT PERFECTIONIST',
   subtitle: 'Design is how it works',
-  group: 'design', defaultModel: 'anthropic/claude-sonnet-4-6',
+  group: 'design', defaultModel: 'anthropic/claude-sonnet-4.6',
   canBeLeader: true, leaderRoles: ['moderator', 'evaluator'] }
 ```
 
@@ -310,7 +310,7 @@ DA section only has toggle + aggression. Missing: LLM model, thinking, web searc
 │ Adversarial critique · Sanhedrin principle         │
 │                                                   │
 │ LLM MODEL                                         │
-│ [x-ai/grok-4.1 ▾]                                │
+│ [x-ai/grok-4 ▾]                                │
 │                                                   │
 │ AI CAPABILITIES                                   │
 │ Thinking: [Off] [Think] [Deep]                    │
@@ -341,7 +341,7 @@ DA section only has toggle + aggression. Missing: LLM model, thinking, web searc
 ```js
 devilsAdvocate: {
   enabled: true,
-  modelId: 'x-ai/grok-4.1',
+  modelId: 'x-ai/grok-4',
   thinkingMode: 'off',
   webSearch: false,
   aggressionLevel: 'aggressive',    // analytical | aggressive | ruthless

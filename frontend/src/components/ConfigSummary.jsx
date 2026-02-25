@@ -53,7 +53,7 @@ export default function ConfigSummary({ preset, participants, souls, brief, mode
           <div className="config-summary-participant-info">
             <span className="config-summary-name">Steve Jobs</span>
             <span className="config-summary-model">
-              {getDisplayName(modelAssignments['moderator'] || 'anthropic/claude-opus-4-6')}
+              {getDisplayName(modelAssignments['moderator'] || 'anthropic/claude-opus-4.6')}
             </span>
           </div>
         </div>

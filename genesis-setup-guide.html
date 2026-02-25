@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Genesis Chamber V5 — Optimal Configuration Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0A0A0C;
+    --bg-secondary: #111114;
+    --bg-card: #16161A;
+    --bg-card-hover: #1C1C21;
+    --border: rgba(255,255,255,0.06);
+    --border-active: rgba(255,255,255,0.12);
+    --text-primary: #E9E7E4;
+    --text-secondary: #8A8A8E;
+    --text-muted: #5A5A5E;
+    --cyan: #00D9FF;
+    --purple: #8B5CF6;
+    --gold: #FFB800;
+    --flame: #F27123;
+    --red: #EF4444;
+    --green: #22C55E;
+    --blue: #3B82F6;
+    --amber: #F59E0B;
+    --pink: #EC4899;
+    --teal: #14B8A6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    position: relative;
+    padding: 80px 40px 60px;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, rgba(0,217,255,0.06) 0%, rgba(139,92,246,0.03) 40%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    background: rgba(0,217,255,0.08);
+    border: 1px solid rgba(0,217,255,0.15);
+    padding: 5px 14px;
+    border-radius: 4px;
+    margin-bottom: 24px;
+  }
+
+  .hero h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 400;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #FFFFFF 0%, #A0A0A0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero p {
+    color: var(--text-secondary);
+    font-size: 17px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* ─── LAYOUT ─── */
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+  .section { margin-bottom: 72px; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  .section-subtitle {
+    font-family: 'Instrument Serif', serif;
+    font-size: 28px; color: var(--text-primary); margin-top: 2px;
+  }
+
+  /* ─── CARDS ─── */
+  .config-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+
+  .config-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .config-card:hover {
+    border-color: var(--border-active);
+    background: var(--bg-card-hover);
+  }
+
+  .config-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    border-radius: 3px 0 0 3px;
+  }
+
+  .card-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 18px;
+  }
+
+  .avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 700; flex-shrink: 0;
+  }
+
+  .card-name { font-weight: 600; font-size: 16px; }
+
+  .card-role {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  .card-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--text-muted);
+    margin-left: auto;
+  }
+
+  /* ─── CONFIG ROWS ─── */
+  .config-rows { display: flex; flex-direction: column; gap: 10px; }
+
+  .config-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.03);
+  }
+
+  .config-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .config-value { font-size: 13px; font-weight: 500; }
+
+  /* ─── PILLS ─── */
+  .pill {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 2px 7px; border-radius: 3px;
+  }
+
+  .pill-off { background: rgba(255,255,255,0.05); color: var(--text-muted); }
+  .pill-think { background: rgba(0,217,255,0.12); color: var(--cyan); }
+  .pill-deep { background: rgba(139,92,246,0.12); color: var(--purple); }
+  .pill-on { background: rgba(34,197,94,0.12); color: var(--green); }
+  .pill-aggressive { background: rgba(245,158,11,0.12); color: var(--amber); }
+  .pill-search { background: rgba(59,130,246,0.12); color: var(--blue); }
+  .pill-image { background: rgba(34,197,94,0.12); color: var(--green); }
+  .pill-gold { background: rgba(255,184,0,0.12); color: var(--gold); }
+  .pill-rec { background: rgba(0,217,255,0.08); color: var(--cyan); border: 1px solid rgba(0,217,255,0.2); }
+
+  /* ─── TEAM COLORS ─── */
+  .team-copy .config-card::before { background: var(--flame); }
+  .team-copy .avatar { background: rgba(242,113,35,0.15); color: var(--flame); }
+  .team-copy .card-role { color: var(--flame); }
+
+  .team-design .config-card::before { background: var(--cyan); }
+  .team-design .avatar { background: rgba(0,217,255,0.15); color: var(--cyan); }
+  .team-design .card-role { color: var(--cyan); }
+
+  .team-business .config-card::before { background: var(--gold); }
+  .team-business .avatar { background: rgba(255,184,0,0.15); color: var(--gold); }
+  .team-business .card-role { color: var(--gold); }
+
+  /* ─── REASONING BOX ─── */
+  .reasoning-box {
+    background: rgba(0,217,255,0.03);
+    border: 1px solid rgba(0,217,255,0.1);
+    border-radius: 10px;
+    padding: 14px 18px; margin-top: 12px;
+    font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+  }
+  .reasoning-box strong { color: var(--cyan); }
+
+  /* ─── SPEED BAR ─── */
+  .speed-bar { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+
+  .speed-track {
+    flex: 1; height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px; overflow: hidden;
+  }
+
+  .speed-fill { height: 100%; border-radius: 2px; }
+
+  .speed-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; font-weight: 600;
+    color: var(--text-muted); min-width: 50px;
+  }
+
+  /* ─── COUNCIL ─── */
+  .council-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .council-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 24px;
+  }
+
+  .council-card.full-width { grid-column: 1 / -1; }
+
+  .preset-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 24px;
+    margin-bottom: 16px; position: relative; overflow: hidden;
+  }
+
+  .preset-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--cyan), var(--purple));
+  }
+
+  .preset-name { font-family: 'Instrument Serif', serif; font-size: 22px; margin-bottom: 8px; }
+  .preset-desc { color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; }
+
+  .model-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+
+  .model-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 600;
+    padding: 4px 10px; border-radius: 6px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    color: var(--text-secondary);
+  }
+
+  /* ─── TODO ─── */
+  .todo-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 32px; margin-top: 48px;
+  }
+
+  .todo-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .todo-item:last-child { border-bottom: none; }
+
+  .todo-priority {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; font-weight: 700;
+    padding: 2px 8px; border-radius: 3px;
+    flex-shrink: 0; margin-top: 2px;
+  }
+  .todo-priority.p1 { background: rgba(239,68,68,0.12); color: var(--red); }
+  .todo-priority.p2 { background: rgba(245,158,11,0.12); color: var(--amber); }
+  .todo-priority.p3 { background: rgba(59,130,246,0.12); color: var(--blue); }
+
+  .todo-text { font-size: 14px; }
+  .todo-text strong { color: var(--text-primary); }
+
+  /* ─── FOOTER ─── */
+  .footer {
+    text-align: center; padding: 48px 32px;
+    color: var(--text-muted); font-size: 12px;
+    border-top: 1px solid var(--border); margin-top: 48px;
+  }
+  .footer a { color: var(--cyan); text-decoration: none; }
+
+  @media (max-width: 768px) {
+    .config-grid, .council-grid { grid-template-columns: 1fr; }
+    .council-card.full-width { grid-column: auto; }
+    .hero { padding: 48px 20px 40px; }
+    .container { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════ HERO ════════════════════════ -->
+<div class="hero">
+  <div class="hero-badge">Configuration Guide v5.1</div>
+  <h1>Genesis Chamber<br>Optimal Setup</h1>
+  <p>Recommended configurations for all 19 souls, leadership roles, and the LLM Council — optimized for speed, quality, and cost.</p>
+</div>
+
+<div class="container">
+
+<!-- ════════════════════════ PHILOSOPHY ════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(139,92,246,0.12)">⚡</div>
+    <div>
+      <div class="section-title">Configuration Philosophy</div>
+      <div class="section-subtitle">Speed vs. Depth</div>
+    </div>
+  </div>
+
+  <div class="council-grid">
+    <div class="council-card">
+      <h3 style="font-size:15px;margin-bottom:12px">🎯 Core Principle</h3>
+      <p style="color:var(--text-secondary);font-size:14px;line-height:1.7">
+        <strong style="color:var(--text-primary)">Creative souls should be FAST.</strong> Ogilvy, Rand, Musk — they think from instinct and experience. Deep thinking adds 30-90s per soul without improving creative output. Save thinking for roles that analyze, critique, or synthesize: DA, Moderator, Evaluator.
+      </p>
+    </div>
+    <div class="council-card">
+      <h3 style="font-size:15px;margin-bottom:12px">⏱️ Speed Impact</h3>
+      <div style="margin-top:8px">
+        <div class="config-row" style="margin-bottom:6px">
+          <span class="config-label">Thinking OFF</span>
+          <span class="config-value" style="color:var(--green)">~8-15s per soul</span>
+        </div>
+        <div class="config-row" style="margin-bottom:6px">
+          <span class="config-label">Thinking ON</span>
+          <span class="config-value" style="color:var(--amber)">~20-40s per soul</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Deep Thinking</span>
+          <span class="config-value" style="color:var(--red)">~45-90s per soul</span>
+        </div>
+      </div>
+      <p style="color:var(--text-muted);font-size:12px;margin-top:10px">With 5 souls × Deep = 4-7 min for Stage 1 alone</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ COPYWRITING & MARKETING TEAM ════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(242,113,35,0.12)">🔥</div>
+    <div>
+      <div class="section-title" style="color:var(--flame)">Copywriting & Marketing</div>
+      <div class="section-subtitle">The Persuasion Engine</div>
+    </div>
+  </div>
+
+  <div class="config-grid team-copy">
+
+    <!-- David Ogilvy -->
+    <div class="config-card">
+      <div class="card-header">
+        <div class="avatar">DO</div>
+        <div>
+          <div class="card-name">David Ogilvy</div>
+          <div class="card-role">FATHER OF ADVERTISING</div>
+        </div>
+        <span class="card-pct">13%</span>
+      </div>
+      <div class="config-rows">
+        <div class="config-row">
+          <span class="config-label">Model</span>
+          <span class="config-value">Claude Opus 4.6</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Thinking</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Web Search</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+      </div>
+      <div class="reasoning-box">
+        <strong>Why:</strong> Ogilvy's genius is research-backed instinct. Claude Opus captures his sophisticated, long-form copy style. No thinking needed — his wisdom comes from decades of testing, not deliberation.
+      </div>
+      <div class="speed-bar">
+        <div class="speed-track"><div class="speed-fill" style="width:85%;background:var(--green)"></div></div>
+        <span class="speed-label">~12s</span>
+      </div>
+    </div>
+
+    <!-- Leo Burnett -->
+    <div class="config-card">
+      <div class="card-header">
+        <div class="avatar">LB</div>
+        <div>
+          <div class="card-name">Leo Burnett</div>
+          <div class="card-role">BRAND MYTHMAKER</div>
+        </div>
+        <span class="card-pct">13%</span>
+      </div>
+      <div class="config-rows">
+        <div class="config-row">
+          <span class="config-label">Model</span>
+          <span class="config-value">GPT-5.2</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Thinking</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Web Search</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+      </div>
+      <div class="reasoning-box">
+        <strong>Why:</strong> Burnett created Marlboro Man, Tony the Tiger — emotional brand myths. GPT-5.2's creative narrative strength matches his warm, everyman storytelling.
+      </div>
+      <div class="speed-bar">
+        <div class="speed-track"><div class="speed-fill" style="width:90%;background:var(--green)"></div></div>
+        <span class="speed-label">~10s</span>
+      </div>
+    </div>
+
+    <!-- Claude Hopkins -->
+    <div class="config-card">
+      <div class="card-header">
+        <div class="avatar">CH</div>
+        <div>
+          <div class="card-name">Claude Hopkins</div>
+          <div class="card-role">SCIENTIFIC ADVERTISING</div>
+        </div>
+        <span class="card-pct">12%</span>
+      </div>
+      <div class="config-rows">
+        <div class="config-row">
+          <span class="config-label">Model</span>
+          <span class="config-value">Claude Sonnet 4.6</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Thinking</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Web Search</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+      </div>
+      <div class="reasoning-box">
+        <strong>Why:</strong> Hopkins pioneered data-driven, coupon-tested advertising. Sonnet's analytical precision matches his scientific, methodical copy approach.
+      </div>
+      <div class="speed-bar">
+        <div class="speed-track"><div class="speed-fill" style="width:88%;background:var(--green)"></div></div>
+        <span class="speed-label">~11s</span>
+      </div>
+    </div>
+
+    <!-- Gary Halbert -->
+    <div class="config-card">
+      <div class="card-header">
+        <div class="avatar">GH</div>
+        <div>
+          <div class="card-name">Gary Halbert</div>
+          <div class="card-role">PRINCE OF PRINT</div>
+        </div>
+        <span class="card-pct">11%</span>
+      </div>
+      <div class="config-rows">
+        <div class="config-row">
+          <span class="config-label">Model</span>
+          <span class="config-value">Grok 4.1</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Thinking</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Web Search</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+      </div>
+      <div class="reasoning-box">
+        <strong>Why:</strong> Halbert wrote raw, aggressive direct response copy. Grok's unfiltered, no-BS personality is the perfect match for his "grab them by the throat" style.
+      </div>
+      <div class="speed-bar">
+        <div class="speed-track"><div class="speed-fill" style="width:92%;background:var(--green)"></div></div>
+        <span class="speed-label">~9s</span>
+      </div>
+    </div>
+
+    <!-- Mary Wells Lawrence -->
+    <div class="config-card">
+      <div class="card-header">
+        <div class="avatar">MW</div>
+        <div>
+          <div class="card-name">Mary Wells Lawrence</div>
+          <div class="card-role">QUEEN OF MADISON AVE</div>
+        </div>
+        <span class="card-pct">16%</span>
+      </div>
+      <div class="config-rows">
+        <div class="config-row">
+          <span class="config-label">Model</span>
+          <span class="config-value">Gemini 3.1 Pro</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Thinking</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Web Search</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+      </div>
+      <div class="reasoning-box">
+        <strong>Why:</strong> Mary Wells was glamorous, bold, and broke every rule. Gemini's fast, creative divergence mirrors her "change the entire airline brand overnight" energy. Highest soul file at 16%.
+      </div>
+      <div class="speed-bar">
+        <div class="speed-track"><div class="speed-fill" style="width:92%;background:var(--green)"></div></div>
+        <span class="speed-label">~9s</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ DESIGN TEAM ════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(0,217,255,0.12)">✦</div>
+    <div>
+      <div class="section-title" style="color:var(--cyan)">Design & Visual Identity</div>
+      <div class="section-subtitle">Visual Architects</div>
+    </div>
+  </div>
+
+  <div class="config-grid team-design">
+
+    <!-- Paul Rand -->
+    <div class="config-card">
+      <div class="card-header">
+        <div class="avatar">PR</div>
+        <div>
+          <div class="card-name">Paul Rand</div>
+          <div class="card-role">LOGO MASTER</div>
+        </div>
+        <span class="card-pct">14%</span>
+      </div>
+      <div class="config-rows">
+        <div class="config-row">
+          <span class="config-label">Model</span>
+          <span class="config-value">Nano Banana Pro <span class="pill pill-image">IMAGE</span></span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Thinking</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Web Search</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+      </div>
+      <div class="reasoning-box">
+        <strong>Why:</strong> Rand designed IBM, ABC, UPS logos. Nano Banana Pro generates visual concepts alongside his design rationale — logo sketches, geometric compositions. Design soul = image model.
+      </div>
+      <div class="speed-bar">
+        <div class="speed-track"><div class="speed-fill" style="width:72%;background:var(--amber)"></div></div>
+        <span class="speed-label">~20s</span>
+      </div>
+    </div>
+
+    <!-- Saul Bass -->
+    <div class="config-card">
+      <div class="card-header">
+        <div class="avatar">SB</div>
+        <div>
+          <div class="card-name">Saul Bass</div>
+          <div class="card-role">MOTION & POSTER</div>
+        </div>
+        <span class="card-pct">12%</span>
+      </div>
+      <div class="config-rows">
+        <div class="config-row">
+          <span class="config-label">Model</span>
+          <span class="config-value">GPT-5 Image <span class="pill pill-image">IMAGE</span></span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Thinking</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Web Search</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+      </div>
+      <div class="reasoning-box">
+        <strong>Why:</strong> Bass created film titles and poster art for Hitchcock, Kubrick. GPT-5 Image renders bold minimal visuals with strong text rendering for title sequences.
+      </div>
+      <div class="speed-bar">
+        <div class="speed-track"><div class="speed-fill" style="width:75%;background:var(--amber)"></div></div>
+        <span class="speed-label">~18s</span>
+      </div>
+    </div>
+
+    <!-- Paula Scher -->
+    <div class="config-card">
+      <div class="card-header">
+        <div class="avatar">PS</div>
+        <div>
+          <div class="card-name">Paula Scher</div>
+          <div class="card-role">TYPOGRAPHIC FORCE</div>
+        </div>
+        <span class="card-pct">12%</span>
+      </div>
+      <div class="config-rows">
+        <div class="config-row">
+          <span class="config-label">Model</span>
+          <span class="config-value">GPT-5 Image <span class="pill pill-image">IMAGE</span></span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Thinking</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Web Search</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+      </div>
+      <div class="reasoning-box">
+        <strong>Why:</strong> Scher's work is typography as architecture — Citibank, Windows 8, The Public Theater. GPT-5 Image handles her bold type-as-art visual approach.
+      </div>
+      <div class="speed-bar">
+        <div class="speed-track"><div class="speed-fill" style="width:75%;background:var(--amber)"></div></div>
+        <span class="speed-label">~18s</span>
+      </div>
+    </div>
+
+    <!-- Rob Janoff -->
+    <div class="config-card">
+      <div class="card-header">
+        <div class="avatar">RJ</div>
+        <div>
+          <div class="card-name">Rob Janoff</div>
+          <div class="card-role">APPLE LOGO CREATOR</div>
+        </div>
+        <span class="card-pct">13%</span>
+      </div>
+      <div class="config-rows">
+        <div class="config-row">
+          <span class="config-label">Model</span>
+          <span class="config-value">Nano Banana Pro <span class="pill pill-image">IMAGE</span></span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Thinking</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Web Search</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+      </div>
+      <div class="reasoning-box">
+        <strong>Why:</strong> Janoff designed the most iconic logo in history. Nano Banana Pro for logo-centric visual generation with clean geometric forms.
+      </div>
+      <div class="speed-bar">
+        <div class="speed-track"><div class="speed-fill" style="width:72%;background:var(--amber)"></div></div>
+        <span class="speed-label">~20s</span>
+      </div>
+    </div>
+
+    <!-- Susan Kare -->
+    <div class="config-card">
+      <div class="card-header">
+        <div class="avatar">SK</div>
+        <div>
+          <div class="card-name">Susan Kare</div>
+          <div class="card-role">PIXEL PIONEER</div>
+        </div>
+        <span class="card-pct">11%</span>
+      </div>
+      <div class="config-rows">
+        <div class="config-row">
+          <span class="config-label">Model</span>
+          <span class="config-value">Claude Opus 4.6</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Thinking</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Web Search</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+      </div>
+      <div class="reasoning-box">
+        <strong>Why:</strong> Kare created the Mac icons, Chicago font — UI/UX before it had a name. Claude Opus captures her systems-thinking approach to visual design.
+      </div>
+      <div class="speed-bar">
+        <div class="speed-track"><div class="speed-fill" style="width:85%;background:var(--green)"></div></div>
+        <span class="speed-label">~12s</span>
+      </div>
+    </div>
+
+    <!-- Tobias van Schneider -->
+    <div class="config-card">
+      <div class="card-header">
+        <div class="avatar">TV</div>
+        <div>
+          <div class="card-name">Tobias van Schneider</div>
+          <div class="card-role">DIGITAL NATIVE</div>
+        </div>
+        <span class="card-pct">11%</span>
+      </div>
+      <div class="config-rows">
+        <div class="config-row">
+          <span class="config-label">Model</span>
+          <span class="config-value">Gemini 3.1 Pro</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Thinking</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Web Search</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+      </div>
+      <div class="reasoning-box">
+        <strong>Why:</strong> Tobias (ex-Spotify, Semplice founder) is digital-first modern design. Gemini's speed matches his fast, contemporary creative process.
+      </div>
+      <div class="speed-bar">
+        <div class="speed-track"><div class="speed-fill" style="width:92%;background:var(--green)"></div></div>
+        <span class="speed-label">~9s</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ BUSINESS & STRATEGY TEAM ════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(255,184,0,0.12)">📊</div>
+    <div>
+      <div class="section-title" style="color:var(--gold)">Business & Strategy</div>
+      <div class="section-subtitle">The Visionaries</div>
+    </div>
+  </div>
+
+  <div class="config-grid team-business">
+
+    <!-- Jeff Bezos -->
+    <div class="config-card">
+      <div class="card-header">
+        <div class="avatar">JB</div>
+        <div>
+          <div class="card-name">Jeff Bezos</div>
+          <div class="card-role">CUSTOMER OBSESSION</div>
+        </div>
+        <span class="card-pct">6%</span>
+      </div>
+      <div class="config-rows">
+        <div class="config-row">
+          <span class="config-label">Model</span>
+          <span class="config-value">Claude Opus 4.6</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Thinking</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Web Search</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+      </div>
+      <div class="reasoning-box">
+        <strong>Why:</strong> Bezos thinks in flywheel frameworks and press-release-first. Claude Opus nails his analytical yet customer-first approach. Compact soul (6%) — loads fast.
+      </div>
+      <div class="speed-bar">
+        <div class="speed-track"><div class="speed-fill" style="width:85%;background:var(--green)"></div></div>
+        <span class="speed-label">~12s</span>
+      </div>
+    </div>
+
+    <!-- Elon Musk -->
+    <div class="config-card">
+      <div class="card-header">
+        <div class="avatar">EM</div>
+        <div>
+          <div class="card-name">Elon Musk</div>
+          <div class="card-role">FIRST PRINCIPLES</div>
+        </div>
+        <span class="card-pct">10%</span>
+      </div>
+      <div class="config-rows">
+        <div class="config-row">
+          <span class="config-label">Model</span>
+          <span class="config-value">Grok 4.1</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Thinking</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Web Search</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+      </div>
+      <div class="reasoning-box">
+        <strong>Why:</strong> Musk on Grok is canon — xAI's own model. His first-principles, move-fast-break-things approach matches Grok's direct, unfiltered personality.
+      </div>
+      <div class="speed-bar">
+        <div class="speed-track"><div class="speed-fill" style="width:92%;background:var(--green)"></div></div>
+        <span class="speed-label">~9s</span>
+      </div>
+    </div>
+
+    <!-- Dietrich Mateschitz -->
+    <div class="config-card">
+      <div class="card-header">
+        <div class="avatar">DM</div>
+        <div>
+          <div class="card-name">Dietrich Mateschitz</div>
+          <div class="card-role">CATEGORY CREATOR</div>
+        </div>
+        <span class="card-pct">5%</span>
+      </div>
+      <div class="config-rows">
+        <div class="config-row">
+          <span class="config-label">Model</span>
+          <span class="config-value">GPT-5.2</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Thinking</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Web Search</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+      </div>
+      <div class="reasoning-box">
+        <strong>Why:</strong> Mateschitz invented energy drinks AND extreme sports marketing. GPT-5.2 balances his strategic depth with creative brand-building. Smallest soul file (5%) — fastest load.
+      </div>
+      <div class="speed-bar">
+        <div class="speed-track"><div class="speed-fill" style="width:90%;background:var(--green)"></div></div>
+        <span class="speed-label">~10s</span>
+      </div>
+    </div>
+
+    <!-- Richard Branson -->
+    <div class="config-card">
+      <div class="card-header">
+        <div class="avatar">RB</div>
+        <div>
+          <div class="card-name">Richard Branson</div>
+          <div class="card-role">BRAND ADVENTURER</div>
+        </div>
+        <span class="card-pct">5%</span>
+      </div>
+      <div class="config-rows">
+        <div class="config-row">
+          <span class="config-label">Model</span>
+          <span class="config-value">Gemini 3.1 Pro</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Thinking</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Web Search</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+      </div>
+      <div class="reasoning-box">
+        <strong>Why:</strong> Branson is fun, fast, and fearless. Gemini's quick, playful output mirrors his "screw it, let's do it" personality. Small soul = quick.
+      </div>
+      <div class="speed-bar">
+        <div class="speed-track"><div class="speed-fill" style="width:92%;background:var(--green)"></div></div>
+        <span class="speed-label">~9s</span>
+      </div>
+    </div>
+
+    <!-- Warren Buffett -->
+    <div class="config-card">
+      <div class="card-header">
+        <div class="avatar">WB</div>
+        <div>
+          <div class="card-name">Warren Buffett</div>
+          <div class="card-role">VALUE INVESTOR</div>
+        </div>
+        <span class="card-pct">6%</span>
+      </div>
+      <div class="config-rows">
+        <div class="config-row">
+          <span class="config-label">Model</span>
+          <span class="config-value">Claude Sonnet 4.6</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Thinking</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Web Search</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+      </div>
+      <div class="reasoning-box">
+        <strong>Why:</strong> Buffett is the anti-hype voice — patient, data-driven, contrarian. Claude Sonnet's careful analytical style matches his "be fearful when others are greedy" philosophy.
+      </div>
+      <div class="speed-bar">
+        <div class="speed-track"><div class="speed-fill" style="width:88%;background:var(--green)"></div></div>
+        <span class="speed-label">~11s</span>
+      </div>
+    </div>
+
+    <!-- Steve Jobs (as soul) -->
+    <div class="config-card">
+      <div class="card-header">
+        <div class="avatar">SJ</div>
+        <div>
+          <div class="card-name">Steve Jobs</div>
+          <div class="card-role">VISIONARY · DEFAULT MODERATOR</div>
+        </div>
+        <span class="card-pct">15%</span>
+      </div>
+      <div class="config-rows">
+        <div class="config-row">
+          <span class="config-label">Model (as soul)</span>
+          <span class="config-value">GPT-5.2</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Model (as moderator)</span>
+          <span class="config-value">Claude Opus 4.6</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Thinking</span>
+          <span class="pill pill-off">OFF <span style="color:var(--text-muted);font-size:8px;margin-left:4px">(as soul)</span></span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Web Search</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+      </div>
+      <div class="reasoning-box">
+        <strong>Dual role:</strong> When selected as a soul participant, Jobs runs fast on GPT-5.2. When he's the Moderator (Stage 3), he uses Opus + THINK to synthesize all responses. See Leadership section below.
+      </div>
+      <div class="speed-bar">
+        <div class="speed-track"><div class="speed-fill" style="width:90%;background:var(--green)"></div></div>
+        <span class="speed-label">~10s</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ LEADERSHIP + DA ════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(255,184,0,0.12)">👑</div>
+    <div>
+      <div class="section-title">Leadership & Devil's Advocate</div>
+      <div class="section-subtitle">The Command Layer</div>
+    </div>
+  </div>
+
+  <div class="config-grid">
+    <!-- Moderator -->
+    <div class="config-card" style="border-color:rgba(255,184,0,0.15)">
+      <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:var(--gold);border-radius:3px 0 0 3px"></div>
+      <div class="card-header">
+        <div class="avatar" style="background:rgba(255,184,0,0.15);color:var(--gold)">SJ</div>
+        <div>
+          <div class="card-name">Steve Jobs</div>
+          <div class="card-role" style="color:var(--gold)">MODERATOR · STAGE 3</div>
+        </div>
+      </div>
+      <div class="config-rows">
+        <div class="config-row">
+          <span class="config-label">Model</span>
+          <span class="config-value">Claude Opus 4.6 <span class="pill pill-rec">REC</span></span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Thinking</span>
+          <span class="pill pill-think">THINK</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Web Search</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+      </div>
+      <div class="reasoning-box">
+        <strong>Why THINK:</strong> The Moderator synthesizes ALL soul responses + DA critique into a final direction. This requires reasoning through multiple perspectives. THINK (not DEEP) gives enough analysis without 90s latency. Web Search OFF — he works with what the souls produced.
+      </div>
+    </div>
+
+    <!-- Evaluator -->
+    <div class="config-card" style="border-color:rgba(139,92,246,0.15)">
+      <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:var(--purple);border-radius:3px 0 0 3px"></div>
+      <div class="card-header">
+        <div class="avatar" style="background:rgba(139,92,246,0.15);color:var(--purple)">JI</div>
+        <div>
+          <div class="card-name">Jony Ive</div>
+          <div class="card-role" style="color:var(--purple)">EVALUATOR · STAGE 2</div>
+        </div>
+        <span class="card-pct">11%</span>
+      </div>
+      <div class="config-rows">
+        <div class="config-row">
+          <span class="config-label">Model</span>
+          <span class="config-value">Claude Sonnet 4.6 <span class="pill pill-rec">REC</span></span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Thinking</span>
+          <span class="pill pill-think">THINK</span>
+        </div>
+        <div class="config-row">
+          <span class="config-label">Web Search</span>
+          <span class="pill pill-off">OFF</span>
+        </div>
+      </div>
+      <div class="reasoning-box">
+        <strong>Why THINK:</strong> Ive scores and ranks all soul outputs with precision. THINK helps reason through quality comparisons. Sonnet is faster than Opus while still analytically strong.
+      </div>
+    </div>
+
+    <!-- Devil's Advocate -->
+    <div class="config-card" style="border-color:rgba(239,68,68,0.15);grid-column:1/-1">
+      <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:var(--red);border-radius:3px 0 0 3px"></div>
+      <div class="card-header">
+        <div class="avatar" style="background:rgba(239,68,68,0.15);color:var(--red)">AD</div>
+        <div>
+          <div class="card-name">Advocatus Diaboli</div>
+          <div class="card-role" style="color:var(--red)">DEVIL'S ADVOCATE · STAGE 2</div>
+        </div>
+        <span class="card-pct">6%</span>
+      </div>
+      <div class="council-grid" style="margin-top:16px">
+        <div>
+          <div class="config-rows">
+            <div class="config-row">
+              <span class="config-label">Model</span>
+              <span class="config-value">Grok 4.1 <span class="pill pill-rec">REC</span></span>
+            </div>
+            <div class="config-row">
+              <span class="config-label">Thinking</span>
+              <span class="pill pill-think">THINK</span>
+            </div>
+            <div class="config-row">
+              <span class="config-label">Web Search</span>
+              <span class="pill pill-on">ON</span>
+            </div>
+            <div class="config-row">
+              <span class="config-label">Aggression</span>
+              <span class="pill pill-aggressive">AGGRESSIVE</span>
+            </div>
+            <div class="config-row">
+              <span class="config-label">Strategy</span>
+              <span class="config-value">Sanhedrin</span>
+            </div>
+            <div class="config-row">
+              <span class="config-label">Max Elimination</span>
+              <span class="config-value">60%</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="reasoning-box" style="margin-top:0">
+            <strong>Why Grok + THINK + Search:</strong> The DA must be fast AND factual. Grok is naturally aggressive and unfiltered — perfect for critique. THINK (not DEEP) gives structured attack reasoning without 90s delay. Web Search ON for real counter-evidence: "Your market estimate is wrong — here's actual data." Sanhedrin rule: if all souls agree, the DA MUST find a flaw. 60% cap prevents total destruction.
+          </div>
+          <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:4px">
+            <span class="pill pill-on">Market Viability</span>
+            <span class="pill pill-on">Originality</span>
+            <span class="pill pill-on">Execution Risk</span>
+            <span class="pill pill-off">Legal</span>
+            <span class="pill pill-off">Cultural</span>
+            <span class="pill pill-off">Competitive</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ COMPLETE TABLE ════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(255,255,255,0.06)">📋</div>
+    <div>
+      <div class="section-title">Quick Reference</div>
+      <div class="section-subtitle">All 19 + DA + Leadership</div>
+    </div>
+  </div>
+
+  <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="border-bottom:2px solid var(--border)">
+          <th style="text-align:left;padding:12px 16px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:var(--text-muted)">SOUL</th>
+          <th style="text-align:left;padding:12px 16px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:var(--text-muted)">TEAM</th>
+          <th style="text-align:left;padding:12px 16px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:var(--text-muted)">MODEL</th>
+          <th style="text-align:center;padding:12px 16px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:var(--text-muted)">THINK</th>
+          <th style="text-align:center;padding:12px 16px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:var(--text-muted)">SEARCH</th>
+          <th style="text-align:center;padding:12px 16px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:var(--text-muted)">FILE</th>
+          <th style="text-align:center;padding:12px 16px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:var(--text-muted)">~TIME</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 16px">David Ogilvy</td><td style="padding:10px 16px;color:var(--flame)">Copy</td><td style="padding:10px 16px">Claude Opus 4.6</td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center;color:var(--text-muted)">13%</td><td style="text-align:center;color:var(--text-muted)">12s</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 16px">Leo Burnett</td><td style="padding:10px 16px;color:var(--flame)">Copy</td><td style="padding:10px 16px">GPT-5.2</td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center;color:var(--text-muted)">13%</td><td style="text-align:center;color:var(--text-muted)">10s</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 16px">Claude Hopkins</td><td style="padding:10px 16px;color:var(--flame)">Copy</td><td style="padding:10px 16px">Claude Sonnet 4.6</td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center;color:var(--text-muted)">12%</td><td style="text-align:center;color:var(--text-muted)">11s</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 16px">Gary Halbert</td><td style="padding:10px 16px;color:var(--flame)">Copy</td><td style="padding:10px 16px">Grok 4.1</td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center;color:var(--text-muted)">11%</td><td style="text-align:center;color:var(--text-muted)">9s</td></tr>
+        <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 16px">Mary Wells Lawrence</td><td style="padding:10px 16px;color:var(--flame)">Copy</td><td style="padding:10px 16px">Gemini 3.1 Pro</td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center;color:var(--text-muted)">16%</td><td style="text-align:center;color:var(--text-muted)">9s</td></tr>
+        <tr style="border-bottom:1px solid var(--border);background:rgba(0,217,255,0.015)"><td style="padding:10px 16px">Paul Rand</td><td style="padding:10px 16px;color:var(--cyan)">Design</td><td style="padding:10px 16px">Nano Banana Pro <span class="pill pill-image">IMG</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center;color:var(--text-muted)">14%</td><td style="text-align:center;color:var(--text-muted)">20s</td></tr>
+        <tr style="border-bottom:1px solid var(--border);background:rgba(0,217,255,0.015)"><td style="padding:10px 16px">Saul Bass</td><td style="padding:10px 16px;color:var(--cyan)">Design</td><td style="padding:10px 16px">GPT-5 Image <span class="pill pill-image">IMG</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center;color:var(--text-muted)">12%</td><td style="text-align:center;color:var(--text-muted)">18s</td></tr>
+        <tr style="border-bottom:1px solid var(--border);background:rgba(0,217,255,0.015)"><td style="padding:10px 16px">Paula Scher</td><td style="padding:10px 16px;color:var(--cyan)">Design</td><td style="padding:10px 16px">GPT-5 Image <span class="pill pill-image">IMG</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center;color:var(--text-muted)">12%</td><td style="text-align:center;color:var(--text-muted)">18s</td></tr>
+        <tr style="border-bottom:1px solid var(--border);background:rgba(0,217,255,0.015)"><td style="padding:10px 16px">Rob Janoff</td><td style="padding:10px 16px;color:var(--cyan)">Design</td><td style="padding:10px 16px">Nano Banana Pro <span class="pill pill-image">IMG</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center;color:var(--text-muted)">13%</td><td style="text-align:center;color:var(--text-muted)">20s</td></tr>
+        <tr style="border-bottom:1px solid var(--border);background:rgba(0,217,255,0.015)"><td style="padding:10px 16px">Susan Kare</td><td style="padding:10px 16px;color:var(--cyan)">Design</td><td style="padding:10px 16px">Claude Opus 4.6</td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center;color:var(--text-muted)">11%</td><td style="text-align:center;color:var(--text-muted)">12s</td></tr>
+        <tr style="border-bottom:1px solid var(--border);background:rgba(0,217,255,0.015)"><td style="padding:10px 16px">Tobias van Schneider</td><td style="padding:10px 16px;color:var(--cyan)">Design</td><td style="padding:10px 16px">Gemini 3.1 Pro</td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center;color:var(--text-muted)">11%</td><td style="text-align:center;color:var(--text-muted)">9s</td></tr>
+        <tr style="border-bottom:1px solid var(--border);background:rgba(255,184,0,0.015)"><td style="padding:10px 16px">Jeff Bezos</td><td style="padding:10px 16px;color:var(--gold)">Business</td><td style="padding:10px 16px">Claude Opus 4.6</td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center;color:var(--text-muted)">6%</td><td style="text-align:center;color:var(--text-muted)">12s</td></tr>
+        <tr style="border-bottom:1px solid var(--border);background:rgba(255,184,0,0.015)"><td style="padding:10px 16px">Elon Musk</td><td style="padding:10px 16px;color:var(--gold)">Business</td><td style="padding:10px 16px">Grok 4.1</td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center;color:var(--text-muted)">10%</td><td style="text-align:center;color:var(--text-muted)">9s</td></tr>
+        <tr style="border-bottom:1px solid var(--border);background:rgba(255,184,0,0.015)"><td style="padding:10px 16px">Dietrich Mateschitz</td><td style="padding:10px 16px;color:var(--gold)">Business</td><td style="padding:10px 16px">GPT-5.2</td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center;color:var(--text-muted)">5%</td><td style="text-align:center;color:var(--text-muted)">10s</td></tr>
+        <tr style="border-bottom:1px solid var(--border);background:rgba(255,184,0,0.015)"><td style="padding:10px 16px">Richard Branson</td><td style="padding:10px 16px;color:var(--gold)">Business</td><td style="padding:10px 16px">Gemini 3.1 Pro</td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center;color:var(--text-muted)">5%</td><td style="text-align:center;color:var(--text-muted)">9s</td></tr>
+        <tr style="border-bottom:1px solid var(--border);background:rgba(255,184,0,0.015)"><td style="padding:10px 16px">Warren Buffett</td><td style="padding:10px 16px;color:var(--gold)">Business</td><td style="padding:10px 16px">Claude Sonnet 4.6</td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center;color:var(--text-muted)">6%</td><td style="text-align:center;color:var(--text-muted)">11s</td></tr>
+        <tr style="border-bottom:1px solid var(--border);background:rgba(255,184,0,0.015)"><td style="padding:10px 16px">Steve Jobs</td><td style="padding:10px 16px;color:var(--gold)">Business</td><td style="padding:10px 16px">GPT-5.2</td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center;color:var(--text-muted)">15%</td><td style="text-align:center;color:var(--text-muted)">10s</td></tr>
+        <tr style="border-bottom:2px solid rgba(255,184,0,0.15);background:rgba(255,184,0,0.03)"><td style="padding:10px 16px;font-weight:600">Steve Jobs</td><td style="padding:10px 16px;color:var(--gold);font-weight:600">Moderator</td><td style="padding:10px 16px">Claude Opus 4.6</td><td style="text-align:center"><span class="pill pill-think">THINK</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center;color:var(--text-muted)">—</td><td style="text-align:center;color:var(--text-muted)">30s</td></tr>
+        <tr style="border-bottom:2px solid rgba(139,92,246,0.15);background:rgba(139,92,246,0.03)"><td style="padding:10px 16px;font-weight:600">Jony Ive</td><td style="padding:10px 16px;color:var(--purple);font-weight:600">Evaluator</td><td style="padding:10px 16px">Claude Sonnet 4.6</td><td style="text-align:center"><span class="pill pill-think">THINK</span></td><td style="text-align:center"><span class="pill pill-off">OFF</span></td><td style="text-align:center;color:var(--text-muted)">11%</td><td style="text-align:center;color:var(--text-muted)">25s</td></tr>
+        <tr style="background:rgba(239,68,68,0.03)"><td style="padding:10px 16px;font-weight:600">Advocatus Diaboli</td><td style="padding:10px 16px;color:var(--red);font-weight:600">DA</td><td style="padding:10px 16px">Grok 4.1</td><td style="text-align:center"><span class="pill pill-think">THINK</span></td><td style="text-align:center"><span class="pill pill-on">ON</span></td><td style="text-align:center;color:var(--text-muted)">6%</td><td style="text-align:center;color:var(--text-muted)">35s</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:20px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);display:flex;gap:16px;flex-wrap:wrap">
+    <span><strong style="color:var(--green)">Stage 1 (5 souls):</strong> ~50-60s</span>
+    <span><strong style="color:var(--amber)">Stage 2 (DA + Eval):</strong> ~60s</span>
+    <span><strong style="color:var(--gold)">Stage 3 (Moderator):</strong> ~30s</span>
+    <span><strong style="color:var(--text-primary)">Total:</strong> ~2.5 min</span>
+  </div>
+</div>
+
+<!-- ════════════════════════ LLM COUNCIL PRESETS ════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg,rgba(0,217,255,0.15),rgba(139,92,246,0.15))">⚖️</div>
+    <div>
+      <div class="section-title" style="background:linear-gradient(90deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent">LLM Council</div>
+      <div class="section-subtitle">Model Comparison Presets</div>
+    </div>
+  </div>
+
+  <!-- Genesis Classic -->
+  <div class="preset-card">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+      <div class="preset-name">Genesis Classic</div>
+      <span class="pill pill-gold">⭐ RECOMMENDED DEFAULT</span>
+    </div>
+    <div class="preset-desc">Top model from each provider — balanced quality, speed, and diversity of thought.</div>
+    <div class="config-rows">
+      <div class="config-row">
+        <span class="config-label">Models</span>
+        <div class="model-list">
+          <span class="model-tag" style="border-color:rgba(0,217,255,0.2);color:var(--cyan)">Claude Opus 4.6</span>
+          <span class="model-tag" style="border-color:rgba(16,163,127,0.2);color:#10A37F">GPT-5.2</span>
+          <span class="model-tag" style="border-color:rgba(66,133,244,0.2);color:#4285F4">Gemini 3.1 Pro</span>
+          <span class="model-tag" style="border-color:rgba(239,68,68,0.2);color:var(--red)">Grok 4.1</span>
+        </div>
+      </div>
+      <div class="config-row">
+        <span class="config-label">All Thinking</span>
+        <span class="pill pill-think">THINK</span>
+      </div>
+      <div class="config-row">
+        <span class="config-label">Web Search</span>
+        <span class="pill pill-on">ON</span>
+      </div>
+      <div class="config-row">
+        <span class="config-label">Chairman</span>
+        <span class="config-value">Claude Opus 4.6 <span class="pill pill-deep">DEEP</span></span>
+      </div>
+      <div class="config-row">
+        <span class="config-label">Anonymization</span>
+        <span class="pill pill-off">OFF</span>
+      </div>
+    </div>
+    <div class="reasoning-box">
+      <strong>Why:</strong> 4 top-tier models with THINK gives quality in ~25s each. Chairman uses DEEP because it only runs once and must reason through everything. Council is a research tool — Web Search ON.
+    </div>
+  </div>
+
+  <!-- Speed Run -->
+  <div class="preset-card">
+    <div class="preset-name">Speed Run</div>
+    <div class="preset-desc">Quick comparison — 3 fast models, no thinking, no search.</div>
+    <div class="config-rows">
+      <div class="config-row">
+        <span class="config-label">Models</span>
+        <div class="model-list">
+          <span class="model-tag">GPT-5.2</span>
+          <span class="model-tag">Gemini 3.1 Pro</span>
+          <span class="model-tag">Claude Sonnet 4.6</span>
+        </div>
+      </div>
+      <div class="config-row"><span class="config-label">Thinking</span><span class="pill pill-off">OFF</span></div>
+      <div class="config-row"><span class="config-label">Web Search</span><span class="pill pill-off">OFF</span></div>
+      <div class="config-row"><span class="config-label">Chairman</span><span class="config-value">Gemini 3.1 Pro <span class="pill pill-think">THINK</span></span></div>
+    </div>
+  </div>
+
+  <!-- Deep Research -->
+  <div class="preset-card">
+    <div class="preset-name">Deep Research</div>
+    <div class="preset-desc">Maximum depth — 5+ models, deep thinking, full search. For critical decisions.</div>
+    <div class="config-rows">
+      <div class="config-row">
+        <span class="config-label">Models</span>
+        <div class="model-list">
+          <span class="model-tag">Claude Opus 4.6</span>
+          <span class="model-tag">GPT-5.2</span>
+          <span class="model-tag">Sonar Pro Search <span class="pill pill-search" style="margin-left:4px">SEARCH</span></span>
+          <span class="model-tag">Grok 4.1</span>
+          <span class="model-tag">Gemini 3.1 Pro</span>
+        </div>
+      </div>
+      <div class="config-row"><span class="config-label">Thinking</span><span class="pill pill-deep">DEEP</span></div>
+      <div class="config-row"><span class="config-label">Web Search</span><span class="pill pill-on">ON</span></div>
+      <div class="config-row"><span class="config-label">Chairman</span><span class="config-value">Claude Opus 4.6 <span class="pill pill-deep">DEEP</span></span></div>
+    </div>
+    <div class="reasoning-box"><strong>Note:</strong> Takes 5-8 minutes. Use for important research, strategy decisions, or when you need bulletproof analysis.</div>
+  </div>
+
+  <!-- Visual + Research -->
+  <div class="preset-card">
+    <div class="preset-name">Visual + Research</div>
+    <div class="preset-desc">Text + generated images + web sources — richest possible output.</div>
+    <div class="config-rows">
+      <div class="config-row">
+        <span class="config-label">Models</span>
+        <div class="model-list">
+          <span class="model-tag">GPT-5 Image <span class="pill pill-image" style="margin-left:4px">IMG</span></span>
+          <span class="model-tag">Nano Banana Pro <span class="pill pill-image" style="margin-left:4px">IMG</span></span>
+          <span class="model-tag">Sonar Pro Search <span class="pill pill-search" style="margin-left:4px">SEARCH</span></span>
+          <span class="model-tag">Claude Opus 4.6</span>
+        </div>
+      </div>
+      <div class="config-row"><span class="config-label">Thinking</span><span class="pill pill-think">THINK</span></div>
+      <div class="config-row"><span class="config-label">Web Search</span><span class="pill pill-on">ON</span></div>
+      <div class="config-row"><span class="config-label">Chairman</span><span class="config-value">Claude Opus 4.6 <span class="pill pill-deep">DEEP</span></span></div>
+    </div>
+    <div class="reasoning-box"><strong>Use for:</strong> Marketing campaigns, product launches, brand strategy — text + visuals + research in one session.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════ MODEL DISTRIBUTION ════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(20,184,166,0.12)">🧠</div>
+    <div>
+      <div class="section-title">Model Distribution Strategy</div>
+      <div class="section-subtitle">Diversity = Better Output</div>
+    </div>
+  </div>
+
+  <div class="council-grid">
+    <div class="council-card">
+      <h3 style="font-size:14px;margin-bottom:12px;color:var(--cyan)">Claude (Anthropic)</h3>
+      <p style="color:var(--text-secondary);font-size:13px">Ogilvy, Hopkins, Kare, Bezos, Buffett + Moderator + Evaluator</p>
+      <p style="color:var(--text-muted);font-size:12px;margin-top:6px">Analytical, nuanced, systems-thinking. Best for: strategic depth, careful reasoning.</p>
+    </div>
+    <div class="council-card">
+      <h3 style="font-size:14px;margin-bottom:12px;color:#10A37F">GPT-5.2 / GPT-5 Image (OpenAI)</h3>
+      <p style="color:var(--text-secondary);font-size:13px">Burnett, Mateschitz, Jobs + Bass, Scher (image)</p>
+      <p style="color:var(--text-muted);font-size:12px;margin-top:6px">Creative narrative, strong visual generation. Best for: storytelling, brand building.</p>
+    </div>
+    <div class="council-card">
+      <h3 style="font-size:14px;margin-bottom:12px;color:#4285F4">Gemini 3.1 Pro / Nano Banana (Google)</h3>
+      <p style="color:var(--text-secondary);font-size:13px">Mary Wells, Branson, Tobias + Rand, Janoff (image)</p>
+      <p style="color:var(--text-muted);font-size:12px;margin-top:6px">Fast, divergent, unexpected. Best for: speed, creative rule-breaking, visual concepts.</p>
+    </div>
+    <div class="council-card">
+      <h3 style="font-size:14px;margin-bottom:12px;color:var(--red)">Grok 4.1 (xAI)</h3>
+      <p style="color:var(--text-secondary);font-size:13px">Halbert, Musk + Devil's Advocate</p>
+      <p style="color:var(--text-muted);font-size:12px;margin-top:6px">Direct, unfiltered, aggressive. Best for: critique, confrontation, raw energy.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ TODO ════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon" style="background:rgba(239,68,68,0.12)">📝</div>
+    <div>
+      <div class="section-title">Tomorrow's Roadmap</div>
+      <div class="section-subtitle">Priority Task List</div>
+    </div>
+  </div>
+
+  <div class="todo-section">
+    <div class="todo-item">
+      <span class="todo-priority p1">P1</span>
+      <div class="todo-text"><strong>Genesis Chamber Bug Testing</strong> — Full test of Chamber mode, document all remaining UI bugs</div>
+    </div>
+    <div class="todo-item">
+      <span class="todo-priority p1">P1</span>
+      <div class="todo-text"><strong>Update CLAUDE.md + backend-CLAUDE.md</strong> — Reflect all Phase 9 changes, new models, architecture BEFORE any more development</div>
+    </div>
+    <div class="todo-item">
+      <span class="todo-priority p1">P1</span>
+      <div class="todo-text"><strong>Fix Chamber Bugs</strong> — Whatever comes from testing round</div>
+    </div>
+    <div class="todo-item">
+      <span class="todo-priority p1">P1</span>
+      <div class="todo-text"><strong>Apply Default Configs</strong> — Set optimal defaults from this guide in mock.js, councilStore.js, chamberStore.js</div>
+    </div>
+    <div class="todo-item">
+      <span class="todo-priority p2">P2</span>
+      <div class="todo-text"><strong>Overwork Config Guide</strong> — Update THIS document after all bugs fixed and configs applied. Verify against actual codebase.</div>
+    </div>
+    <div class="todo-item">
+      <span class="todo-priority p2">P2</span>
+      <div class="todo-text"><strong>Loading Animation Final Polish</strong> — Shimmer gradient, staggered entry, tier-color borders</div>
+    </div>
+    <div class="todo-item">
+      <span class="todo-priority p2">P2</span>
+      <div class="todo-text"><strong>Full Database Persistence</strong> — Replace localStorage with SQLite/PostgreSQL for sessions</div>
+    </div>
+    <div class="todo-item">
+      <span class="todo-priority p3">P3</span>
+      <div class="todo-text"><strong>V5 Master Upgrade</strong> — RAG, soul memory, dynamic emotional states, anti-sycophancy (only after P1+P2 stable)</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ════════════════════════ FOOTER ════════════════════════ -->
+<div class="footer">
+  <p>Genesis Chamber V5.1 — Configuration Guide · 19 Souls + DA + Leadership</p>
+  <p style="margin-top:4px">Generated February 24, 2026</p>
+</div>
+
+</body>
+</html>

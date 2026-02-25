@@ -10,17 +10,18 @@ load_dotenv()
 # OpenRouter API key
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-# Council members - list of OpenRouter model identifiers (5 premium defaults)
+# Council members - list of OpenRouter model identifiers (6 premium defaults)
 COUNCIL_MODELS = [
-    "anthropic/claude-opus-4-6",
+    "anthropic/claude-opus-4.6",
     "google/gemini-3.1-pro-preview",
     "perplexity/sonar-pro-search",
     "google/gemini-3-pro-image-preview",
     "openai/gpt-5-image",
+    "openai/gpt-5.2",
 ]
 
 # Chairman model - synthesizes final response
-CHAIRMAN_MODEL = "google/gemini-3.1-pro-preview"
+CHAIRMAN_MODEL = "anthropic/claude-opus-4.6"
 
 # OpenRouter API endpoint
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
@@ -243,7 +244,7 @@ DEFAULT_PARTICIPANTS = {
     },
     "gary-halbert": {
         "name": "Gary Halbert",
-        "model": "x-ai/grok-4.1",
+        "model": "x-ai/grok-4",
         "soul_document": "souls/gary-halbert.md",
         "role": "participant",
         "team": "marketing",
@@ -294,7 +295,7 @@ DEFAULT_PARTICIPANTS = {
     },
     "rob-janoff": {
         "name": "Rob Janoff",
-        "model": "x-ai/grok-4.1",
+        "model": "x-ai/grok-4",
         "soul_document": "souls/rob-janoff.md",
         "role": "participant",
         "team": "design",
@@ -315,7 +316,7 @@ DEFAULT_PARTICIPANTS = {
     # --- Business & Strategy Team ---
     "elon-musk": {
         "name": "Elon Musk",
-        "model": "x-ai/grok-4.1",
+        "model": "x-ai/grok-4",
         "soul_document": "souls/elon-musk.md",
         "role": "participant",
         "team": "business",
@@ -369,13 +370,13 @@ DEFAULT_PARTICIPANTS = {
 # These two roles judge, eliminate, and assess craft — they need the strongest reasoning.
 # Benchmark both Claude Opus 4.6 and GPT-5.2, then pick the best for each role.
 # To switch: just change the "model" field below.
-#   Option A: "anthropic/claude-opus-4-6"   — deepest reasoning, best synthesis
+#   Option A: "anthropic/claude-opus-4.6"   — deepest reasoning, best synthesis
 #   Option B: "openai/gpt-5.2"             — strong creative reasoning, fast
 #   Option C: Hybrid (Jobs on one, Ive on the other for max cognitive diversity)
 
 DEFAULT_MODERATOR = {
     "name": "Steve Jobs",
-    "model": "anthropic/claude-opus-4-6",
+    "model": "anthropic/claude-opus-4.6",
     "soul_document": "souls/steve-jobs.md",
     "role": "moderator",
     "team": "leadership",
@@ -406,7 +407,7 @@ DEFAULT_EVALUATOR = {
 # OPTIONAL — activated per simulation via the devils_advocate toggle.
 DEFAULT_DEVILS_ADVOCATE = {
     "name": "Advocatus Diaboli",
-    "model": "x-ai/grok-4.1",
+    "model": "x-ai/grok-4",
     "soul_document": "souls/devils-advocate.md",
     "role": "devils_advocate",
     "team": "leadership",

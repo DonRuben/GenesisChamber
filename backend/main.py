@@ -810,7 +810,7 @@ async def get_available_models():
             "tier_1_premium": {
                 "description": "Best quality, highest cost",
                 "models": [
-                    {"id": "anthropic/claude-opus-4-6", "cost_per_1m_tokens": 15.0, "context": "200K", "best_for": "Deepest reasoning, synthesis"},
+                    {"id": "anthropic/claude-opus-4.6", "cost_per_1m_tokens": 15.0, "context": "200K", "best_for": "Deepest reasoning, synthesis"},
                     {"id": "openai/gpt-5.2", "cost_per_1m_tokens": 15.0, "context": "128K", "best_for": "Creative reasoning"},
                     {"id": "openai/gpt-5.1", "cost_per_1m_tokens": 5.0, "context": "128K", "best_for": "Strong creative reasoning"},
                     {"id": "google/gemini-3-pro", "cost_per_1m_tokens": 7.0, "context": "2M", "best_for": "Long context"}
@@ -821,8 +821,8 @@ async def get_available_models():
                 "models": [
                     {"id": "anthropic/claude-sonnet-4.6", "cost_per_1m_tokens": 3.0, "context": "1M", "best_for": "Detail, precision"},
                     {"id": "google/gemini-2.5-pro", "cost_per_1m_tokens": 2.5, "context": "1M", "best_for": "Research-heavy"},
-                    {"id": "x-ai/grok-4.1", "cost_per_1m_tokens": 3.0, "context": "128K", "best_for": "Bold, provocative"},
-                    {"id": "x-ai/grok-4.1", "cost_per_1m_tokens": 3.0, "context": "128K", "best_for": "Latest Grok, improved reasoning"},
+                    {"id": "x-ai/grok-4", "cost_per_1m_tokens": 3.0, "context": "128K", "best_for": "Bold, provocative"},
+                    {"id": "x-ai/grok-4", "cost_per_1m_tokens": 3.0, "context": "128K", "best_for": "Latest Grok, improved reasoning"},
                     {"id": "mistralai/mistral-large", "cost_per_1m_tokens": 2.0, "context": "128K", "best_for": "EU alternative, strong reasoning"}
                 ]
             },

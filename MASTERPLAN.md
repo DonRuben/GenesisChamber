@@ -96,7 +96,7 @@ Different LLMs per persona for cognitive diversity (all via OpenRouter):
 
 | Model | ID (OpenRouter) | Strengths | Considerations |
 |-------|-----------------|-----------|----------------|
-| Claude Opus 4.6 | `anthropic/claude-opus-4-6` | Deepest reasoning, best synthesis, nuanced judgment, large context | Highest cost per token |
+| Claude Opus 4.6 | `anthropic/claude-opus-4.6` | Deepest reasoning, best synthesis, nuanced judgment, large context | Highest cost per token |
 | GPT-5.2 | `openai/gpt-5.2` | Strong creative reasoning, fast, excellent instruction following | May lack Claude's nuance in multi-turn synthesis |
 
 **Evaluation plan:**

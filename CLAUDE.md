@@ -48,17 +48,17 @@ Business (5): elon-musk, jeff-bezos, warren-buffett, richard-branson, dietrich-m
 Leadership: steve-jobs (Moderator), jony-ive (Evaluator)
 Special: devils-advocate (Promoter of the Faith)
 
-## LLM Council — Model Roster (17 models, 5 tiers)
+## LLM Council — Model Roster (21 models, 5 tiers)
 
 | Tier | Models | Price Range |
 |------|--------|------------|
-| **Premium** (5) | Claude Opus 4.6, Gemini 3.1 Pro, Sonar Pro Search, Nano Banana Pro, GPT-5 Image | $3–$75/M |
-| **Balanced** (5) | GPT-5.2, Gemini 3 Pro, Grok 4.1, Claude Sonnet 4.6, GPT-5.3 Codex | $2.5–$15/M |
-| **Efficient** (3) | Claude Haiku 4.5, Gemini 3 Flash, GPT-5.2 Chat | $0.15–$4/M |
-| **Budget** (3) | DeepSeek V3.2, Gemini 2.5 Flash Lite, GPT-4.1 Nano | $0.075–$1.1/M |
+| **Premium** (6) | Claude Opus 4.6, Gemini 3.1 Pro, Sonar Pro Search, Nano Banana Pro, GPT-5 Image, GPT-5.2 | $3–$75/M |
+| **Balanced** (4) | Gemini 3 Pro, Grok 4, Claude Sonnet 4.6, GPT-5.3 Codex | $2.5–$15/M |
+| **Efficient** (6) | Claude Haiku 4.5, Gemini 3 Flash, GPT-5.2 Chat, MiniMax M2.5, Kimi K2.5, Kimi K2 Thinking | $0.15–$4/M |
+| **Budget** (4) | DeepSeek V3.2, Gemini 2.5 Flash Lite, GPT-4.1 Nano, Llama 4 Maverick | $0.075–$1.1/M |
 | **Specialist** (1) | O3-Pro (always max reasoning, 30x expensive) | $60–$240/M |
 
-Default active: all 5 Premium models. Defined in `mock.js:MODELS` and `mock.js:DEFAULT_COUNCIL_MODELS`.
+Default active: all 6 Premium models. Defined in `mock.js:MODELS` and `mock.js:DEFAULT_COUNCIL_MODELS`.
 
 ### 5-Level Thinking System
 | Level | Key | Behavior | Token Scaling |
@@ -135,7 +135,7 @@ Phase 9 spec exists in `docs/phase9-final-spec.md` but is NOT YET INTEGRATED. Fe
 - Thinking mode values are `'off'`|`'low'`|`'medium'`|`'high'`|`'max'` — never use old `'thinking'`/`'deep'` values in new code.
 - O3-Pro (`openai/o3-pro`) is Specialist tier — always warn about 30x cost. Never include in defaults.
 - Sonar models have `capabilities: ['search']` — they don't support reasoning config.
-- Model IDs use the exact OpenRouter format: `x-ai/grok-4.1` (not `xai/`), `anthropic/claude-sonnet-4.6` (dot notation).
+- Model IDs use the exact OpenRouter format: `x-ai/grok-4` (not `xai/`), `anthropic/claude-sonnet-4.6` (dot notation).
 
 ## Gotchas
 

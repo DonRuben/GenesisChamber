@@ -28,13 +28,14 @@ export const useCouncilStore = create((set, get) => ({
 
   // ── Model Config (full OpenRouter IDs) ──
   activeModels: [
-    'anthropic/claude-opus-4-6',
+    'anthropic/claude-opus-4.6',
     'google/gemini-3.1-pro-preview',
     'perplexity/sonar-pro-search',
     'google/gemini-3-pro-image-preview',
     'openai/gpt-5-image',
+    'openai/gpt-5.2',
   ],
-  chairmanModel: 'google/gemini-3.1-pro-preview',
+  chairmanModel: 'anthropic/claude-opus-4.6',
   thinkingMode: 'medium',       // 'off' | 'low' | 'medium' | 'high' | 'max'
   modelThinkingModes: {},        // per-model overrides
   enableWebSearch: false,
