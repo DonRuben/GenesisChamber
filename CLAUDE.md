@@ -12,6 +12,16 @@ For backend-specific context (API endpoints, engines, DB schema): see `backend/b
 genesis-chamber-v4/
 ├── src/                          # React 19 + Vite + Zustand
 │   ├── components/               # UI components (ALL inline styles via useTokens())
+│   │   └── council/              # Council-specific components
+│   │       ├── ArtifactPanel.jsx     # Claude.ai-style slide-out panel (preview/code/sources)
+│   │       ├── CollapsibleSources.jsx # Reusable citation display with favicons
+│   │       ├── ConversationView.jsx   # Main conversation layout
+│   │       ├── ImageOutput.jsx        # Image renderer (thumbnail/full variants)
+│   │       ├── ReadFullModal.jsx      # Full response modal with export
+│   │       ├── ResponseCard.jsx       # Individual model response card
+│   │       ├── SettingsPanel.jsx      # Council configuration slide-in
+│   │       ├── SynthesisPanel.jsx     # Chairman synthesis display
+│   │       └── ThinkingCard.jsx       # Animated thinking state (conic border, neural waves)
 │   ├── stores/                   # councilStore.js, appStore.js (Zustand)
 │   ├── data/                     # mock.js (personas, presets), soulBios.js
 │   ├── design/                   # tokens.js, shared.jsx, icons.jsx, gc-motion.css
@@ -20,8 +30,9 @@ genesis-chamber-v4/
 │   ├── main.py                   # App entry (port 8001), CORS, routes
 │   ├── config.py                 # 19 personas, colors, OpenRouter + fal.ai config
 │   ├── council.py                # 3-stage council orchestration (stage1/stage2/stage3)
-│   ├── openrouter.py             # OpenRouter API wrapper + reasoning config
+│   ├── openrouter.py             # OpenRouter API wrapper + reasoning + image extraction
 │   ├── simulation.py             # Genesis Chamber multi-round simulation
+│   ├── image_store.py            # In-memory simulation image store + context references
 │   ├── soul_engine.py            # Soul personality + biography system
 │   ├── output_engine.py          # Final output formatting
 │   ├── image_generator.py        # fal.ai image generation
@@ -99,12 +110,20 @@ Commit after each logical unit: `git add -A && git commit -m "Phase X Group Y: d
 
 ### Styling — IMPORTANT
 - ALL styling is inline style objects via `useTokens()` hook. No Tailwind. No CSS modules. No CSS-in-JS libs.
-- Only 3 CSS files exist: `gc-motion.css` (keyframes), `fonts.css` (@font-face), `index.css` (resets).
+- Only 3 CSS files exist: `gc-motion.css` (keyframes), `fonts.css` (@font-face), `index.css` (resets + pseudo-element classes).
 - Read `src/design/tokens.js` before touching any colors or spacing.
 - Never hardcode hex values. Never use CSS classes for styling (only for animations from gc-motion.css).
+- **Shadow tokens**: `t.shadow.sm`, `t.shadow.md`, `t.shadow.lg` — available in both dark and light themes.
+- **CSS classes** (index.css) — used ONLY where inline styles can't reach (pseudo-elements, backdrop-filter):
+  - `.artifact-backdrop` — backdrop blur overlay (theme-aware rgba)
+  - `.think-card` — conic gradient border via `::before` pseudo-element. Set `--tc-mc` CSS var for model color.
+  - `.think-orbit` — avatar orbit ring animation
+  - `.think-wave line` — neural wave dash animation
+- **Keyframes** (gc-motion.css): `tcBorderSpin`, `tcWaveDash`, `artifactSlideIn`, `artifactFadeIn`, `gcEnter`, `gcFadeIn`.
 
 ### State management
 Zustand stores. `councilStore.js` = council logic. `appStore.js` = app chrome. Components use hooks directly, no prop drilling.
+- **`artifactPanel`** state in councilStore: `{ isOpen, content, modelName, modelColor, sources, images }`. Opened by `openArtifact(data)`, closed by `closeArtifact()`. ArtifactPanel rendered in ConversationView.
 
 ### SSE streaming
 Backend streams Server-Sent Events: `response_start` → `response_chunk` → `response_complete` → `stage_complete`.
@@ -113,8 +132,32 @@ Update store incrementally per-soul as events arrive — never batch/wait for al
 ### Simulation pipeline
 3-stage council: Ideation (all souls generate) → Refinement (Moderator guides) → Evaluation (Evaluator scores + DA challenges). See `backend/backend-CLAUDE.md` for engine details.
 
+### Image Pipeline
+**Extraction** (`openrouter.py:_extract_response`): 4-tier image extraction from OpenRouter responses:
+1. Array content: `[{"type": "image_url", "image_url": {"url": "data:..."}}]`
+2. Markdown inline: `![alt](data:image/png;base64,...)`
+3. Raw base64 data URIs in content text
+4. `message.images[]` — OpenRouter alternate format (images as siblings to content)
+All images are deduplicated before returning. Council stage1/stage3 pass `images` through SSE events.
+
+**Storage** (`image_store.py`): In-memory singleton `image_store` for simulation images. `store_image()` with content-hash dedup, `get_context_references()` returns compact text tokens (~30-50 per image) for injection into subsequent round prompts. Limits: 100 images/simulation, 500MB total. API: `GET /api/simulation/{id}/context-images`, `GET /api/simulation/{id}/context-images/{image_id}`.
+
+**Rendering** (`ImageOutput.jsx`): Thumbnail (80px row) in ResponseCard, full-width in ArtifactPanel. Error fallback for broken images.
+
 ### Current phase
 Phase 9 spec exists in `docs/phase9-final-spec.md` but is NOT YET INTEGRATED. Features planned: per-soul thinking modes, Chairman AI, Devil's Advocate config, premium loading states, 10 council presets. Read the spec before starting any Phase 9 work.
+
+### UI Components — Council Output Pipeline
+
+**ArtifactPanel** (`ArtifactPanel.jsx`): Claude.ai-style 55vw slide-out panel. Triggered by "Artifact" button in ResponseCard. Features: preview/code toggle, markdown rendering, HTML iframe with theme passthrough, source bottom bar with favicon chips, source preview sidebar (280px), copy/download (MD/PDF). State in `councilStore.artifactPanel`. ESC/backdrop/X to close. CSS: `.artifact-backdrop` (index.css), keyframes `artifactSlideIn`/`artifactFadeIn` (gc-motion.css).
+
+**ThinkingCard** (`ThinkingCard.jsx`): Animated card during model reasoning. Conic gradient border via `.think-card::before` (CSS pseudo-element), orbiting avatar ring (`.think-orbit`), 3 neural wave SVG lines (`.think-wave`) with model-specific speeds. Sets `--tc-mc` CSS variable for dynamic model color. Props: `modelName`, `modelColor`, `modelLetter`, `modelId`, `tier`, `thinkingMode`, `elapsed`, `soulName`.
+
+**CollapsibleSources** (`CollapsibleSources.jsx`): Reusable collapsible citation display. Used in ResponseCard and ArtifactPanel. Props: `sources` (array of `{url, title}`), `defaultExpanded`, `columns` (1 or 2), `maxHeight`, `accentColor`. Favicons via Google S2, councilGold hover accent.
+
+**ImageOutput** (`ImageOutput.jsx`): Image renderer with two variants. `variant="thumbnail"`: 80x80 horizontal scroll row, max 6 visible. `variant="full"`: full-width with alt text captions and prompt display. Error fallback for broken images. Props: `images`, `modelColor`, `variant`, `onImageClick`.
+
+**ResponseCard** (`ResponseCard.jsx`): Individual model response card. Features: hover border effect, left accent in model color, 350px scrollable body with gradient fade, CollapsibleSources for citations, "Artifact" button opens ArtifactPanel, inline image rendering, copy/export/read-full actions.
 
 ### UI Components — SettingsPanel
 `SettingsPanel.jsx` is the council configuration slide-in panel. Key patterns:
