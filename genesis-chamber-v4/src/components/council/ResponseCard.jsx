@@ -221,23 +221,6 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
           </div>
         )}
 
-        {/* Read full response — opens artifact panel */}
-        {isLong && (
-          <button
-            onClick={handleOpenArtifact}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              marginTop: 4, padding: '6px 12px',
-              background: 'transparent', border: `1px solid ${t.border}`, borderRadius: 5,
-              cursor: 'pointer', fontSize: 10, fontFamily: font.mono,
-              color: t.textSoft, textTransform: 'uppercase', letterSpacing: '0.06em',
-            }}
-          >
-            <span style={{ fontSize: 12 }}>{IC.exportArrow}</span>
-            Read full response
-          </button>
-        )}
-
         {/* Citations / Sources */}
         {annotations.length > 0 && (
           <CollapsibleSources sources={annotations} columns={1} />
@@ -259,13 +242,17 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
           </button>
           <button
             onClick={handleOpenArtifact}
+            onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.7'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
             style={{
               display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px',
               background: 'transparent', border: 'none', cursor: 'pointer',
-              fontSize: 11, color: t.councilGold, fontFamily: font.mono,
+              fontSize: 11, fontFamily: font.mono, fontWeight: 500,
+              color: t.councilGold, letterSpacing: 0.5,
+              transition: 'opacity 0.15s',
             }}
           >
-            <span style={{ fontSize: 12 }}>{IC.exportArrow}</span>
+            <span style={{ fontSize: 11 }}>{IC.arrowRight}</span>
             Read Full
           </button>
         </div>

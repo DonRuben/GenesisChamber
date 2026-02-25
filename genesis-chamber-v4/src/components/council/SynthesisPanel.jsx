@@ -16,6 +16,7 @@ import { useTokens } from '../../hooks/useTokens';
 import { useModelLookup } from '../../hooks/useModels';
 import SynthesisWaiting from './SynthesisWaiting';
 import Markdown from '../../design/Markdown';
+import CollapsibleSources from './CollapsibleSources';
 
 export default function SynthesisPanel() {
   const t = useTokens();
@@ -60,8 +61,6 @@ export default function SynthesisPanel() {
   // Deduplicate by URL, clean title=URL entries, limit to 10
   const annotations = [...new Map(rawMappedAnnotations.map(a => [a.url, a])).values()]
     .map(a => ({ ...a, title: (a.title && a.title !== a.url) ? a.title : null }));
-  const displayAnnotations = annotations.slice(0, 10);
-  const moreSourcesCount = Math.max(0, annotations.length - 10);
 
   // Response count for footer
   const responseCount = stage1Results?.length || (backendOnline === false ? MOCK_RESPONSES.length : 0);
@@ -157,59 +156,9 @@ export default function SynthesisPanel() {
           )}
         </div>
 
-        {/* Read full synthesis — opens artifact panel */}
-        {isLong && (
-          <button
-            onClick={() => openArtifact({
-              content: synthesis,
-              modelName: chairman?.name || 'Chairman',
-              modelColor: chairman?.color || t.gold,
-              sources: annotations,
-              images: [],
-            })}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              marginTop: 4, padding: '6px 12px',
-              background: 'transparent', border: `1px solid ${t.border}`, borderRadius: 5,
-              cursor: 'pointer', fontSize: 10, fontFamily: font.mono,
-              color: t.textSoft, textTransform: 'uppercase', letterSpacing: '0.06em',
-            }}
-          >
-            <span style={{ fontSize: 12 }}>{IC.exportArrow}</span>
-            Read full synthesis
-          </button>
-        )}
-
         {/* Citations / Sources */}
-        {displayAnnotations.length > 0 && (
-          <div style={{
-            marginTop: 12, padding: '10px 14px', background: t.surfaceRaised,
-            borderRadius: 6, borderLeft: `2px solid ${t.cyan}`,
-          }}>
-            <span style={{
-              fontSize: 9, fontFamily: font.mono, color: t.cyan,
-              textTransform: 'uppercase', letterSpacing: '0.12em',
-            }}>SOURCES</span>
-            <ul style={{ margin: '6px 0 0', paddingLeft: 16, listStyle: 'disc' }}>
-              {displayAnnotations.map((a, i) => (
-                <li key={i} style={{ fontSize: 11, marginBottom: 3 }}>
-                  <a
-                    href={a.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: t.cyan, textDecoration: 'none' }}
-                  >
-                    {a.title || a.url}
-                  </a>
-                </li>
-              ))}
-              {moreSourcesCount > 0 && (
-                <li style={{ fontSize: 11, color: t.textMuted, fontStyle: 'italic' }}>
-                  and {moreSourcesCount} more sources
-                </li>
-              )}
-            </ul>
-          </div>
+        {annotations.length > 0 && (
+          <CollapsibleSources sources={annotations} columns={1} />
         )}
 
         {/* Thinking for synthesis */}
@@ -277,13 +226,17 @@ export default function SynthesisPanel() {
               sources: annotations,
               images: [],
             })}
+            onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.7'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
             style={{
               display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px',
               background: 'transparent', border: 'none', cursor: 'pointer',
-              fontSize: 11, color: t.textMuted, fontFamily: font.mono,
+              fontSize: 11, fontFamily: font.mono, fontWeight: 500,
+              color: t.councilGold, letterSpacing: 0.5,
+              transition: 'opacity 0.15s',
             }}
           >
-            <span style={{ fontSize: 12 }}>{IC.exportArrow}</span>
+            <span style={{ fontSize: 11 }}>{IC.arrowRight}</span>
             Read Full
           </button>
           <span style={{ fontSize: 10, fontFamily: font.mono, color: t.textMuted }}>
