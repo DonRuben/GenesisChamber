@@ -9,7 +9,6 @@ from .config import OPENROUTER_API_KEY, OPENROUTER_API_URL
 IMAGE_CAPABLE_MODELS = {
     'openai/gpt-5-image',
     'google/gemini-3-pro-image-preview',
-    'google/gemini-2.5-flash-image-preview',
 }
 
 
@@ -79,49 +78,66 @@ def _extract_response(message: Dict[str, Any]) -> Dict[str, Any]:
     return result
 
 
-def get_reasoning_config(model: str, thinking_mode: str = "thinking") -> Dict[str, Any]:
+def get_reasoning_config(model: str, thinking_mode: str = "medium", adaptive: bool = False) -> Dict[str, Any]:
     """Get the appropriate reasoning config for a model and thinking tier.
 
-    Tiers:
+    5-level thinking:
       - "off": no reasoning (returns empty dict)
-      - "thinking": standard extended reasoning
-      - "deep": maximum reasoning with higher budgets
+      - "low": light reasoning
+      - "medium": balanced reasoning (default)
+      - "high": deep reasoning
+      - "max": maximum reasoning (Claude 4.6 only, others get "high")
 
-    Models:
-      - Claude 4.6 (Opus/Sonnet): adaptive thinking (no budget, most powerful)
-      - Claude 4.5 (Opus/Sonnet): effort-based high
-      - GPT-5.2 / GPT-5.1: effort-based high (OpenAI reasoning)
-      - Gemini 3 Pro / 2.5 Pro: effort-based high (Google thinking)
-      - Grok 4: effort-based high (xAI reasoning + native X.com search)
-      - Others: effort-based medium
+    Special models:
+      - O3-Pro: always uses {"effort": "high"} regardless of thinking_mode
+      - Sonar (search models): no reasoning support — returns empty dict
+      - Claude 4.6 + adaptive: {"exclude": False} (no budget cap)
     """
     if thinking_mode == "off":
         return {}
 
     model_lower = model.lower()
-    # Claude 4.6 — adaptive thinking (most powerful, no budget needed)
+
+    # Sonar search models — no reasoning support
+    if 'sonar' in model_lower:
+        return {}
+
+    # O3-Pro — always maximum reasoning
+    if 'o3-pro' in model_lower:
+        return {"effort": "high", "exclude": False}
+
+    # Claude 4.6 — adaptive or effort-based
     if any(s in model_lower for s in ('claude-opus-4.6', 'claude-sonnet-4.6',
                                        'claude-opus-4-6', 'claude-sonnet-4-6')):
-        return {"exclude": False}
-    # Claude 4.5 — effort high; deep mode adds explicit budget
-    elif any(s in model_lower for s in ('claude-opus-4.5', 'claude-sonnet-4.5',
-                                         'claude-opus-4-5', 'claude-sonnet-4-5')):
-        config = {"effort": "high", "exclude": False}
-        if thinking_mode == "deep":
-            config["max_tokens"] = 32000
-        return config
-    # GPT-5.x — effort high
-    elif any(s in model_lower for s in ('gpt-5.2', 'gpt-5.1', 'gpt-5')):
-        return {"effort": "high", "exclude": False}
-    # Gemini — effort high
-    elif any(s in model_lower for s in ('gemini-3', 'gemini-2.5-pro')):
-        return {"effort": "high", "exclude": False}
-    # Grok — effort high
-    elif 'grok-4' in model_lower or 'grok-3' in model_lower:
-        return {"effort": "high", "exclude": False}
-    else:
-        effort = "high" if thinking_mode == "deep" else "medium"
-        return {"effort": effort, "exclude": False}
+        if adaptive or thinking_mode == "max":
+            return {"exclude": False}
+        return {"effort": thinking_mode, "exclude": False}
+
+    # Claude 4.5 — effort-based
+    if any(s in model_lower for s in ('claude-opus-4.5', 'claude-sonnet-4.5',
+                                       'claude-opus-4-5', 'claude-sonnet-4-5',
+                                       'claude-haiku-4.5', 'claude-haiku-4-5')):
+        effective = "high" if thinking_mode == "max" else thinking_mode
+        return {"effort": effective, "exclude": False}
+
+    # GPT-5.x / GPT-4.1 — effort-based
+    if any(s in model_lower for s in ('gpt-5', 'gpt-4.1')):
+        effective = "high" if thinking_mode == "max" else thinking_mode
+        return {"effort": effective, "exclude": False}
+
+    # Gemini — effort-based
+    if 'gemini' in model_lower:
+        effective = "high" if thinking_mode == "max" else thinking_mode
+        return {"effort": effective, "exclude": False}
+
+    # Grok — effort-based
+    if 'grok-4' in model_lower or 'grok-3' in model_lower:
+        effective = "high" if thinking_mode == "max" else thinking_mode
+        return {"effort": effective, "exclude": False}
+
+    # Others — effort-based, cap at high
+    effective = "high" if thinking_mode == "max" else thinking_mode
+    return {"effort": effective, "exclude": False}
 
 
 async def query_model(
@@ -282,9 +298,9 @@ async def query_with_soul(
 
     # Scale max_tokens based on thinking mode
     effective_max_tokens = max_tokens
-    if thinking_mode == "deep" and reasoning:
+    if thinking_mode in ("high", "max") and reasoning:
         effective_max_tokens = min(max(max_tokens * 3, 16000), 32000)
-    elif reasoning:
+    elif thinking_mode in ("medium", "low") and reasoning:
         effective_max_tokens = min(max(max_tokens * 2, 8000), 16000)
 
     payload = {

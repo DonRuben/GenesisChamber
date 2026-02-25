@@ -78,9 +78,11 @@ export default function LLMCouncil() {
         thinkingMode: store.thinkingMode,
         enableWebSearch: store.enableWebSearch,
         modelThinkingModes: store.modelThinkingModes,
+        adaptiveMode: store.adaptiveMode,
         chairman: {
           model: store.chairmanModel,
           thinking_mode: store.chairman.thinkingMode,
+          adaptive_mode: store.chairman.adaptiveMode || false,
           web_search: store.chairman.webSearch,
         },
         signal: ctrl.signal,

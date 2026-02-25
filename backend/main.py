@@ -82,6 +82,7 @@ class ChairmanConfig(BaseModel):
     """Chairman AI configuration."""
     model: Optional[str] = None
     thinking_mode: str = "off"
+    adaptive_mode: bool = False
     web_search: bool = False
 
 class RoleConfig(BaseModel):
@@ -108,9 +109,10 @@ class SendMessageRequest(BaseModel):
     content: str
     models: Optional[List[str]] = None
     chairman_model: Optional[str] = None
-    thinking_mode: str = "off"  # "off", "thinking", or "deep"
+    thinking_mode: str = "off"  # "off", "low", "medium", "high", or "max"
     model_thinking_modes: Optional[Dict[str, str]] = None  # per-model overrides
     enable_web_search: bool = False
+    adaptive_mode: bool = False  # Claude 4.6 adaptive thinking
     chairman: Optional[ChairmanConfig] = None
     moderator: Optional[RoleConfig] = None
     evaluator: Optional[RoleConfig] = None
@@ -254,7 +256,8 @@ async def send_message_stream(conversation_id: str, request: SendMessageRequest)
                 request.content, models=request.models,
                 thinking_mode=request.thinking_mode,
                 enable_web_search=request.enable_web_search,
-                model_thinking_modes=request.model_thinking_modes)
+                model_thinking_modes=request.model_thinking_modes,
+                adaptive_mode=request.adaptive_mode)
             yield f"data: {json.dumps({'type': 'stage1_complete', 'data': stage1_results})}\n\n"
 
             # Stage 2: Collect rankings
@@ -263,7 +266,8 @@ async def send_message_stream(conversation_id: str, request: SendMessageRequest)
                 request.content, stage1_results, models=request.models,
                 thinking_mode=request.thinking_mode,
                 enable_web_search=request.enable_web_search,
-                model_thinking_modes=request.model_thinking_modes)
+                model_thinking_modes=request.model_thinking_modes,
+                adaptive_mode=request.adaptive_mode)
             aggregate_rankings = calculate_aggregate_rankings(stage2_results, label_to_model)
             yield f"data: {json.dumps({'type': 'stage2_complete', 'data': stage2_results, 'metadata': {'label_to_model': label_to_model, 'aggregate_rankings': aggregate_rankings}})}\n\n"
 
@@ -273,12 +277,15 @@ async def send_message_stream(conversation_id: str, request: SendMessageRequest)
             resolved_chairman_model = request.chairman_model
             if request.chairman and request.chairman.model:
                 resolved_chairman_model = request.chairman.model
+            # Chairman gets its own adaptive flag from chairman config
+            chairman_adaptive = request.chairman.adaptive_mode if request.chairman else request.adaptive_mode
             stage3_result = await stage3_synthesize_final(
                 request.content, stage1_results, stage2_results,
                 chairman_model=resolved_chairman_model,
-                thinking_mode=request.thinking_mode,
-                enable_web_search=request.enable_web_search,
-                model_thinking_modes=request.model_thinking_modes)
+                thinking_mode=request.chairman.thinking_mode if request.chairman else request.thinking_mode,
+                enable_web_search=request.chairman.web_search if request.chairman else request.enable_web_search,
+                model_thinking_modes=request.model_thinking_modes,
+                adaptive_mode=chairman_adaptive)
             yield f"data: {json.dumps({'type': 'stage3_complete', 'data': stage3_result})}\n\n"
 
             # Wait for title generation if it was started

@@ -3,9 +3,10 @@
 // Slide-in panel: active models + per-model thinking +
 // web search + chairman model + anonymization toggle
 // Models grouped by tier with dynamic roster
+// 5-level thinking: off/low/medium/high/max + adaptive
 // ─────────────────────────────────────────────────────────
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { font } from '../../design/tokens';
 import { IC } from '../../design/icons';
 import { ModelDot, Toggle } from '../../design/shared';
@@ -13,6 +14,42 @@ import { useCouncilStore } from '../../stores/councilStore';
 import { useTokens } from '../../hooks/useTokens';
 import { useModels } from '../../hooks/useModels';
 import { MODEL_TIERS } from '../../data/mock';
+
+// ── InfoTooltip ──
+function InfoTooltip({ text, t }) {
+  const [show, setShow] = useState(false);
+  const ref = useRef(null);
+  return (
+    <span
+      ref={ref}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+      style={{ position: 'relative', cursor: 'help', fontSize: 11, color: t.textMuted, lineHeight: 1 }}
+    >
+      {IC.info}
+      {show && (
+        <span style={{
+          position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
+          marginBottom: 6, padding: '6px 10px', borderRadius: 6,
+          background: t.surfaceRaised, border: `1px solid ${t.border}`,
+          fontSize: 10, color: t.text, zIndex: 300,
+          lineHeight: 1.4, maxWidth: 240, whiteSpace: 'normal',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+        }}>{text}</span>
+      )}
+    </span>
+  );
+}
+
+// ── Thinking options per model type ──
+function getModelThinkingType(modelId) {
+  const id = modelId.toLowerCase();
+  if (id.includes('claude-opus-4-6') || id.includes('claude-opus-4.6') ||
+      id.includes('claude-sonnet-4-6') || id.includes('claude-sonnet-4.6')) return 'full';
+  if (id.includes('o3-pro')) return 'fixed';
+  if (id.includes('sonar')) return 'fixed';
+  return 'standard';
+}
 
 export default function SettingsPanel() {
   const t = useTokens();
@@ -33,10 +70,12 @@ export default function SettingsPanel() {
   const setChairmanModel = useCouncilStore((s) => s.setChairmanModel);
   const chairman = useCouncilStore((s) => s.chairman);
   const setChairmanConfig = useCouncilStore((s) => s.setChairmanConfig);
+  const adaptiveMode = useCouncilStore((s) => s.adaptiveMode);
+  const setAdaptiveMode = useCouncilStore((s) => s.setAdaptiveMode);
 
   // Collapsible tiers
   const [expandedChairTier, setExpandedChairTier] = useState('premium');
-  const [expandedModelTiers, setExpandedModelTiers] = useState({ premium: true });
+  const [expandedModelTiers, setExpandedModelTiers] = useState({ premium: true, balanced: true });
 
   // Override counter: how many active models have per-model thinking overrides
   const overrideCount = activeModels.filter((id) => modelThinkingModes[id] !== undefined).length;
@@ -46,12 +85,22 @@ export default function SettingsPanel() {
 
   const thinkingModes = [
     { id: 'off', label: 'Off', color: t.textMuted },
-    { id: 'thinking', label: 'Thinking', color: t.cyan },
-    { id: 'deep', label: 'Deep', color: t.gold },
+    { id: 'low', label: 'Low', color: '#6B7280' },
+    { id: 'medium', label: 'Med', color: t.cyan },
+    { id: 'high', label: 'High', color: t.gold },
+    { id: 'max', label: 'Max', color: '#EF4444' },
   ];
 
+  const thinkingTooltips = {
+    off: 'No extended reasoning — fastest, cheapest',
+    low: 'Light reasoning — good for simple queries',
+    medium: 'Balanced reasoning — recommended default',
+    high: 'Deep reasoning — complex analysis, 3x tokens',
+    max: 'Maximum reasoning — Claude 4.6 adaptive, 3x tokens',
+  };
+
   // Group models by tier
-  const tierOrder = ['premium', 'balanced', 'efficient', 'budget'];
+  const tierOrder = ['premium', 'balanced', 'efficient', 'budget', 'specialist'];
   const grouped = tierOrder.map((tierId) => ({
     tier: MODEL_TIERS.find((mt) => mt.id === tierId) || { id: tierId, name: tierId, color: '#6B7280' },
     models: models.filter((m) => m.tier === tierId),
@@ -61,6 +110,43 @@ export default function SettingsPanel() {
     padding: '2px 4px', fontSize: 9, fontFamily: font.mono,
     background: t.surfaceRaised, border: `1px solid ${t.border}`,
     borderRadius: 3, color: t.text, cursor: 'pointer', outline: 'none',
+  };
+
+  // Check if any active model is Claude 4.6
+  const hasClaude46Active = activeModels.some((id) => getModelThinkingType(id) === 'full');
+
+  // Check if chairman is Claude 4.6
+  const chairmanIsClaude46 = getModelThinkingType(chairmanModel) === 'full';
+
+  // Render per-model thinking control
+  const renderModelThinking = (m) => {
+    const type = getModelThinkingType(m.id);
+    if (type === 'fixed') {
+      const label = m.id.includes('o3-pro') ? 'MAX' : 'SEARCH';
+      const hint = m.id.includes('o3-pro') ? 'Always uses maximum reasoning' : 'Search model — no thinking mode';
+      return (
+        <span style={{
+          fontSize: 8, fontFamily: font.mono, fontWeight: 700,
+          color: m.id.includes('o3-pro') ? '#EF4444' : '#6366F1',
+          background: m.id.includes('o3-pro') ? 'rgba(239,68,68,0.12)' : 'rgba(99,102,241,0.12)',
+          padding: '1px 4px', borderRadius: 3, letterSpacing: '0.06em',
+        }} title={hint}>{label}</span>
+      );
+    }
+    return (
+      <select
+        value={modelThinkingModes[m.id] || thinkingMode}
+        onChange={(e) => { e.stopPropagation(); setModelThinkingMode(m.id, e.target.value); }}
+        onClick={(e) => e.stopPropagation()}
+        style={thinkingSelectStyle}
+      >
+        <option value="off">Off</option>
+        <option value="low">Low</option>
+        <option value="medium">Med</option>
+        <option value="high">High</option>
+        {type === 'full' && <option value="max">Max</option>}
+      </select>
+    );
   };
 
   return (
@@ -111,7 +197,17 @@ export default function SettingsPanel() {
                   <span style={{
                     fontSize: 9, fontFamily: font.mono, color: tier.color,
                     textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 600,
-                  }}>{tier.name}</span>
+                    display: 'flex', alignItems: 'center', gap: 5,
+                  }}>
+                    {tier.name}
+                    {tier.warning && (
+                      <span style={{
+                        fontSize: 8, fontFamily: font.mono, fontWeight: 700,
+                        color: '#EF4444', background: 'rgba(239,68,68,0.12)',
+                        padding: '1px 4px', borderRadius: 3,
+                      }}>{'\u26A0\uFE0F'}</span>
+                    )}
+                  </span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{
                       fontSize: 9, fontFamily: font.mono,
@@ -156,22 +252,21 @@ export default function SettingsPanel() {
                               padding: '1px 4px', borderRadius: 3, letterSpacing: '0.06em',
                             }}>SEARCH</span>
                           )}
+                          {m.warning && (
+                            <span style={{
+                              fontSize: 8, fontFamily: font.mono, fontWeight: 600,
+                              color: '#EF4444',
+                            }}>{m.warning}</span>
+                          )}
                         </span>
-                        {/* Per-model thinking dropdown */}
-                        {active && (
-                          <select
-                            value={modelThinkingModes[m.id] || thinkingMode}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              setModelThinkingMode(m.id, e.target.value);
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                            style={thinkingSelectStyle}
-                          >
-                            <option value="off">Off</option>
-                            <option value="thinking">Think</option>
-                            <option value="deep">Deep</option>
-                          </select>
+                        {/* Per-model thinking control */}
+                        {active && renderModelThinking(m)}
+                        {/* Price display */}
+                        {m.inputPrice != null && (
+                          <span style={{
+                            fontSize: 8, fontFamily: font.mono, color: t.textMuted,
+                            whiteSpace: 'nowrap',
+                          }}>${m.inputPrice}</span>
                         )}
                         <div style={{
                           width: 16, height: 16, borderRadius: 3,
@@ -215,22 +310,42 @@ export default function SettingsPanel() {
           </span>
         </div>
 
-        <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+        <div style={{ display: 'flex', gap: 4, marginBottom: 6 }}>
           {thinkingModes.map(({ id, label, color }) => (
-            <button
-              key={id}
-              onClick={() => setThinkingMode(id)}
-              style={{
-                flex: 1, padding: '8px 12px', borderRadius: 6, cursor: 'pointer',
-                background: thinkingMode === id ? `${color}1a` : t.surfaceRaised,
-                border: `1px solid ${thinkingMode === id ? color : t.border}`,
-                fontSize: 11, fontFamily: font.mono, fontWeight: 600,
-                color: thinkingMode === id ? color : t.textMuted,
-                textTransform: 'uppercase', letterSpacing: '0.06em',
-              }}
-            >{label}</button>
+            <div key={id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+              <button
+                onClick={() => setThinkingMode(id)}
+                style={{
+                  width: '100%', padding: '8px 6px', borderRadius: 6, cursor: 'pointer',
+                  background: thinkingMode === id ? `${color}1a` : t.surfaceRaised,
+                  border: `1px solid ${thinkingMode === id ? color : t.border}`,
+                  fontSize: 10, fontFamily: font.mono, fontWeight: 600,
+                  color: thinkingMode === id ? color : t.textMuted,
+                  textTransform: 'uppercase', letterSpacing: '0.06em',
+                }}
+              >{label}</button>
+              <InfoTooltip text={thinkingTooltips[id]} t={t} />
+            </div>
           ))}
         </div>
+
+        {/* Adaptive Mode checkbox — only when Claude 4.6 is active */}
+        {hasClaude46Active && (
+          <label style={{
+            display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
+            padding: '8px 0', marginBottom: 4,
+          }}>
+            <input
+              type="checkbox"
+              checked={adaptiveMode}
+              onChange={(e) => setAdaptiveMode(e.target.checked)}
+              style={{ accentColor: t.cyan, width: 14, height: 14 }}
+            />
+            <span style={{ fontSize: 11, color: t.text, fontWeight: 500 }}>Adaptive Thinking</span>
+            <InfoTooltip text="Claude 4.6 decides its own reasoning depth per query — no budget cap" t={t} />
+          </label>
+        )}
+
         <div style={{
           fontSize: 10, color: t.textMuted, marginBottom: 28, lineHeight: 1.4,
         }}>
@@ -346,23 +461,41 @@ export default function SettingsPanel() {
               fontSize: 9, fontFamily: font.mono, color: t.textMuted,
               textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8,
             }}>Thinking</div>
-            <div style={{ display: 'flex', gap: 6 }}>
+            <div style={{ display: 'flex', gap: 4 }}>
               {thinkingModes.map(({ id, label, color }) => (
-                <button
-                  key={id}
-                  onClick={() => setChairmanConfig({ thinkingMode: id })}
-                  style={{
-                    flex: 1, padding: '6px 10px', borderRadius: 5, cursor: 'pointer',
-                    background: chairman.thinkingMode === id ? `${color}1a` : 'transparent',
-                    border: `1px solid ${chairman.thinkingMode === id ? color : t.border}`,
-                    fontSize: 10, fontFamily: font.mono, fontWeight: 600,
-                    color: chairman.thinkingMode === id ? color : t.textMuted,
-                    textTransform: 'uppercase', letterSpacing: '0.06em',
-                  }}
-                >{label}</button>
+                <div key={id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                  <button
+                    onClick={() => setChairmanConfig({ thinkingMode: id })}
+                    style={{
+                      width: '100%', padding: '6px 4px', borderRadius: 5, cursor: 'pointer',
+                      background: chairman.thinkingMode === id ? `${color}1a` : 'transparent',
+                      border: `1px solid ${chairman.thinkingMode === id ? color : t.border}`,
+                      fontSize: 9, fontFamily: font.mono, fontWeight: 600,
+                      color: chairman.thinkingMode === id ? color : t.textMuted,
+                      textTransform: 'uppercase', letterSpacing: '0.06em',
+                    }}
+                  >{label}</button>
+                </div>
               ))}
             </div>
           </div>
+
+          {/* Chairman Adaptive checkbox — only when chairman is Claude 4.6 */}
+          {chairmanIsClaude46 && (
+            <label style={{
+              display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
+              padding: '4px 0', marginBottom: 10,
+            }}>
+              <input
+                type="checkbox"
+                checked={chairman.adaptiveMode || false}
+                onChange={(e) => setChairmanConfig({ adaptiveMode: e.target.checked })}
+                style={{ accentColor: t.gold, width: 14, height: 14 }}
+              />
+              <span style={{ fontSize: 11, color: t.text, fontWeight: 500 }}>Adaptive Thinking</span>
+              <InfoTooltip text="Chairman decides its own reasoning depth — recommended for synthesis" t={t} />
+            </label>
+          )}
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
@@ -377,7 +510,7 @@ export default function SettingsPanel() {
           <div style={{
             fontSize: 10, color: t.textMuted, marginTop: 12, lineHeight: 1.4,
           }}>
-            Chairman synthesizes all responses in Stage 3. Deep thinking produces more nuanced synthesis.
+            Chairman synthesizes all responses in Stage 3. Higher thinking produces more nuanced synthesis.
           </div>
         </div>
 

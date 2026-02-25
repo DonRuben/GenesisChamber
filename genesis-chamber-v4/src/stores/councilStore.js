@@ -28,22 +28,25 @@ export const useCouncilStore = create((set, get) => ({
 
   // ── Model Config (full OpenRouter IDs) ──
   activeModels: [
-    'openai/gpt-5.2',
+    'anthropic/claude-opus-4-6',
     'google/gemini-3.1-pro-preview',
-    'anthropic/claude-sonnet-4.6',
-    'x-ai/grok-4.1',
+    'perplexity/sonar-pro-search',
+    'google/gemini-3-pro-image-preview',
+    'openai/gpt-5-image',
   ],
   chairmanModel: 'google/gemini-3.1-pro-preview',
-  thinkingMode: 'off',        // 'off' | 'thinking' | 'deep'
-  modelThinkingModes: {},      // per-model overrides
+  thinkingMode: 'medium',       // 'off' | 'low' | 'medium' | 'high' | 'max'
+  modelThinkingModes: {},        // per-model overrides
   enableWebSearch: false,
+  adaptiveMode: false,           // Claude 4.6 adaptive thinking (no budget cap)
 
   // ── Phase 9: Thinking Hierarchy + Leadership ──
-  defaultThinkingMode: 'off',   // 'off' | 'thinking' | 'deep' — global default
+  defaultThinkingMode: 'medium', // 'off' | 'low' | 'medium' | 'high' | 'max' — global default
 
   chairman: {
-    thinkingMode: 'off',
-    webSearch: false,
+    thinkingMode: 'high',
+    adaptiveMode: true,
+    webSearch: true,
   },
 
   // ── API State ──
@@ -84,6 +87,7 @@ export const useCouncilStore = create((set, get) => ({
     modelThinkingModes: { ...s.modelThinkingModes, [modelId]: mode },
   })),
   setEnableWebSearch: (enabled) => set({ enableWebSearch: enabled }),
+  setAdaptiveMode: (enabled) => set({ adaptiveMode: enabled }),
 
   // ── Phase 9: Thinking Hierarchy Actions ──
   setDefaultThinkingMode: (mode) => set({ defaultThinkingMode: mode, thinkingMode: mode }),
@@ -206,6 +210,7 @@ export const useCouncilStore = create((set, get) => ({
               synthesis: s.stage3Result,
               config: {
                 thinkingMode: s.thinkingMode,
+                adaptiveMode: s.adaptiveMode,
                 enableWebSearch: s.enableWebSearch,
                 chairmanModel: s.chairmanModel,
               },
@@ -249,7 +254,13 @@ export const useCouncilStore = create((set, get) => ({
       revealed: true,
       showSynthesis: true,
       selectedResponseTab: 0,
-      thinkingMode: data.config?.thinkingMode || 'off',
+      thinkingMode: (() => {
+        const mode = data.config?.thinkingMode || 'off';
+        if (mode === 'thinking') return 'medium';
+        if (mode === 'deep') return 'high';
+        return mode;
+      })(),
+      adaptiveMode: data.config?.adaptiveMode || false,
       enableWebSearch: data.config?.enableWebSearch || false,
       chairmanModel: data.config?.chairmanModel || get().chairmanModel,
     });

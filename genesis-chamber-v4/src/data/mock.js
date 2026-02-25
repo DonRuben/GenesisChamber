@@ -28,70 +28,64 @@ export const MODEL_TIERS = [
   { id: 'balanced', name: 'Balanced', color: '#3B82F6' },
   { id: 'efficient', name: 'Efficient', color: '#10B981' },
   { id: 'budget', name: 'Budget', color: '#6B7280' },
+  { id: 'specialist', name: 'Specialist', color: '#EF4444', warning: true },
 ];
 
-// ── LLM Council Models (full 19-model roster) ──
+// ── LLM Council Models (17-model roster across 5 tiers) ──
 export const MODELS = [
-  // Tier 1 — Premium
-  { id: 'anthropic/claude-opus-4-6', name: 'Claude Opus 4.6', color: '#F27123', letter: 'CO', tier: 'premium' },
-  { id: 'openai/gpt-5.2', name: 'GPT-5.2', color: '#34D399', letter: 'G', tier: 'premium' },
-  { id: 'openai/gpt-5.1', name: 'GPT-5.1', color: '#22C55E', letter: 'G5', tier: 'premium' },
-  { id: 'google/gemini-3.1-pro-preview', name: 'Gemini 3 Pro', color: '#00D9FF', letter: 'Gm', tier: 'premium' },
-  // Tier 2 — Balanced
-  { id: 'anthropic/claude-sonnet-4.6', name: 'Claude Sonnet 4.6', color: '#F97316', letter: 'CS', tier: 'balanced' },
-  { id: 'google/gemini-2.5-pro', name: 'Gemini 2.5 Pro', color: '#06B6D4', letter: 'Gp', tier: 'balanced' },
-  { id: 'x-ai/grok-4.1', name: 'Grok 4.1', color: '#E5375E', letter: 'Gk', tier: 'balanced' },
-  { id: 'mistralai/mistral-large', name: 'Mistral Large', color: '#D4A853', letter: 'ML', tier: 'balanced' },
-  // Tier 3 — Efficient
-  { id: 'meta-llama/llama-4-maverick', name: 'Llama 4 Maverick', color: '#8B5CF6', letter: 'Lm', tier: 'efficient' },
-  { id: 'anthropic/claude-haiku-4.5', name: 'Claude Haiku 4.5', color: '#FB923C', letter: 'CH', tier: 'efficient' },
-  { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash', color: '#67E8F9', letter: 'Gf', tier: 'efficient' },
-  { id: 'deepseek/deepseek-v3.2', name: 'DeepSeek V3.2', color: '#A78BFA', letter: 'DS', tier: 'efficient' },
-  { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1', color: '#C084FC', letter: 'DR', tier: 'efficient' },
-  { id: 'google/gemini-3-flash', name: 'Gemini 3 Flash', color: '#22D3EE', letter: 'G3', tier: 'efficient' },
-  { id: 'qwen/qwen-3-235b', name: 'Qwen 3 235B', color: '#14B8A6', letter: 'Qw', tier: 'efficient' },
-  // Tier 4 — Budget
-  { id: 'moonshotai/kimi-k2.5', name: 'Kimi K2.5', color: '#94A3B8', letter: 'Ki', tier: 'budget' },
-  { id: 'minimax/minimax-m2.5', name: 'MiniMax M2.5', color: '#78716C', letter: 'Mx', tier: 'budget' },
-  { id: 'nvidia/nemotron-70b', name: 'Nemotron 70B', color: '#84CC16', letter: 'Nm', tier: 'budget' },
-  // ── Image & Search Models ──
-  { id: 'openai/gpt-5-image', name: 'GPT-5 Image', color: '#4ADE80', letter: 'GI', tier: 'premium', capabilities: ['image'] },
-  { id: 'google/gemini-3-pro-image-preview', name: 'Nano Banana Pro', color: '#2DD4BF', letter: 'NB', tier: 'premium', capabilities: ['image'] },
-  { id: 'perplexity/sonar-pro-search', name: 'Sonar Pro Search', color: '#6366F1', letter: 'SS', tier: 'premium', capabilities: ['search'] },
-  { id: 'perplexity/sonar-pro', name: 'Sonar Pro', color: '#818CF8', letter: 'Sp', tier: 'balanced', capabilities: ['search'] },
-  { id: 'perplexity/sonar-reasoning', name: 'Sonar Reasoning', color: '#A78BFA', letter: 'SR', tier: 'balanced', capabilities: ['search'] },
-  { id: 'perplexity/sonar', name: 'Sonar', color: '#C4B5FD', letter: 'So', tier: 'efficient', capabilities: ['search'] },
-  { id: 'google/gemini-2.5-flash-image-preview', name: 'Nano Banana', color: '#5EEAD4', letter: 'Nb', tier: 'efficient', capabilities: ['image'] },
+  // Tier 1 — Premium (5)
+  { id: 'anthropic/claude-opus-4-6', name: 'Claude Opus 4.6', color: '#F27123', letter: 'CO', tier: 'premium', inputPrice: 15, outputPrice: 75 },
+  { id: 'google/gemini-3.1-pro-preview', name: 'Gemini 3.1 Pro', color: '#00D9FF', letter: 'Gm', tier: 'premium', inputPrice: 10, outputPrice: 30 },
+  { id: 'perplexity/sonar-pro-search', name: 'Sonar Pro Search', color: '#6366F1', letter: 'SS', tier: 'premium', inputPrice: 3, outputPrice: 15, capabilities: ['search'] },
+  { id: 'google/gemini-3-pro-image-preview', name: 'Nano Banana Pro', color: '#2DD4BF', letter: 'NB', tier: 'premium', inputPrice: 5, outputPrice: 10, capabilities: ['image'] },
+  { id: 'openai/gpt-5-image', name: 'GPT-5 Image', color: '#4ADE80', letter: 'GI', tier: 'premium', inputPrice: 5, outputPrice: 15, capabilities: ['image'] },
+  // Tier 2 — Balanced (5)
+  { id: 'openai/gpt-5.2', name: 'GPT-5.2', color: '#34D399', letter: 'G', tier: 'balanced', inputPrice: 3, outputPrice: 12 },
+  { id: 'google/gemini-3-pro-preview', name: 'Gemini 3 Pro', color: '#06B6D4', letter: 'Gp', tier: 'balanced', inputPrice: 2.5, outputPrice: 10 },
+  { id: 'x-ai/grok-4.1', name: 'Grok 4.1', color: '#E5375E', letter: 'Gk', tier: 'balanced', inputPrice: 3, outputPrice: 9 },
+  { id: 'anthropic/claude-sonnet-4.6', name: 'Claude Sonnet 4.6', color: '#F97316', letter: 'CS', tier: 'balanced', inputPrice: 3, outputPrice: 15 },
+  { id: 'openai/gpt-5.3-codex', name: 'GPT-5.3 Codex', color: '#22C55E', letter: 'GC', tier: 'balanced', inputPrice: 2.5, outputPrice: 10 },
+  // Tier 3 — Efficient (3)
+  { id: 'anthropic/claude-haiku-4.5', name: 'Claude Haiku 4.5', color: '#FB923C', letter: 'CH', tier: 'efficient', inputPrice: 0.8, outputPrice: 4 },
+  { id: 'google/gemini-3-flash-preview', name: 'Gemini 3 Flash', color: '#22D3EE', letter: 'G3', tier: 'efficient', inputPrice: 0.15, outputPrice: 0.6 },
+  { id: 'openai/gpt-5.2-chat', name: 'GPT-5.2 Chat', color: '#67E8F9', letter: 'Gc', tier: 'efficient', inputPrice: 0.5, outputPrice: 2 },
+  // Tier 4 — Budget (3)
+  { id: 'deepseek/deepseek-v3.2', name: 'DeepSeek V3.2', color: '#A78BFA', letter: 'DS', tier: 'budget', inputPrice: 0.27, outputPrice: 1.1 },
+  { id: 'google/gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite', color: '#5EEAD4', letter: 'Gl', tier: 'budget', inputPrice: 0.075, outputPrice: 0.3 },
+  { id: 'openai/gpt-4.1-nano', name: 'GPT-4.1 Nano', color: '#84CC16', letter: 'Gn', tier: 'budget', inputPrice: 0.1, outputPrice: 0.4 },
+  // Tier 5 — Specialist (1)
+  { id: 'openai/o3-pro', name: 'O3-Pro', color: '#EF4444', letter: 'O3', tier: 'specialist', inputPrice: 60, outputPrice: 240, warning: '\u26A0\uFE0F 30x more expensive' },
 ];
 
 // ── Model lookup map ──
 export const MODEL_MAP = Object.fromEntries(MODELS.map(m => [m.id, m]));
 
-// ── Default 4 models for council mode ──
+// ── Default 5 premium models for council mode ──
 export const DEFAULT_COUNCIL_MODELS = [
-  'openai/gpt-5.2',
+  'anthropic/claude-opus-4-6',
   'google/gemini-3.1-pro-preview',
-  'anthropic/claude-sonnet-4.6',
-  'x-ai/grok-4.1',
+  'perplexity/sonar-pro-search',
+  'google/gemini-3-pro-image-preview',
+  'openai/gpt-5-image',
 ];
 
 // ── Default persona → model mapping ──
 export const DEFAULT_PERSONA_MODELS = {
   'david-ogilvy': 'google/gemini-3.1-pro-preview',
   'claude-hopkins': 'anthropic/claude-sonnet-4.6',
-  'leo-burnett': 'openai/gpt-5.1',
-  'mary-wells': 'meta-llama/llama-4-maverick',
+  'leo-burnett': 'openai/gpt-5.2',
+  'mary-wells': 'google/gemini-3-pro-preview',
   'gary-halbert': 'x-ai/grok-4.1',
   'paul-rand': 'google/gemini-3.1-pro-preview',
-  'paula-scher': 'openai/gpt-5.1',
+  'paula-scher': 'openai/gpt-5.2',
   'saul-bass': 'anthropic/claude-sonnet-4.6',
-  'susan-kare': 'meta-llama/llama-4-maverick',
+  'susan-kare': 'google/gemini-3-pro-preview',
   'rob-janoff': 'x-ai/grok-4.1',
   'tobias-vs': 'google/gemini-3.1-pro-preview',
   'elon-musk': 'x-ai/grok-4.1',
   'jeff-bezos': 'anthropic/claude-sonnet-4.6',
   'warren-buffett': 'google/gemini-3.1-pro-preview',
-  'richard-branson': 'meta-llama/llama-4-maverick',
+  'richard-branson': 'google/gemini-3-pro-preview',
   'dietrich-mateschitz': 'deepseek/deepseek-v3.2',
   'steve-jobs': 'anthropic/claude-opus-4-6',
   'jony-ive': 'anthropic/claude-sonnet-4.6',
@@ -269,8 +263,8 @@ export const MOCK_TEAMS = [
     personas: [
       { id: 'david-ogilvy', name: 'David Ogilvy', title: 'Father of Advertising', era: '1960s', model: 'google/gemini-3.1-pro-preview', thinkingMode: 'default' },
       { id: 'claude-hopkins', name: 'Claude Hopkins', title: 'Scientific Advertising', era: '1920s', model: 'anthropic/claude-sonnet-4.6', thinkingMode: 'default' },
-      { id: 'leo-burnett', name: 'Leo Burnett', title: 'Heartland Storyteller', era: '1950s', model: 'openai/gpt-5.1', thinkingMode: 'default' },
-      { id: 'mary-wells', name: 'Mary Wells Lawrence', title: 'Creative Revolution', era: '1960s', model: 'meta-llama/llama-4-maverick', thinkingMode: 'default' },
+      { id: 'leo-burnett', name: 'Leo Burnett', title: 'Heartland Storyteller', era: '1950s', model: 'openai/gpt-5.2', thinkingMode: 'default' },
+      { id: 'mary-wells', name: 'Mary Wells Lawrence', title: 'Creative Revolution', era: '1960s', model: 'google/gemini-3-pro-preview', thinkingMode: 'default' },
       { id: 'gary-halbert', name: 'Gary Halbert', title: 'Prince of Print', era: '1980s', model: 'x-ai/grok-4.1', thinkingMode: 'default' },
     ],
   },
@@ -278,9 +272,9 @@ export const MOCK_TEAMS = [
     id: 'design', name: 'Design & Visual', color: T.purple,
     personas: [
       { id: 'paul-rand', name: 'Paul Rand', title: 'Corporate Identity Pioneer', era: '1960s', model: 'google/gemini-3.1-pro-preview', thinkingMode: 'default' },
-      { id: 'paula-scher', name: 'Paula Scher', title: 'Typographic Powerhouse', era: '1990s', model: 'openai/gpt-5.1', thinkingMode: 'default' },
+      { id: 'paula-scher', name: 'Paula Scher', title: 'Typographic Powerhouse', era: '1990s', model: 'openai/gpt-5.2', thinkingMode: 'default' },
       { id: 'saul-bass', name: 'Saul Bass', title: 'Title Sequence Master', era: '1960s', model: 'anthropic/claude-sonnet-4.6', thinkingMode: 'default' },
-      { id: 'susan-kare', name: 'Susan Kare', title: 'Pixel Art Pioneer', era: '1980s', model: 'meta-llama/llama-4-maverick', thinkingMode: 'default' },
+      { id: 'susan-kare', name: 'Susan Kare', title: 'Pixel Art Pioneer', era: '1980s', model: 'google/gemini-3-pro-preview', thinkingMode: 'default' },
       { id: 'rob-janoff', name: 'Rob Janoff', title: 'Apple Logo Creator', era: '1977', model: 'x-ai/grok-4.1', thinkingMode: 'default' },
       { id: 'tobias-vs', name: 'Tobias van Schneider', title: 'Dark UI Visionary', era: '2010s', model: 'google/gemini-3.1-pro-preview', thinkingMode: 'default' },
       { id: 'jony-ive', name: 'Jony Ive', title: 'CRAFT PERFECTIONIST', subtitle: 'Design is how it works', group: 'design', model: 'anthropic/claude-sonnet-4.6', defaultModel: 'anthropic/claude-sonnet-4.6', thinkingMode: 'default', canBeLeader: true, leaderRoles: ['moderator', 'evaluator'] },
@@ -292,7 +286,7 @@ export const MOCK_TEAMS = [
       { id: 'elon-musk', name: 'Elon Musk', title: 'First Principles Thinker', era: '2000s', model: 'x-ai/grok-4.1', thinkingMode: 'default' },
       { id: 'jeff-bezos', name: 'Jeff Bezos', title: 'Customer Obsessed', era: '2000s', model: 'anthropic/claude-sonnet-4.6', thinkingMode: 'default' },
       { id: 'warren-buffett', name: 'Warren Buffett', title: 'Value Investor', era: '1970s', model: 'google/gemini-3.1-pro-preview', thinkingMode: 'default' },
-      { id: 'richard-branson', name: 'Richard Branson', title: 'Brand Maverick', era: '1980s', model: 'meta-llama/llama-4-maverick', thinkingMode: 'default' },
+      { id: 'richard-branson', name: 'Richard Branson', title: 'Brand Maverick', era: '1980s', model: 'google/gemini-3-pro-preview', thinkingMode: 'default' },
       { id: 'dietrich-mateschitz', name: 'Dietrich Mateschitz', title: 'Category Creator', era: '1987', model: 'deepseek/deepseek-v3.2', thinkingMode: 'default' },
       { id: 'steve-jobs', name: 'Steve Jobs', title: 'VISIONARY PROVOCATEUR', subtitle: 'The intersection of technology & liberal arts', group: 'business', model: 'anthropic/claude-opus-4-6', defaultModel: 'anthropic/claude-opus-4-6', thinkingMode: 'default', canBeLeader: true, leaderRoles: ['moderator', 'evaluator'] },
     ],
@@ -342,7 +336,7 @@ export const MOCK_SIMULATION = {
     },
     {
       id: 'c2', name: 'Glacier Protocol', persona: 'Paula Scher', personaId: 'paula-scher',
-      model: 'openai/gpt-5.1', modelColor: '#34D399', status: 'surviving', score: 85,
+      model: 'openai/gpt-5.2', modelColor: '#34D399', status: 'surviving', score: 85,
       headline: 'Engineered by Nature. Perfected by Obsession.', tagline: 'Precision hydration.',
       idea: 'A tech-forward water brand targeting biohackers and performance enthusiasts, with QR-coded mineral analysis on every bottle.',
       visual_direction: 'Crystal clear bottle, sans-serif typography, data-visualization label showing mineral composition.',
@@ -362,7 +356,7 @@ export const MOCK_SIMULATION = {
     },
     {
       id: 'c4', name: 'Nordic Myth', persona: 'Leo Burnett', personaId: 'leo-burnett',
-      model: 'openai/gpt-5.1', modelColor: '#34D399', status: 'eliminated', score: 62,
+      model: 'openai/gpt-5.2', modelColor: '#34D399', status: 'eliminated', score: 62,
       headline: 'Drink the Legend.', tagline: 'From the wells of Yggdrasil.',
       idea: 'Norse mythology-infused brand with Viking heritage storytelling. Limited editions tied to seasonal Norse festivals.',
       visual_direction: 'Frosted blue glass, runic typography, Viking-inspired geometric patterns.',
@@ -405,9 +399,9 @@ export const MOCK_SIMULATION = {
   ],
   participants: [
     { id: 'david-ogilvy', name: 'David Ogilvy', model: 'google/gemini-3.1-pro-preview', modelColor: '#00D9FF', concept: 'Volcanic Essence', score: 92, status: 'winner' },
-    { id: 'paula-scher', name: 'Paula Scher', model: 'openai/gpt-5.1', modelColor: '#34D399', concept: 'Glacier Protocol', score: 85, status: 'surviving' },
+    { id: 'paula-scher', name: 'Paula Scher', model: 'openai/gpt-5.2', modelColor: '#34D399', concept: 'Glacier Protocol', score: 85, status: 'surviving' },
     { id: 'saul-bass', name: 'Saul Bass', model: 'anthropic/claude-sonnet-4.6', modelColor: '#F27123', concept: 'Still Life', score: 78, status: 'surviving' },
-    { id: 'leo-burnett', name: 'Leo Burnett', model: 'openai/gpt-5.1', modelColor: '#34D399', concept: 'Nordic Myth', score: 62, status: 'eliminated' },
+    { id: 'leo-burnett', name: 'Leo Burnett', model: 'openai/gpt-5.2', modelColor: '#34D399', concept: 'Nordic Myth', score: 62, status: 'eliminated' },
     { id: 'elon-musk', name: 'Elon Musk', model: 'x-ai/grok-4.1', modelColor: '#E5375E', concept: 'H2Luxe', score: 45, status: 'eliminated' },
   ],
   media: [

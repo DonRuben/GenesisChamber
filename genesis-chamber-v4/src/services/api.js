@@ -108,7 +108,7 @@ export async function renameConversation(id, name) {
 export async function sendMessageStream(convId, content, onEvent, options = {}) {
   const {
     models, chairmanModel, thinkingMode, enableWebSearch, modelThinkingModes,
-    chairman, signal,
+    adaptiveMode, chairman, signal,
   } = options;
 
   const body = { content };
@@ -119,6 +119,7 @@ export async function sendMessageStream(convId, content, onEvent, options = {}) 
   if (modelThinkingModes && Object.keys(modelThinkingModes).length > 0) {
     body.model_thinking_modes = modelThinkingModes;
   }
+  if (adaptiveMode) body.adaptive_mode = true;
   if (chairman) body.chairman = chairman;
 
   const res = await fetch(`${API_BASE}/api/conversations/${convId}/message/stream`, {

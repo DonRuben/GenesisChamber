@@ -6,11 +6,11 @@ from .config import COUNCIL_MODELS, CHAIRMAN_MODEL
 
 
 def _build_council_extras(thinking_mode: str = "off", enable_web_search: bool = False,
-                          model: str = "") -> dict:
+                          model: str = "", adaptive: bool = False) -> dict:
     """Build reasoning/plugins kwargs for council queries."""
     kwargs = {}
     if thinking_mode and thinking_mode != "off":
-        kwargs["reasoning"] = get_reasoning_config(model, thinking_mode)
+        kwargs["reasoning"] = get_reasoning_config(model, thinking_mode, adaptive=adaptive)
     if enable_web_search:
         kwargs["plugins"] = [{"id": "web", "max_results": 5}]
     return kwargs
@@ -19,15 +19,17 @@ def _build_council_extras(thinking_mode: str = "off", enable_web_search: bool = 
 async def stage1_collect_responses(user_query: str, models: List[str] = None,
                                    thinking_mode: str = "off",
                                    enable_web_search: bool = False,
-                                   model_thinking_modes: Optional[Dict[str, str]] = None) -> List[Dict[str, Any]]:
+                                   model_thinking_modes: Optional[Dict[str, str]] = None,
+                                   adaptive_mode: bool = False) -> List[Dict[str, Any]]:
     """
     Stage 1: Collect individual responses from all council models.
 
     Args:
         user_query: The user's question
         models: Optional list of model IDs to use (defaults to COUNCIL_MODELS)
-        thinking_mode: "off", "thinking", or "deep" (global baseline)
+        thinking_mode: "off", "low", "medium", "high", or "max" (global baseline)
         model_thinking_modes: Optional per-model thinking mode overrides
+        adaptive_mode: Enable adaptive thinking for Claude 4.6 models
 
     Returns:
         List of dicts with 'model' and 'response' keys
@@ -35,19 +37,25 @@ async def stage1_collect_responses(user_query: str, models: List[str] = None,
     council_models = models or COUNCIL_MODELS
     messages = [{"role": "user", "content": user_query}]
 
+    # Helper: check if model is Claude 4.6
+    def _is_claude46(m):
+        ml = m.lower()
+        return any(s in ml for s in ('claude-opus-4.6', 'claude-sonnet-4.6',
+                                      'claude-opus-4-6', 'claude-sonnet-4-6'))
+
     # Build per-model reasoning configs
     model_reasoning = None
     plugins = None
     if model_thinking_modes:
         model_reasoning = {
-            m: get_reasoning_config(m, mode)
+            m: get_reasoning_config(m, mode, adaptive=adaptive_mode and _is_claude46(m))
             for m, mode in model_thinking_modes.items()
             if mode != "off"
         }
     elif thinking_mode and thinking_mode != "off":
         # Build per-model configs (each model gets its own correct reasoning config)
         model_reasoning = {
-            m: get_reasoning_config(m, thinking_mode)
+            m: get_reasoning_config(m, thinking_mode, adaptive=adaptive_mode and _is_claude46(m))
             for m in council_models
         }
     if enable_web_search:
@@ -83,6 +91,7 @@ async def stage2_collect_rankings(
     thinking_mode: str = "off",
     enable_web_search: bool = False,
     model_thinking_modes: Optional[Dict[str, str]] = None,
+    adaptive_mode: bool = False,
 ) -> Tuple[List[Dict[str, Any]], Dict[str, str]]:
     """
     Stage 2: Each model ranks the anonymized responses.
@@ -90,6 +99,7 @@ async def stage2_collect_rankings(
     Args:
         user_query: The original user query
         stage1_results: Results from Stage 1
+        adaptive_mode: Enable adaptive thinking for Claude 4.6 models
 
     Returns:
         Tuple of (rankings list, label_to_model mapping)
@@ -141,19 +151,26 @@ FINAL RANKING:
 Now provide your evaluation and ranking:"""
 
     council_models = models or COUNCIL_MODELS
+
+    # Helper: check if model is Claude 4.6
+    def _is_claude46(m):
+        ml = m.lower()
+        return any(s in ml for s in ('claude-opus-4.6', 'claude-sonnet-4.6',
+                                      'claude-opus-4-6', 'claude-sonnet-4-6'))
+
     messages = [{"role": "user", "content": ranking_prompt}]
 
     # Build per-model reasoning configs
     model_reasoning = None
     if model_thinking_modes:
         model_reasoning = {
-            m: get_reasoning_config(m, mode)
+            m: get_reasoning_config(m, mode, adaptive=adaptive_mode and _is_claude46(m))
             for m, mode in model_thinking_modes.items()
             if mode != "off"
         }
     elif thinking_mode != "off" and council_models:
         model_reasoning = {
-            m: get_reasoning_config(m, thinking_mode)
+            m: get_reasoning_config(m, thinking_mode, adaptive=adaptive_mode and _is_claude46(m))
             for m in council_models
         }
     plugins = [{"id": "web", "max_results": 5}] if enable_web_search else None
@@ -185,6 +202,7 @@ async def stage3_synthesize_final(
     thinking_mode: str = "off",
     enable_web_search: bool = False,
     model_thinking_modes: Optional[Dict[str, str]] = None,
+    adaptive_mode: bool = False,
 ) -> Dict[str, Any]:
     """
     Stage 3: Chairman synthesizes final response.
@@ -233,7 +251,7 @@ Provide a clear, well-reasoned final answer that represents the council's collec
     effective_mode = thinking_mode
     if model_thinking_modes and chairman in model_thinking_modes:
         effective_mode = model_thinking_modes[chairman]
-    extras = _build_council_extras(effective_mode, enable_web_search, chairman)
+    extras = _build_council_extras(effective_mode, enable_web_search, chairman, adaptive=adaptive_mode)
     response = await query_model(chairman, messages, timeout=180.0, **extras)
 
     if response is None:
@@ -381,6 +399,7 @@ async def run_full_council(
     thinking_mode: str = "off",
     enable_web_search: bool = False,
     model_thinking_modes: Optional[Dict[str, str]] = None,
+    adaptive_mode: bool = False,
 ) -> Tuple[List, List, Dict, Dict]:
     """
     Run the complete 3-stage council process.
@@ -389,9 +408,10 @@ async def run_full_council(
         user_query: The user's question
         models: Optional list of model IDs (defaults to COUNCIL_MODELS)
         chairman_model: Optional chairman model ID (defaults to CHAIRMAN_MODEL)
-        thinking_mode: "off", "thinking", or "deep" (global baseline)
+        thinking_mode: "off", "low", "medium", "high", or "max" (global baseline)
         enable_web_search: Enable live web search
         model_thinking_modes: Optional per-model thinking mode overrides
+        adaptive_mode: Enable adaptive thinking for Claude 4.6 models
 
     Returns:
         Tuple of (stage1_results, stage2_results, stage3_result, metadata)
@@ -400,7 +420,8 @@ async def run_full_council(
     stage1_results = await stage1_collect_responses(
         user_query, models=models,
         thinking_mode=thinking_mode, enable_web_search=enable_web_search,
-        model_thinking_modes=model_thinking_modes)
+        model_thinking_modes=model_thinking_modes,
+        adaptive_mode=adaptive_mode)
 
     # If no models responded successfully, return error
     if not stage1_results:
@@ -413,7 +434,8 @@ async def run_full_council(
     stage2_results, label_to_model = await stage2_collect_rankings(
         user_query, stage1_results, models=models,
         thinking_mode=thinking_mode, enable_web_search=enable_web_search,
-        model_thinking_modes=model_thinking_modes)
+        model_thinking_modes=model_thinking_modes,
+        adaptive_mode=adaptive_mode)
 
     # Calculate aggregate rankings
     aggregate_rankings = calculate_aggregate_rankings(stage2_results, label_to_model)
@@ -427,6 +449,7 @@ async def run_full_council(
         thinking_mode=thinking_mode,
         enable_web_search=enable_web_search,
         model_thinking_modes=model_thinking_modes,
+        adaptive_mode=adaptive_mode,
     )
 
     # Prepare metadata

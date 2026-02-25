@@ -19,13 +19,13 @@ genesis-chamber-v4/
 ├── backend/                      # Python FastAPI + OpenRouter + fal.ai
 │   ├── main.py                   # App entry (port 8001), CORS, routes
 │   ├── config.py                 # 19 personas, colors, OpenRouter + fal.ai config
-│   ├── routes.py                 # All API endpoints
-│   ├── simulation.py             # 3-stage council orchestration
+│   ├── council.py                # 3-stage council orchestration (stage1/stage2/stage3)
+│   ├── openrouter.py             # OpenRouter API wrapper + reasoning config
+│   ├── simulation.py             # Genesis Chamber multi-round simulation
 │   ├── soul_engine.py            # Soul personality + biography system
 │   ├── output_engine.py          # Final output formatting
 │   ├── image_generator.py        # fal.ai image generation
 │   ├── video_generator.py        # fal.ai video generation
-│   ├── openrouter_client.py      # OpenRouter API wrapper + streaming
 │   ├── sse.py                    # Server-Sent Events implementation
 │   ├── database.py               # Neon PostgreSQL (async SQLAlchemy)
 │   ├── models.py                 # SQLAlchemy ORM models
@@ -47,6 +47,41 @@ Design (6): paul-rand, paula-scher, saul-bass, susan-kare, rob-janoff, tobias-va
 Business (5): elon-musk, jeff-bezos, warren-buffett, richard-branson, dietrich-mateschitz
 Leadership: steve-jobs (Moderator), jony-ive (Evaluator)
 Special: devils-advocate (Promoter of the Faith)
+
+## LLM Council — Model Roster (17 models, 5 tiers)
+
+| Tier | Models | Price Range |
+|------|--------|------------|
+| **Premium** (5) | Claude Opus 4.6, Gemini 3.1 Pro, Sonar Pro Search, Nano Banana Pro, GPT-5 Image | $3–$75/M |
+| **Balanced** (5) | GPT-5.2, Gemini 3 Pro, Grok 4.1, Claude Sonnet 4.6, GPT-5.3 Codex | $2.5–$15/M |
+| **Efficient** (3) | Claude Haiku 4.5, Gemini 3 Flash, GPT-5.2 Chat | $0.15–$4/M |
+| **Budget** (3) | DeepSeek V3.2, Gemini 2.5 Flash Lite, GPT-4.1 Nano | $0.075–$1.1/M |
+| **Specialist** (1) | O3-Pro (always max reasoning, 30x expensive) | $60–$240/M |
+
+Default active: all 5 Premium models. Defined in `mock.js:MODELS` and `mock.js:DEFAULT_COUNCIL_MODELS`.
+
+### 5-Level Thinking System
+| Level | Key | Behavior | Token Scaling |
+|-------|-----|----------|--------------|
+| Off | `'off'` | No reasoning | 1x |
+| Low | `'low'` | Light reasoning | 2x |
+| Medium | `'medium'` | Balanced (default) | 2x |
+| High | `'high'` | Deep analysis | 3x |
+| Max | `'max'` | Claude 4.6 adaptive / others get high | 3x |
+
+**Special model behavior:**
+- **Claude 4.6** (Opus/Sonnet): supports all 5 levels + Adaptive mode (`{"exclude": False}` = no budget cap)
+- **O3-Pro**: always `{"effort": "high"}` regardless of setting — SettingsPanel shows fixed "MAX" badge
+- **Sonar** (search models): no reasoning support — returns `{}` — SettingsPanel shows fixed "SEARCH" badge
+- **All others**: effort-based (`low`/`medium`/`high`), `max` maps to `high`
+
+**Adaptive mode:** When enabled + Claude 4.6, sends `{"exclude": False}` (model decides own reasoning depth). Separate toggles for participants and chairman. Stored as `adaptiveMode` (store) / `adaptive_mode` (API).
+
+### Chairman Separation
+Chairman (Stage 3 synthesis) has independent config: `chairman.thinkingMode`, `chairman.adaptiveMode`, `chairman.webSearch`. Defaults: `high` / `true` / `true`. Frontend sends as `chairman: { model, thinking_mode, adaptive_mode, web_search }`.
+
+### Session Migration
+Old saved sessions with `'thinking'` → `'medium'`, `'deep'` → `'high'`. Handled in `councilStore.js:loadSavedSession`.
 
 ## How
 
@@ -80,6 +115,13 @@ Update store incrementally per-soul as events arrive — never batch/wait for al
 ### Current phase
 Phase 9 spec exists in `docs/phase9-final-spec.md` but is NOT YET INTEGRATED. Features planned: per-soul thinking modes, Chairman AI, Devil's Advocate config, premium loading states, 10 council presets. Read the spec before starting any Phase 9 work.
 
+### UI Components — SettingsPanel
+`SettingsPanel.jsx` is the council configuration slide-in panel. Key patterns:
+- **InfoTooltip**: local hover component using `IC.info` icon + absolute-positioned tooltip. Used for thinking level descriptions and adaptive mode explanation.
+- **Per-model thinking**: `getModelThinkingType(modelId)` returns `'full'` (Claude 4.6 — all 5 levels + adaptive), `'fixed'` (O3-Pro/Sonar — badge only, no dropdown), or `'standard'` (others — 4 levels, no max).
+- **Tier collapsing**: Premium + Balanced expanded by default. Specialist tier shows warning badge.
+- **Price display**: `$inputPrice` shown per model from `m.inputPrice` field.
+
 ## Rules
 
 - Font sizes are numbers, not strings: `fontSize: 11` not `fontSize: '11px'`.
@@ -90,16 +132,22 @@ Phase 9 spec exists in `docs/phase9-final-spec.md` but is NOT YET INTEGRATED. Fe
 - Max 16 personas per council session. Toggle silently fails beyond 16.
 - Mono uppercase for labels: `fontFamily: font.mono`, `textTransform: 'uppercase'`, `letterSpacing: '0.12em'`.
 - Left border accent on cards: `borderLeft: '2px solid ${color}'`, not full borders or backgrounds.
+- Thinking mode values are `'off'`|`'low'`|`'medium'`|`'high'`|`'max'` — never use old `'thinking'`/`'deep'` values in new code.
+- O3-Pro (`openai/o3-pro`) is Specialist tier — always warn about 30x cost. Never include in defaults.
+- Sonar models have `capabilities: ['search']` — they don't support reasoning config.
+- Model IDs use the exact OpenRouter format: `x-ai/grok-4.1` (not `xai/`), `anthropic/claude-sonnet-4.6` (dot notation).
 
 ## Gotchas
 
 - Backend CORS middleware MUST be added BEFORE route definitions in `main.py`. Order matters.
-- OpenRouter thinking: `{ type: 'enabled', budget_tokens: N }` — include ONLY for 'think'/'deep' mode. Omit entirely for 'off'. Including it with budget 0 causes errors.
+- OpenRouter reasoning: use `get_reasoning_config(model, thinking_mode, adaptive)` in `openrouter.py`. Never build reasoning dicts manually. For `'off'` it returns `{}`. For Claude 4.6 adaptive it returns `{"exclude": False}`. For everything else it returns `{"effort": level}`.
 - Sidebar conversation save: debounce updates to avoid excessive DB calls.
 - Motion durations are strings with units (`'210ms'`), unlike fontSize which are bare numbers.
 - `getFilteredMedia()` is a method, not reactive state — call via `getState()`.
 - fal.ai requires `FAL_KEY` env var. Image and video generation are separate endpoints with different models.
 - Port is 8001 (NOT 8000). Configured via `os.getenv('PORT', '8001')` in main.py.
+- Chairman Stage 3 uses its OWN thinking/adaptive/webSearch config from `request.chairman`, not the global `request.thinking_mode`. See `main.py` streaming endpoint.
+- `IMAGE_CAPABLE_MODELS` in `openrouter.py` — only `openai/gpt-5-image` and `google/gemini-3-pro-image-preview`. Do NOT add models that don't return `modalities: ["text", "image"]`.
 
 ## Environment
 ```
