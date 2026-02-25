@@ -1199,6 +1199,32 @@ async def get_generated_images(sim_id: str):
     return {"images": images, "status": "complete"}
 
 
+@app.get("/api/simulation/{sim_id}/context-images")
+async def get_simulation_context_images(sim_id: str):
+    """Get metadata for all in-context images captured during simulation rounds."""
+    from .image_store import image_store
+    metadata = image_store.get_image_metadata(sim_id)
+    return {"images": metadata, "count": len(metadata)}
+
+
+@app.get("/api/simulation/{sim_id}/context-images/{image_id}")
+async def get_simulation_context_image(sim_id: str, image_id: str):
+    """Get a single in-context image by ID (includes base64 data)."""
+    from .image_store import image_store
+    img = image_store.get_image(sim_id, image_id)
+    if not img:
+        raise HTTPException(status_code=404, detail="Image not found")
+    return {
+        "image_id": img.image_id,
+        "round_num": img.round_num,
+        "stage": img.stage,
+        "model": img.model,
+        "persona_id": img.persona_id,
+        "description": img.description,
+        "data": img.data,
+    }
+
+
 class GenerateVideosRequest(BaseModel):
     quality: str = "standard"  # hero, standard, draft
 

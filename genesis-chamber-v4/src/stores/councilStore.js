@@ -21,6 +21,9 @@ export const useCouncilStore = create((set, get) => ({
   followUp: '',
   selectedResponseTab: 0,       // 0-based index | 'all' | 'leaderboard' | 'synthesis'
 
+  // ── Artifact Panel ──
+  artifactPanel: { isOpen: false, content: '', modelName: '', modelColor: '', sources: [], images: [] },
+
   // ── Compare Mode ──
   compareMode: false,
   compareLeft: 0,
@@ -77,6 +80,8 @@ export const useCouncilStore = create((set, get) => ({
       : [...s.activeModels, id],
   })),
   setFollowUp: (followUp) => set({ followUp }),
+  openArtifact: (data) => set({ artifactPanel: { isOpen: true, ...data } }),
+  closeArtifact: () => set((s) => ({ artifactPanel: { ...s.artifactPanel, isOpen: false } })),
   setSelectedResponseTab: (tab) => set({ selectedResponseTab: tab }),
   setCompareMode: (on) => set({ compareMode: on }),
   setCompareLeft: (idx) => set({ compareLeft: idx }),

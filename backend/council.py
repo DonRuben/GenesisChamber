@@ -270,6 +270,8 @@ Provide a clear, well-reasoned final answer that represents the council's collec
         result['reasoning'] = response['reasoning']
     if response.get('annotations'):
         result['annotations'] = response['annotations']
+    if response.get('images'):
+        result['images'] = response['images']
     return result
 
 

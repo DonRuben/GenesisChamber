@@ -13,6 +13,7 @@ import { useTokens } from '../../hooks/useTokens';
 import { useModelLookup } from '../../hooks/useModels';
 import Markdown from '../../design/Markdown';
 import ReadFullModal, { sanitizeFilename, questionSlug } from './ReadFullModal';
+import CollapsibleSources from './CollapsibleSources';
 import { useCouncilStore } from '../../stores/councilStore';
 
 // Detect full HTML responses (e.g. models returning styled HTML instead of markdown)
@@ -26,10 +27,11 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
   const t = useTokens();
   const lookupModel = useModelLookup();
   const question = useCouncilStore((s) => s.question);
+  const openArtifact = useCouncilStore((s) => s.openArtifact);
   const [showThinking, setShowThinking] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [sourcesExpanded, setSourcesExpanded] = useState(false);
+  const [hovered, setHovered] = useState(false);
 
   // Accept both mock format {modelId, text, score} and backend format {model, response, reasoning}
   const modelId = response.model || response.modelId;
@@ -78,11 +80,16 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
 
   return (
     <>
-      <div className="gc-enter" style={{
-        background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8,
-        borderLeft: `2px solid ${revealed ? model.color : t.textMuted}`,
-        padding: '20px 24px', transition: 'border-color 0.2s',
-      }}>
+      <div
+        className="gc-enter"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          background: t.surface, border: `1px solid ${hovered ? t.borderHover : t.border}`, borderRadius: 12,
+          borderLeft: `2px solid ${revealed ? model.color : t.textMuted}`,
+          padding: '20px 24px', transition: 'border-color 0.2s',
+        }}
+      >
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -226,43 +233,9 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
           </button>
         )}
 
-        {/* Citations / Sources — collapsible, default 3 */}
+        {/* Citations / Sources */}
         {annotations.length > 0 && (
-          <div style={{
-            marginTop: 12, padding: '10px 14px', background: t.surfaceRaised,
-            borderRadius: 6, borderLeft: `2px solid ${t.cyan}`,
-          }}>
-            <span style={{
-              fontSize: 9, fontFamily: font.mono, color: t.cyan,
-              textTransform: 'uppercase', letterSpacing: '0.12em',
-            }}>SOURCES</span>
-            <ul style={{ margin: '6px 0 0', paddingLeft: 16, listStyle: 'disc' }}>
-              {(sourcesExpanded ? annotations : annotations.slice(0, 3)).map((a, i) => (
-                <li key={i} style={{ fontSize: 11, marginBottom: 3 }}>
-                  <a
-                    href={a.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: t.cyan, textDecoration: 'none' }}
-                  >
-                    {a.title || a.url}
-                  </a>
-                </li>
-              ))}
-            </ul>
-            {!sourcesExpanded && annotations.length > 3 && (
-              <button
-                onClick={() => setSourcesExpanded(true)}
-                style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  color: t.cyan, fontSize: 11, fontFamily: font.mono,
-                  padding: '4px 0 0', display: 'block',
-                }}
-              >
-                + {annotations.length - 3} more sources
-              </button>
-            )}
-          </div>
+          <CollapsibleSources sources={annotations} columns={1} />
         )}
 
         {/* Footer — copy + export */}
@@ -292,6 +265,23 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
               Export
             </button>
           )}
+          <button
+            onClick={() => openArtifact({
+              content: text,
+              modelName: model.name,
+              modelColor: model.color,
+              sources: annotations,
+              images: response.images || [],
+            })}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px',
+              background: 'transparent', border: 'none', cursor: 'pointer',
+              fontSize: 11, color: t.councilGold, fontFamily: font.mono,
+            }}
+          >
+            <span style={{ fontSize: 12 }}>{IC.exportArrow}</span>
+            Artifact
+          </button>
         </div>
       </div>
 

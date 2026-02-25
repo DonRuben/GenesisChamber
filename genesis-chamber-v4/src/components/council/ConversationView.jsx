@@ -23,6 +23,7 @@ import { useModelLookup } from '../../hooks/useModels';
 import { useIsMobile } from '../../hooks/useMediaQuery';
 import Markdown from '../../design/Markdown';
 import ReadFullModal, { sanitizeFilename, questionSlug, downloadBlob, openPrintWindow, PRINT_CSS } from './ReadFullModal';
+import ArtifactPanel from './ArtifactPanel';
 
 function UserBubble({ text, color, muted }) {
   const t = useTokens();
@@ -372,6 +373,8 @@ export default function ConversationView({ onSubmit }) {
   const stage3Result = useCouncilStore((s) => s.stage3Result);
   const loading = useCouncilStore((s) => s.loading);
   const currentStage = useCouncilStore((s) => s.currentStage);
+  const artifactPanel = useCouncilStore((s) => s.artifactPanel);
+  const closeArtifact = useCouncilStore((s) => s.closeArtifact);
   const error = useCouncilStore((s) => s.error);
   const activeModels = useCouncilStore((s) => s.activeModels);
   const modelThinkingModes = useCouncilStore((s) => s.modelThinkingModes);
@@ -879,6 +882,17 @@ export default function ConversationView({ onSubmit }) {
           onClose={() => setShowReport(false)}
         />
       )}
+
+      {/* Artifact Panel */}
+      <ArtifactPanel
+        isOpen={artifactPanel.isOpen}
+        onClose={closeArtifact}
+        modelName={artifactPanel.modelName}
+        modelColor={artifactPanel.modelColor}
+        content={artifactPanel.content}
+        sources={artifactPanel.sources}
+        images={artifactPanel.images}
+      />
     </div>
   );
 }

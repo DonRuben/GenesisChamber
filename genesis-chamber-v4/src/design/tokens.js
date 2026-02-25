@@ -69,6 +69,13 @@ export const T = {
     critique: '#F59E0B',
     synthesize: '#EF4444',
   },
+
+  // Shadows
+  shadow: {
+    sm: '0 1px 2px rgba(0,0,0,0.3)',
+    md: '0 4px 12px rgba(0,0,0,0.4)',
+    lg: '-8px 0 24px rgba(0,0,0,0.5)',
+  },
 };
 
 // Light theme overrides — darkened accents for readability on white
@@ -97,6 +104,13 @@ export const TLight = {
   red: '#C42E2E',
   blue: '#2563EB',
   councilGold: '#9A7B4F',
+
+  // Shadows
+  shadow: {
+    sm: '0 1px 2px rgba(0,0,0,0.08)',
+    md: '0 4px 12px rgba(0,0,0,0.12)',
+    lg: '-8px 0 24px rgba(0,0,0,0.15)',
+  },
 };
 
 // Font stacks

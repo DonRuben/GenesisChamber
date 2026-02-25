@@ -37,9 +37,11 @@ def strip_base64_images(text: str) -> str:
 def _extract_response(message: Dict[str, Any]) -> Dict[str, Any]:
     """Extract content, reasoning, and annotations from an OpenRouter response message.
 
-    Handles both string content and array content (used by image models):
-    - String: "Here is the design..."
-    - Array: [{"type": "text", "text": "..."}, {"type": "image_url", "image_url": {"url": "data:..."}}]
+    Handles multiple image formats:
+    1. Array content: [{"type": "text", ...}, {"type": "image_url", "image_url": {"url": "data:..."}}]
+    2. Markdown inline base64: ![alt](data:image/png;base64,...)
+    3. Raw base64 data URIs in content: data:image/png;base64,...
+    4. message.images[] — OpenRouter alternate format (images as siblings to content)
     """
     raw_content = message.get('content')
     images = []
@@ -64,8 +66,38 @@ def _extract_response(message: Dict[str, Any]) -> Dict[str, Any]:
         md_images = re.findall(r'!\[[^\]]*\]\((data:image/[^)]+)\)', content)
         if md_images:
             images.extend(md_images)
+        # Extract raw base64 data URIs not wrapped in markdown syntax
+        raw_uris = re.findall(r'(?<!\()(data:image/[a-zA-Z]+;base64,[A-Za-z0-9+/=]{100,})', content)
+        for uri in raw_uris:
+            if uri not in images:
+                images.append(uri)
     else:
         content = ''
+
+    # OpenRouter alternate format: images as siblings to content in message
+    raw_images = message.get('images', [])
+    for img in raw_images:
+        if isinstance(img, str):
+            if img.startswith('data:image/') or img.startswith('http'):
+                images.append(img)
+        elif isinstance(img, dict):
+            image_url = None
+            if img.get('type') == 'image_url' and isinstance(img.get('image_url'), dict):
+                image_url = img['image_url'].get('url', '')
+            elif isinstance(img.get('image_url'), str):
+                image_url = img['image_url']
+            elif img.get('url'):
+                image_url = img['url']
+            if image_url and (image_url.startswith('data:image/') or image_url.startswith('http')):
+                images.append(image_url)
+
+    # Deduplicate images preserving order
+    seen = set()
+    unique_images = []
+    for img in images:
+        if img not in seen:
+            seen.add(img)
+            unique_images.append(img)
 
     result = {
         'content': content,
@@ -73,8 +105,8 @@ def _extract_response(message: Dict[str, Any]) -> Dict[str, Any]:
         'reasoning_details': message.get('reasoning_details'),
         'annotations': message.get('annotations'),
     }
-    if images:
-        result['images'] = images
+    if unique_images:
+        result['images'] = unique_images
     return result
 
 

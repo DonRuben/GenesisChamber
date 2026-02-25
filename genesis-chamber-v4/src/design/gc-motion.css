@@ -165,6 +165,33 @@
   scrollbar-color: rgba(0,0,0,0.12) transparent;
 }
 
+/* ── ThinkingCard — conic border spin ── */
+@property --tc-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes tcBorderSpin {
+  to { --tc-angle: 360deg; }
+}
+
+/* ── ThinkingCard — neural wave dash ── */
+@keyframes tcWaveDash {
+  to { stroke-dashoffset: -40; }
+}
+
+/* ── ArtifactPanel — slide in from right ── */
+@keyframes artifactSlideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+/* ── ArtifactPanel — fade in backdrop ── */
+@keyframes artifactFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* ── Reduced Motion ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

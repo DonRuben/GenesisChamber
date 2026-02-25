@@ -14,6 +14,7 @@ from .models import (
 from .soul_engine import SoulEngine
 from .openrouter import query_with_soul, query_with_soul_parallel, get_reasoning_config
 from .config import ROUND_MODES, SIMULATION_OUTPUT_DIR
+from .image_store import image_store
 
 
 def _build_query_extras(pconfig) -> dict:
@@ -343,6 +344,12 @@ class GenesisRound:
                 user_prompt += "\n\nPrevious round concepts for reference:\n"
                 for c in self.active_concepts:
                     user_prompt += f"- {c.name}: {c.idea[:200]}\n"
+                # Inject image context from previous rounds
+                img_context = image_store.get_context_references(
+                    self.state.simulation_id, up_to_round=self.round_num - 1
+                )
+                if img_context:
+                    user_prompt += f"\n\n{img_context}\n"
 
             query = {
                 "model": pconfig.model,
@@ -386,6 +393,17 @@ class GenesisRound:
                     response["content"], pid, pconfig.display_name, self.round_num
                 )
                 all_concepts.extend(concepts)
+                # Store any images from image-capable models
+                for img_url in (response.get("images") or []):
+                    image_store.store_image(
+                        simulation_id=self.state.simulation_id,
+                        round_num=self.round_num,
+                        stage="creation",
+                        model=pconfig.model,
+                        persona_id=pid,
+                        data=img_url,
+                        description=concepts[0].name if concepts else "",
+                    )
                 # Emit completion event per participant
                 if on_participant_event:
                     concept_names = [c.name for c in concepts]

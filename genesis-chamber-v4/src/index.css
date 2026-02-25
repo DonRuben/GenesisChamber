@@ -100,6 +100,49 @@ body {
   }
 }
 
+/* ── Artifact Backdrop ── */
+.artifact-backdrop {
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+[data-theme="light"] .artifact-backdrop {
+  background: rgba(0,0,0,0.25);
+}
+
+/* ── ThinkingCard — conic border (pseudo-element required) ── */
+.think-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+}
+.think-card::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 14px;
+  background: conic-gradient(from var(--tc-angle), transparent 0%, var(--tc-mc) 8%, transparent 22%);
+  animation: tcBorderSpin 2s linear infinite;
+  z-index: 0;
+}
+
+/* ThinkingCard avatar orbit ring */
+.think-orbit {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: conic-gradient(from var(--tc-angle), transparent 0%, var(--tc-mc) 15%, transparent 30%);
+  animation: tcBorderSpin 3s linear infinite;
+  mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1.5px));
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1.5px));
+}
+
+/* Neural wave lines */
+.think-wave line {
+  stroke-dasharray: 4 6;
+  animation: tcWaveDash linear infinite;
+}
+
 /* ── Mobile TopBar Visibility ── */
 .gc-mobile-topbar {
   display: none !important;
