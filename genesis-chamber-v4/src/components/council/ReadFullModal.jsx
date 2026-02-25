@@ -182,7 +182,15 @@ export default function ReadFullModal({ title, subtitle, text, accentColor, anno
           className="gc-scrollbar"
           style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}
         >
-          <Markdown colors={MODAL_COLORS}>{text}</Markdown>
+          {text && typeof text === 'string' && text.trim().startsWith('<') && (text.includes('<div') || text.includes('<style') || text.includes('<table')) ? (
+            <iframe
+              srcDoc={text}
+              sandbox=""
+              style={{ width: '100%', height: 'calc(85vh - 200px)', border: 'none', borderRadius: 8, background: '#fff' }}
+            />
+          ) : (
+            <Markdown colors={MODAL_COLORS}>{text}</Markdown>
+          )}
         </div>
 
         {/* Generated images */}
@@ -202,15 +210,13 @@ export default function ReadFullModal({ title, subtitle, text, accentColor, anno
           </div>
         )}
 
-        {/* Sources — deduplicated */}
+        {/* Sources — all shown, no truncation */}
         {(() => {
           const deduped = annotations
             ? [...new Map(annotations.map(a => [a.url, a])).values()]
                 .map(a => ({ ...a, title: (a.title && a.title !== a.url) ? a.title : null }))
             : [];
-          const shown = deduped.slice(0, 15);
-          const extra = Math.max(0, deduped.length - 15);
-          if (!shown.length) return null;
+          if (!deduped.length) return null;
           return (
             <div style={{
               marginTop: 12, padding: '10px 14px', background: 'rgba(255,255,255,0.04)',
@@ -219,9 +225,9 @@ export default function ReadFullModal({ title, subtitle, text, accentColor, anno
               <span style={{
                 fontSize: 9, fontFamily: font.mono, color: '#00D9FF',
                 textTransform: 'uppercase', letterSpacing: '0.12em',
-              }}>SOURCES</span>
+              }}>SOURCES ({deduped.length})</span>
               <ul style={{ margin: '6px 0 0', paddingLeft: 16, listStyle: 'disc' }}>
-                {shown.map((a, i) => (
+                {deduped.map((a, i) => (
                   <li key={i} style={{ fontSize: 11, marginBottom: 3 }}>
                     <a
                       href={a.url}
@@ -233,11 +239,6 @@ export default function ReadFullModal({ title, subtitle, text, accentColor, anno
                     </a>
                   </li>
                 ))}
-                {extra > 0 && (
-                  <li style={{ fontSize: 11, color: '#A1A1AA', fontStyle: 'italic' }}>
-                    and {extra} more sources
-                  </li>
-                )}
               </ul>
             </div>
           );

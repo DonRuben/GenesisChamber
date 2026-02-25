@@ -15,6 +15,13 @@ import Markdown from '../../design/Markdown';
 import ReadFullModal, { sanitizeFilename, questionSlug } from './ReadFullModal';
 import { useCouncilStore } from '../../stores/councilStore';
 
+// Detect full HTML responses (e.g. models returning styled HTML instead of markdown)
+function isHTMLContent(text) {
+  if (!text || typeof text !== 'string') return false;
+  const t = text.trim();
+  return t.startsWith('<') && (t.includes('<div') || t.includes('<style') || t.includes('<table'));
+}
+
 export default function ResponseCard({ response, index, revealed, isWinner, rank, score }) {
   const t = useTokens();
   const lookupModel = useModelLookup();
@@ -22,6 +29,7 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
   const [showThinking, setShowThinking] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [sourcesExpanded, setSourcesExpanded] = useState(false);
 
   // Accept both mock format {modelId, text, score} and backend format {model, response, reasoning}
   const modelId = response.model || response.modelId;
@@ -55,11 +63,9 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
       title: citation.title || citation.text || citation.display_name || a.title,
     };
   }).filter((a) => a.url);
-  // Deduplicate by URL, clean title=URL entries, limit to 10
+  // Deduplicate by URL, clean title=URL entries
   const annotations = [...new Map(rawMapped.map(a => [a.url, a])).values()]
     .map(a => ({ ...a, title: (a.title && a.title !== a.url) ? a.title : null }));
-  const displayAnnotations = annotations.slice(0, 10);
-  const moreSourcesCount = Math.max(0, annotations.length - 10);
 
   const handleCopy = () => {
     navigator.clipboard?.writeText(text);
@@ -152,20 +158,37 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
 
         {/* Response text — scrollable with gradient fade */}
         <div style={{ position: 'relative' }}>
-          <div
-            className="gc-scrollbar"
-            style={{
-              maxHeight: 350, overflow: 'hidden',
-            }}
-          >
-            <Markdown>{text}</Markdown>
-          </div>
-          {isLong && (
-            <div style={{
-              position: 'absolute', bottom: 0, left: 0, right: 0, height: 60,
-              background: `linear-gradient(transparent, ${t.surface})`,
-              pointerEvents: 'none',
-            }} />
+          {isHTMLContent(text) ? (
+            <>
+              <iframe
+                srcDoc={text}
+                sandbox=""
+                style={{ width: '100%', height: 350, border: 'none', borderRadius: 8, background: '#fff' }}
+              />
+              <div style={{
+                position: 'absolute', bottom: 0, left: 0, right: 0, height: 60,
+                background: `linear-gradient(transparent, ${t.surface})`,
+                pointerEvents: 'none',
+              }} />
+            </>
+          ) : (
+            <>
+              <div
+                className="gc-scrollbar"
+                style={{
+                  maxHeight: 350, overflow: 'hidden',
+                }}
+              >
+                <Markdown>{text}</Markdown>
+              </div>
+              {isLong && (
+                <div style={{
+                  position: 'absolute', bottom: 0, left: 0, right: 0, height: 60,
+                  background: `linear-gradient(transparent, ${t.surface})`,
+                  pointerEvents: 'none',
+                }} />
+              )}
+            </>
           )}
         </div>
 
@@ -203,8 +226,8 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
           </button>
         )}
 
-        {/* Citations / Sources */}
-        {displayAnnotations.length > 0 && (
+        {/* Citations / Sources — collapsible, default 3 */}
+        {annotations.length > 0 && (
           <div style={{
             marginTop: 12, padding: '10px 14px', background: t.surfaceRaised,
             borderRadius: 6, borderLeft: `2px solid ${t.cyan}`,
@@ -214,7 +237,7 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
               textTransform: 'uppercase', letterSpacing: '0.12em',
             }}>SOURCES</span>
             <ul style={{ margin: '6px 0 0', paddingLeft: 16, listStyle: 'disc' }}>
-              {displayAnnotations.map((a, i) => (
+              {(sourcesExpanded ? annotations : annotations.slice(0, 3)).map((a, i) => (
                 <li key={i} style={{ fontSize: 11, marginBottom: 3 }}>
                   <a
                     href={a.url}
@@ -226,12 +249,19 @@ export default function ResponseCard({ response, index, revealed, isWinner, rank
                   </a>
                 </li>
               ))}
-              {moreSourcesCount > 0 && (
-                <li style={{ fontSize: 11, color: t.textMuted, fontStyle: 'italic' }}>
-                  and {moreSourcesCount} more sources
-                </li>
-              )}
             </ul>
+            {!sourcesExpanded && annotations.length > 3 && (
+              <button
+                onClick={() => setSourcesExpanded(true)}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: t.cyan, fontSize: 11, fontFamily: font.mono,
+                  padding: '4px 0 0', display: 'block',
+                }}
+              >
+                + {annotations.length - 3} more sources
+              </button>
+            )}
           </div>
         )}
 
